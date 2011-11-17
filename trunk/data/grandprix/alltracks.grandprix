@@ -1,0 +1,25 @@
+
+<supertuxkart_grand_prix name="All Tracks">
+
+    <track id="hacienda"         laps="3" />
+    <track id="scotland"         laps="3" />
+    <track id="startrack"        laps="3" />
+    <track id="lighthouse"       laps="4" />
+    <track id="jungle"           laps="3" />
+    <track id="mines"            laps="3" />
+    <track id="islandtrack"      laps="2" />
+    <track id="sandtrack"        laps="3" />
+    <track id="fortmagma"        laps="3" />
+    <track id="snowtuxpeak"      laps="3" />
+    <track id="crescentcrossing" laps="2" />
+    <track id="olivermath"       laps="4" />
+    <track id="farm"             laps="3" />
+    <track id="zengarden"        laps="4" />
+    <track id="city"             laps="3" />
+    <track id="xr591"            laps="3" />
+    <track id="minigolf"         laps="3" />
+    <track id="snowmountain"     laps="3" />
+    <track id="tuxtollway"       laps="2" />
+    <track id="subsea"           laps="2" />
+
+</supertuxkart_grand_prix>

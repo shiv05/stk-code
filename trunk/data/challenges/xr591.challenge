@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<challenge
+    version="1"
+    id="minigolf"
+    name="Win a race on Minigolf"
+    description="Win a 3 lap race on Minigolf against 4 Expert level AI karts."
+    depend-on="tollway"
+    unlock-track="xr591"
+    major="single"
+    minor="quickrace"
+    track="minigolf"
+    difficulty="hard"
+    laps="3"
+    karts="5"
+    position="1"
+/>
+

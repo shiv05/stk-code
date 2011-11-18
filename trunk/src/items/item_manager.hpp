@@ -28,6 +28,7 @@
 #include "utils/no_copy.hpp"
 
 class Kart;
+struct ItemType;
 
 /**
   * \ingroup items
@@ -72,9 +73,11 @@ public:
     void           collectedItem   (int item_id, Kart *kart,
                                     int add_info=-1);
     void           switchItems     ();
-    void           setSwitchItems(const std::vector<int> &switch_items);
+    void           setSwitchItems  (const std::vector<int> &switch_items);
     scene::IMesh*  getItemModel    (Item::ItemType type)
                                       {return m_item_mesh[type];}
+    std::vector<Item*> getCloseItems (Kart* kart, float max_dist,
+                                       Item::ItemType type);
 };
 
 extern ItemManager* item_manager;

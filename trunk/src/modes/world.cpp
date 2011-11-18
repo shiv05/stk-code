@@ -36,6 +36,7 @@
 #include "items/projectile_manager.hpp"
 #include "karts/controller/default_ai_controller.hpp"
 #include "karts/controller/new_ai_controller.hpp"
+#include "karts/controller/fuzzy_ai_controller.hpp"
 #include "karts/controller/player_controller.hpp"
 #include "karts/controller/end_controller.hpp"
 #include "karts/kart_properties_manager.hpp"
@@ -230,7 +231,7 @@ Controller* World::loadAIController(Kart *kart)
     // turn=1-turn;
 
     // For now disable the new AI.
-    int turn=0;
+    int turn=2;
     switch(turn)
     {
         case 0:
@@ -238,6 +239,9 @@ Controller* World::loadAIController(Kart *kart)
             break;
         case 1:
             controller = new NewAIController(kart);
+            break;
+        case 2:
+            controller = new FuzzyAIController(kart);
             break;
         default:
             fprintf(stderr, "Warning: Unknown robot, using default.\n");

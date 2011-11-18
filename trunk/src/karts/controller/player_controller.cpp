@@ -18,6 +18,8 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+#include <iostream>
+
 #include "karts/controller/player_controller.hpp"
 
 #include "audio/sfx_base.hpp"
@@ -32,6 +34,8 @@
 #include "states_screens/race_gui_base.hpp"
 #include "utils/constants.hpp"
 #include "utils/translation.hpp"
+
+using namespace std;
 
 /** The constructor for a player kart.
  *  \param kart_name Name of the kart.
@@ -56,6 +60,18 @@ PlayerController::PlayerController(Kart *kart, StateManager::ActivePlayer *playe
     m_ugh_sound   = sfx_manager->createSoundSource( "ugh"  );
     m_grab_sound  = sfx_manager->createSoundSource( "grab_collectable" );
     m_full_sound  = sfx_manager->createSoundSource( "energy_bar_full" );
+
+    // -- Fuzzy controller params --
+    // Player evaluation
+    m_average_rank = m_kart->getPosition();
+    race_manager->setPlayerAverageRank(m_average_rank); // Update race manager data
+    race_manager->setPlayerCrashCount(m_crash_count);       
+
+    //m_times_average_rank_was_computed = 0;
+    m_timer                   = 0.0f;
+    m_crash_count             = 0;
+    m_old_speed               = 0.0f;
+    
 
     reset();
 }   // PlayerController
@@ -355,6 +371,47 @@ void PlayerController::update(float dt)
     {
         m_bzzt_sound->play();
     }
+    
+    //------------------------------------------------------
+    // Rank estimation for fuzzy ai controllers
+    m_timer += dt;
+    if(m_timer >= 5.0f)        // every 5 seconds, compute average rank
+    {
+        // TODO change formula so that the average rank takes more in account
+        // the current rank (so the player evaluation can change in race)
+        //m_average_rank = ((m_average_rank * m_times_average_rank_was_computed) +
+        //    this->m_kart->getPosition()) /
+        //    (m_times_average_rank_was_computed + 1);
+        // m_times_average_rank_was_computed++;
+
+        // This formula takes around 15sec to converge towards a new rank
+        m_average_rank = (m_average_rank + m_kart->getPosition())/2;
+        race_manager->setPlayerAverageRank(m_average_rank);
+
+//#ifdef AI_DEBUG
+//        cout << "player (" << m_kart->getIdent() << ") current rank = " << m_kart->getPosition() << endl;
+//        cout << "player (" << m_kart->getIdent() << ") average rank = " << m_average_rank << endl;
+//#endif
+        if(m_crash_count > 0)
+            m_crash_count--;    // Decrement (last 20 seconds) crash count
+        m_timer -= 5.0f;
+    }
+
+    //------------------------------------------------------
+    // Crash number for fuzzy ai controllers
+    //  less of 10mps is considered as a crash
+    if(m_kart->getSpeed() < 10.0f && m_old_speed > 10.0f)
+    {
+        m_crash_count++;
+        race_manager->setPlayerCrashCount(m_crash_count);
+//#ifdef AI_DEBUG
+//        cout << "player (" << m_kart->getIdent() << ") just crashed !" << endl;
+//        cout << "player (" << m_kart->getIdent() << ") crash number = " << m_crash_number << endl;
+//#endif
+    }
+    m_old_speed = m_kart->getSpeed();
+
+
     Controller::update(dt);
 }   // update
 

@@ -1051,6 +1051,7 @@ void initRest()
     race_manager->setMinorMode (RaceManager::MINOR_MODE_NORMAL_RACE);
     race_manager->setDifficulty(
                  (RaceManager::Difficulty)(int)UserConfigParams::m_difficulty);
+    race_manager->setNumKarts(2);
 
 }   // initRest
 

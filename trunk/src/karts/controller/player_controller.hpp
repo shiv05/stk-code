@@ -48,6 +48,15 @@ private:
     SFXBase       *m_grab_sound;
     SFXBase       *m_full_sound;
 
+    //  -- Fuzzy AI variables used for player evaluation --
+    float          m_average_rank;
+    //unsigned int   m_times_average_rank_was_computed; // Used only by exact average formula
+    float          m_timer;
+    
+    unsigned int   m_crash_count; // times the player crashed within the 20 last sec.
+    float          m_old_speed;
+    //  -- End of fuzzy AI variables --
+
     void           steer(float, int);
 public:
                    PlayerController  (Kart *kart, StateManager::ActivePlayer *_player,
@@ -63,6 +72,12 @@ public:
     bool           isPlayerController() const {return true;}
     virtual void   reset             ();
     void           resetInputState   ();
+    
+    // -- Getters for Fuzzy AI --
+    // The average rank is updated every 5secs
+    // float          getAverageRank()    {return m_average_rank;}
+    // The number of times the player has slowed down to less than 10mps
+    // float          getCrashCount()     {return m_crash_number;}
 };
 
 #endif

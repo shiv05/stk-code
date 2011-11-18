@@ -41,6 +41,9 @@
 #include "states_screens/state_manager.hpp"
 #include "tracks/track_manager.hpp"
 #include "utils/ptr_vector.hpp"
+#include "karts/controller/player_controller.hpp"
+
+using namespace std;
 
 RaceManager* race_manager= NULL;
 
@@ -623,6 +626,20 @@ void RaceManager::startSingleRace(const std::string trackIdent, const int num_la
     network_manager->setupPlayerKartInfo();
     
     startNew();
+}
+
+//==============================================================================
+// Fuzzy controller related functions
+
+// Get the first player
+int RaceManager::getPlayerKartId()
+{
+    for(unsigned int id=0; id<m_kart_status.size(); id++)
+    {
+        if(m_kart_status[id].m_local_player_id != -1)
+            return id;
+    }
+    return 0;
 }
 
 /* EOF */

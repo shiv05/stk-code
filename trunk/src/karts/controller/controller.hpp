@@ -80,6 +80,11 @@ public:
     virtual void  newLap             (int lap) {}
     virtual const irr::core::stringw& getNamePostfix() const;
 
+//     -- Getters for Fuzzy AI (Only overidden in player_controller) --
+//     The average rank is updated every 5secs
+//    float          getAverageRank()    {return 0;}
+//     The number of times the player has slowed down to less than 10mps
+//    float          getCrashNumber()    {return 0;}
 };   // Controller
 
 #endif

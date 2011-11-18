@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 #include "config/stk_config.hpp"
 #include "config/user_config.hpp"
@@ -33,6 +34,8 @@
 #include "network/network_manager.hpp"
 #include "tracks/track.hpp"
 #include "utils/string_utils.hpp"
+
+using namespace std;
 
 ItemManager* item_manager;
 
@@ -215,6 +218,34 @@ void  ItemManager::checkItemHit(Kart* kart)
         }   // if hit
     }   // for m_all_items
 }   // checkItemHit
+
+//-----------------------------------------------------------------------------
+/** Get items close to the given kart.
+ *  \param kart Pointer to the kart. 
+ */
+std::vector<Item*> ItemManager::getCloseItems(Kart* kart, float max_dist,
+        Item::ItemType type = Item::ITEM_NONE)
+{
+    // Only do this on the server
+    //if(network_manager->getMode()==NetworkManager::NW_CLIENT) return NULL;
+  
+    std::vector<Item*> items;
+    
+    for(AllItemTypes::iterator i = m_all_items.begin();
+        i != m_all_items.end();  i++)
+    {
+        if((!*i) || (*i)->wasCollected()) continue;
+
+        if(((*i)->getXYZ() - kart->getXYZ()).length() < max_dist)
+        {
+            if(type == Item::ITEM_NONE || (*i)->getType() == type)
+                items.push_back(*i);
+        }
+    }   // for m_all_items
+
+    return items;
+}   // getCloseItems
+
 
 //-----------------------------------------------------------------------------
 /** Remove all item instances, and the track specific models. This is used

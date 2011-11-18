@@ -156,42 +156,42 @@ void InputManager::handleStaticAction(int key, int value)
             }
             break;
         case KEY_F2:
-            if (UserConfigParams::m_artist_debug_mode && world)
+            if (/*UserConfigParams::m_artist_debug_mode &&*/ world)
             {
                 Kart* kart = world->getLocalPlayerKart(0);
                 kart->setPowerup(PowerupManager::POWERUP_PLUNGER, 10000);
             }
             break;
         case KEY_F3:
-            if (UserConfigParams::m_artist_debug_mode && world)
+            if (/*UserConfigParams::m_artist_debug_mode &&*/ world)
             {
                 Kart* kart = world->getLocalPlayerKart(0);
                 kart->setPowerup(PowerupManager::POWERUP_CAKE, 10000);
             }
             break;
         case KEY_F4:
-            if (UserConfigParams::m_artist_debug_mode && world)
+            if (/*UserConfigParams::m_artist_debug_mode &&*/ world)
             {
                 Kart* kart = world->getLocalPlayerKart(0);
                 kart->setPowerup(PowerupManager::POWERUP_SWITCH, 10000);
             }
             break;
         case KEY_F5:
-            if (UserConfigParams::m_artist_debug_mode && world)
+            if (/*UserConfigParams::m_artist_debug_mode &&*/ world)
             {
                 Kart* kart = world->getLocalPlayerKart(0);
                 kart->setPowerup(PowerupManager::POWERUP_BOWLING, 10000);
             }
             break;
         case KEY_F6:
-            if (UserConfigParams::m_artist_debug_mode && world)
+            if (/*UserConfigParams::m_artist_debug_mode &&*/ world)
             {
                 Kart* kart = world->getLocalPlayerKart(0);
                 kart->setPowerup(PowerupManager::POWERUP_BUBBLEGUM, 10000);
             }
             break;
         case KEY_F7:
-            if (UserConfigParams::m_artist_debug_mode && world)
+            if (/*UserConfigParams::m_artist_debug_mode &&*/ world)
             {
                 Kart* kart = world->getLocalPlayerKart(0);
                 kart->setPowerup(PowerupManager::POWERUP_ZIPPER, 10000);
@@ -199,7 +199,7 @@ void InputManager::handleStaticAction(int key, int value)
             break;
         
         case KEY_F8:
-            if (UserConfigParams::m_artist_debug_mode && value && world)
+            if (/*UserConfigParams::m_artist_debug_mode && value &&*/ world)
             {
                 if (control_is_pressed)
                 {
@@ -222,7 +222,7 @@ void InputManager::handleStaticAction(int key, int value)
             break;
             
         case KEY_F9:
-            if (UserConfigParams::m_artist_debug_mode && world)
+            if (/*UserConfigParams::m_artist_debug_mode &&*/ world)
             {
                 Kart* kart = world->getLocalPlayerKart(0);
                 if(control_is_pressed && race_manager->getMinorMode()!=

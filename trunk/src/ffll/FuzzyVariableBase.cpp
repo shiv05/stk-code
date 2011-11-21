@@ -922,7 +922,7 @@ int FuzzyVariableBase::load_sets_from_fcl_file(std::ifstream& file_contents)
 	char* token;
 			
 	// inlude ":=" in tokens so we skip the assignment operator
-	char seps[]   = " ,()\t\n:=";
+	char seps[]   = " ,()\t\n\r:=";
  
 	while(1)
 		{

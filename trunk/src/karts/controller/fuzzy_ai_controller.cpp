@@ -303,11 +303,36 @@ void FuzzyAIController::update(float dt)
         vector<Item*> boxes = item_manager->getCloseItems(m_kart, 40, Item::ITEM_BONUS_BOX);
         vector<Item*> allItems = item_manager->getCloseItems(m_kart, 40, Item::ITEM_NONE);
 
+        // Player evaluation
+        // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last), and can also be evaluated as bad...
+        // see m_kart_info[kart_id].getSector()->getDistanceFromStart()
+        
+        int eval = computePlayerEvaluation(race_manager->getPlayerAverageRank(), race_manager->getPlayerCrashCount());
         
 #ifdef AI_DEBUG
         // Player evaluation
         cout << m_kart->getIdent() << " : player crashes = " << race_manager->getPlayerCrashCount() << endl;
         cout << m_kart->getIdent() << " : player av.rank = " << race_manager->getPlayerAverageRank() << endl;
+        cout << m_kart->getIdent() << " : player evaluation = ";
+        switch(eval)
+        {
+        case (1):
+        	cout << "Good!" << endl;
+        	break;
+        
+        case (2):
+        	cout << "Average" << endl;
+        	break;
+        
+        case (3):
+        	cout << "Bad!" << endl;
+        	break;
+        
+        default :
+           cout << "unexpected value : " << eval << endl;
+        } // end switch
+        
+        // Items
         cout << m_kart->getIdent() << " : items = " << allItems.size();
         for(int i=0; i < nitro_b.size(); i++)
             cout << ", big nitro : " << (nitro_b[i])->getXYZ()[1];
@@ -324,10 +349,7 @@ void FuzzyAIController::update(float dt)
         // Agent powerup (possessed item/weapon)
         cout << m_kart->getIdent() << " : powerup count = " << m_kart->getNumPowerup() << endl;
         // Agent speed
-        cout << m_kart->getIdent() << " : powerup count = " << m_kart->getSpeed() << endl;
-        //
-        // TODO Big crash here.. check ffll
-        //computePlayerEvaluation(race_manager->getPlayerAverageRank(), race_manager->getPlayerCrashCount());
+        cout << m_kart->getIdent() << " : speed = " << m_kart->getSpeed() << endl;
 #endif
     }
 
@@ -335,43 +357,19 @@ void FuzzyAIController::update(float dt)
     
 }   // update
 
-//
+// TODO : make an ffll interface class
 int FuzzyAIController::computePlayerEvaluation(float average_rank, int crash_count)
 {
-    int model = ffll_new_model(); 
+    int model = ffll_new_model();
+
 	int ret_val = (int)ffll_load_fcl_file(model, "test.fcl");
 
 	int child = ffll_new_child(model);
 
-	//A good player
-	//int average_rank = 2;
-	//int average_crashes = 0;
-
-	//A Bad player
-	//int average_rank = 11;
-	//int average_crashes = 7;
-
 	ffll_set_value(model, child, PLAYER_RANK, average_rank); 
     ffll_set_value(model, child, PLAYER_CRASHES, crash_count);
 
-	int output = (int)ffll_get_output_value(model, child);
-
-	switch(output)
-	{
-	case (1):
-		std::cout << "Good!";
-		break;
-
-	case (2):
-		std::cout << "Average";
-		break;
-
-	case (3):
-
-		std::cout << "Bad!";
-		break;
-
-	} // end switch
+	return (int)ffll_get_output_value(model, child);
 }
 
 //-----------------------------------------------------------------------------

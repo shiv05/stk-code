@@ -4,7 +4,7 @@
 // Purpose:	Implementation of the FuzzyModelBase class.  This class represents
 //			the rules associated with a set of variables
 //
-// Copyright © 1999-2001 Louder Than A Bomb! Software
+// Copyright Â© 1999-2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.
@@ -1362,7 +1362,7 @@ void FuzzyModelBase::save_rules_to_fcl_file(std::ofstream& file_contents) const
 
 	// loop through input vars, we'll save each set's ID into the var_sets array
 	// 05/02 - modifying so we write out what the FCL standard says we should:
-	//		subcondition ::= (‘NOT’ ‘(‘ variable_name ‘IS’ [‘NOT'] ) term_name ‘)’) | ( variable_name ‘IS’ [‘NOT’] term_name ) 
+	//		subcondition ::= (Ã«NOTÃ­ Ã«(Ã« variable_name Ã«ISÃ­ [Ã«NOT'] ) term_name Ã«)Ã­) | ( variable_name Ã«ISÃ­ [Ã«NOTÃ­] term_name ) 
 	// NOTE: right now (5/02) we still don't support the 'NOT' option
 	// as opposed to the way we were doing it which was just:
 	//		subcondition ::= term_name
@@ -1461,7 +1461,7 @@ void FuzzyModelBase::save_rules_to_fcl_file(std::ofstream& file_contents) const
 			for (j = 0; j < input_var_count; j++)
 				{
 				// write out the subconditions in the form:
-				// ( variable_name ‘IS’ term_name )
+				// ( variable_name Ã«ISÃ­ term_name )
 
 				var = get_var(j);
 
@@ -1790,7 +1790,7 @@ int FuzzyModelBase::load_vars_from_fcl_file(std::ifstream& file_contents, bool o
 //	Author		Date		Modification
 //	------		----		------------
 //	Michael Z	6/02		modifying so we read what the FCL standard says we should:
-//								subcondition ::= (‘NOT’ ‘(‘ variable_name ‘IS’ [‘NOT'] ) term_name ‘)’) | ( variable_name ‘IS’ [‘NOT’] term_name ) 
+//								subcondition ::= (Ã«NOTÃ­ Ã«(Ã« variable_name Ã«ISÃ­ [Ã«NOT'] ) term_name Ã«)Ã­) | ( variable_name Ã«ISÃ­ [Ã«NOTÃ­] term_name ) 
 //							NOTE: we still don't support the 'NOT' option
 //							as opposed to the way we were doing it which was just:
 //								subcondition ::= term_name
@@ -1882,15 +1882,20 @@ int FuzzyModelBase::load_rules_from_fcl_file(std::ifstream& file_contents)
 	// we read in the whole next line - ASSUMING it's the operator
 
 	line[0] = '\0';
+
+	// separators for parsing
+ 	char seps[]   = " :;\t\n\r";
+ 	
 	// skip blank lines
-	while (strlen(line) <= 0)
+    // Modified by Kinsu : this loop does not filter '\r' chars on my computer,
+    // so it is also necessary check if "operation" is null or not.
+    char* operation = NULL;
+	while (strlen(line) <= 0 || operation == NULL)
+	{
 		file_contents.getline(line, 50);
-
-	// parse it...
- 	char seps[]   = " :;\t\n";
-
-	// right now we only care about the first part (before the colon)...
-	char* operation = strtok(line, seps);
+	   // right now we only care about the first part (before the colon)...
+	   operation = strtok(line, seps);
+	}
 
 	// right now we only support 'and'
 	if (strncmp(operation, "AND", strlen("AND")) == 0)
@@ -1906,11 +1911,16 @@ int FuzzyModelBase::load_rules_from_fcl_file(std::ifstream& file_contents)
 	// read in the ACCU method...
 
 	line[0] = '\0';
-	// skip blank lines
-	while (strlen(line) <= 0)
-		file_contents.getline(line, 50);
 
-	char* accum = strtok(line, seps);
+	// skip blank lines
+	// Modified by Kinsu : same thing than above
+	char* accum = NULL;
+	while (strlen(line) <= 0 || accum == NULL)
+	{
+		file_contents.getline(line, 50);
+    	accum = strtok(line, seps);
+	}
+
 
 	// sanity check
 	if (strncmp(accum, "ACCU", strlen("ACCU")) != 0)

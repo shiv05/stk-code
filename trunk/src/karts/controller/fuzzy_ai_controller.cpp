@@ -354,7 +354,6 @@ void FuzzyAIController::update(float dt)
     }
 
     
-    
 }   // update
 
 // TODO : make an ffll interface class
@@ -370,6 +369,8 @@ int FuzzyAIController::computePlayerEvaluation(float average_rank, int crash_cou
     ffll_set_value(model, child, PLAYER_CRASHES, crash_count);
 
 	return (int)ffll_get_output_value(model, child);
+
+	return -1;
 }
 
 //-----------------------------------------------------------------------------

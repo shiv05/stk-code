@@ -160,6 +160,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Header Files\ffll">
+      <UniqueIdentifier>{db866a8f-413e-4919-b2a1-dba1bbda4615}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ffll">
+      <UniqueIdentifier>{20dc1c1e-ad3a-4b5f-ad72-4f9271ba5ed5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\main.cpp">
@@ -806,6 +812,66 @@
     </ClCompile>
     <ClCompile Include="..\..\utils\leak_check.cpp">
       <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\karts\controller\fuzzy_ai_controller.cpp">
+      <Filter>Source Files\karts\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\COGDefuzzSetObj.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\COGDefuzzVarObj.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\DefuzzSetObj.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\DefuzzVarObj.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\FFLLAPI.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\FFLLBase.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\FuzzyModelBase.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\FuzzyOutSet.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\FuzzyOutVariable.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\FuzzySetBase.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\FuzzyVariableBase.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\MemberFuncBase.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\MemberFuncSCurve.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\MemberFuncSingle.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\MemberFuncTrap.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\MemberFuncTri.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\MOMDefuzzSetObj.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\MOMDefuzzVarObj.cpp">
+      <Filter>Source Files\ffll</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ffll\RuleArray.cpp">
+      <Filter>Source Files\ffll</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1535,5 +1601,76 @@
     <ClInclude Include="..\..\utils\leak_check.hpp">
       <Filter>Header Files\utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\karts\controller\fuzzy_ai_controller.hpp">
+      <Filter>Header Files\karts\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\COGDefuzz.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\COGDefuzzSetObj.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\COGDefuzzVarObj.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\debug.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\crossPlatform.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\DefuzzSetObj.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\FFLLAPI.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\FFLLBase.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\FuzzyModelBase.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\FuzzyOutSet.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\FuzzyOutVariable.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\FuzzySetBase.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\FuzzyVariableBase.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\MemberFuncBase.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\MemberFuncSCurve.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\MemberFuncSingle.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\MemberFuncTrap.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\MemberFuncTri.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\MOMDefuzzSetObj.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\MOMDefuzzVarObj.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ffll\RuleArray.h">
+      <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\ffll\FFLLAPI.def">
+      <Filter>Header Files\ffll</Filter>
+    </None>
   </ItemGroup>
 </Project>

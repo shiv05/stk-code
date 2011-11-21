@@ -112,6 +112,25 @@
   <ItemGroup>
     <ClCompile Include="..\..\addons\news_manager.cpp" />
     <ClCompile Include="..\..\addons\request.cpp" />
+    <ClCompile Include="..\..\ffll\COGDefuzzSetObj.cpp" />
+    <ClCompile Include="..\..\ffll\COGDefuzzVarObj.cpp" />
+    <ClCompile Include="..\..\ffll\DefuzzSetObj.cpp" />
+    <ClCompile Include="..\..\ffll\DefuzzVarObj.cpp" />
+    <ClCompile Include="..\..\ffll\FFLLAPI.cpp" />
+    <ClCompile Include="..\..\ffll\FFLLBase.cpp" />
+    <ClCompile Include="..\..\ffll\FuzzyModelBase.cpp" />
+    <ClCompile Include="..\..\ffll\FuzzyOutSet.cpp" />
+    <ClCompile Include="..\..\ffll\FuzzyOutVariable.cpp" />
+    <ClCompile Include="..\..\ffll\FuzzySetBase.cpp" />
+    <ClCompile Include="..\..\ffll\FuzzyVariableBase.cpp" />
+    <ClCompile Include="..\..\ffll\MemberFuncBase.cpp" />
+    <ClCompile Include="..\..\ffll\MemberFuncSCurve.cpp" />
+    <ClCompile Include="..\..\ffll\MemberFuncSingle.cpp" />
+    <ClCompile Include="..\..\ffll\MemberFuncTrap.cpp" />
+    <ClCompile Include="..\..\ffll\MemberFuncTri.cpp" />
+    <ClCompile Include="..\..\ffll\MOMDefuzzSetObj.cpp" />
+    <ClCompile Include="..\..\ffll\MOMDefuzzVarObj.cpp" />
+    <ClCompile Include="..\..\ffll\RuleArray.cpp" />
     <ClCompile Include="..\..\graphics\hardware_skinning.cpp" />
     <ClCompile Include="..\..\graphics\hit_sfx.cpp" />
     <ClCompile Include="..\..\graphics\lod_node.cpp" />
@@ -123,6 +142,7 @@
     <ClCompile Include="..\..\guiengine\widgets\CGUIEditBox.cpp" />
     <ClCompile Include="..\..\items\rubber_ball.cpp" />
     <ClCompile Include="..\..\items\swatter.cpp" />
+    <ClCompile Include="..\..\karts\controller\fuzzy_ai_controller.cpp" />
     <ClCompile Include="..\..\karts\kart_with_stats.cpp" />
     <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\main_loop.cpp" />
@@ -333,6 +353,27 @@
   <ItemGroup>
     <ClInclude Include="..\..\addons\news_manager.hpp" />
     <ClInclude Include="..\..\addons\request.hpp" />
+    <ClInclude Include="..\..\ffll\COGDefuzz.h" />
+    <ClInclude Include="..\..\ffll\COGDefuzzSetObj.h" />
+    <ClInclude Include="..\..\ffll\COGDefuzzVarObj.h" />
+    <ClInclude Include="..\..\ffll\crossPlatform.h" />
+    <ClInclude Include="..\..\ffll\debug.h" />
+    <ClInclude Include="..\..\ffll\DefuzzSetObj.h" />
+    <ClInclude Include="..\..\ffll\FFLLAPI.h" />
+    <ClInclude Include="..\..\ffll\FFLLBase.h" />
+    <ClInclude Include="..\..\ffll\FuzzyModelBase.h" />
+    <ClInclude Include="..\..\ffll\FuzzyOutSet.h" />
+    <ClInclude Include="..\..\ffll\FuzzyOutVariable.h" />
+    <ClInclude Include="..\..\ffll\FuzzySetBase.h" />
+    <ClInclude Include="..\..\ffll\FuzzyVariableBase.h" />
+    <ClInclude Include="..\..\ffll\MemberFuncBase.h" />
+    <ClInclude Include="..\..\ffll\MemberFuncSCurve.h" />
+    <ClInclude Include="..\..\ffll\MemberFuncSingle.h" />
+    <ClInclude Include="..\..\ffll\MemberFuncTrap.h" />
+    <ClInclude Include="..\..\ffll\MemberFuncTri.h" />
+    <ClInclude Include="..\..\ffll\MOMDefuzzSetObj.h" />
+    <ClInclude Include="..\..\ffll\MOMDefuzzVarObj.h" />
+    <ClInclude Include="..\..\ffll\RuleArray.h" />
     <ClInclude Include="..\..\graphics\hardware_skinning.hpp" />
     <ClInclude Include="..\..\graphics\hit_effect.hpp" />
     <ClInclude Include="..\..\graphics\hit_sfx.hpp" />
@@ -345,6 +386,7 @@
     <ClInclude Include="..\..\guiengine\widgets\CGUIEditBox.h" />
     <ClInclude Include="..\..\items\rubber_ball.hpp" />
     <ClInclude Include="..\..\items\swatter.hpp" />
+    <ClInclude Include="..\..\karts\controller\fuzzy_ai_controller.hpp" />
     <ClInclude Include="..\..\karts\kart_with_stats.hpp" />
     <ClInclude Include="..\..\main_loop.hpp" />
     <ClInclude Include="..\..\guiengine\abstract_state_manager.hpp" />
@@ -583,6 +625,9 @@
       <Project>{b0e92b97-089a-4d5b-bf17-77f1bc5daeef}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\ffll\FFLLAPI.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

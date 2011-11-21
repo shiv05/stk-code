@@ -23,7 +23,6 @@
 #ifndef HEADER_FUZZY_AI_CONTROLLER_HPP
 #define HEADER_FUZZY_AI_CONTROLLER_HPP
 
-#include <vector.h>
 #include "karts/controller/ai_base_controller.hpp"
 
 class Track;

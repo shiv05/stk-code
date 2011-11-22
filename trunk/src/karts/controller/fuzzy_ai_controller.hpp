@@ -153,7 +153,10 @@ private:
 
     void  checkCrashes(int steps, const Vec3& pos);
     void  findNonCrashingPoint(Vec3 *result);
-    int  computePlayerEvaluation(float average_rank, int crash_count);
+
+    
+	int  computeFuzzyModel(const char* file_name,std::vector<float> parameters);
+	int	 computePlayerEvaluation(const char* file_name, std::vector<float> parameters);
 
     int   calcSteps();
     void  findCurve();

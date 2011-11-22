@@ -306,8 +306,15 @@ void FuzzyAIController::update(float dt)
         // Player evaluation
         // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last), and can also be evaluated as bad...
         // see m_kart_info[kart_id].getSector()->getDistanceFromStart()
+
+		//Create vector that contains parameters for player evaluation
+
+		vector<float> evaluationParameters;
+		evaluationParameters.push_back(race_manager->getPlayerAverageRank());
+		evaluationParameters.push_back(race_manager->getPlayerCrashCount());
+
         
-        int eval = computePlayerEvaluation(race_manager->getPlayerAverageRank(), race_manager->getPlayerCrashCount());
+        int eval = computePlayerEvaluation("test.fcl", evaluationParameters);
         
 #ifdef AI_DEBUG
         // Player evaluation
@@ -357,20 +364,34 @@ void FuzzyAIController::update(float dt)
 }   // update
 
 // TODO : make an ffll interface class
-int FuzzyAIController::computePlayerEvaluation(float average_rank, int crash_count)
+int FuzzyAIController::computePlayerEvaluation(const char* file_name,vector<float> parameters)
 {
-    int model = ffll_new_model();
+   return  computeFuzzyModel(file_name,parameters);;
+}
 
-	int ret_val = (int)ffll_load_fcl_file(model, "test.fcl");
+int FuzzyAIController::computeFuzzyModel(const char* file_name,vector<float> parameters)
+{
+	int model = ffll_new_model();
+
+	int ret_val = (int)ffll_load_fcl_file(model,file_name);
+
+	if(ret_val < 0)
+	{
+		cout << "Error Opening the .fcl file";
+		return 0;
+	}
 
 	int child = ffll_new_child(model);
 
-	ffll_set_value(model, child, PLAYER_RANK, average_rank); 
-    ffll_set_value(model, child, PLAYER_CRASHES, crash_count);
+	for (size_t i=0, size=parameters.size(); i < size; i++)
+	{
+		ffll_set_value(model, child, i, parameters[i]); 
+	}
 
-	return (int)ffll_get_output_value(model, child);
+	int output = (int)ffll_get_output_value(model, child);
 
-	return -1;
+	return output;
+
 }
 
 //-----------------------------------------------------------------------------

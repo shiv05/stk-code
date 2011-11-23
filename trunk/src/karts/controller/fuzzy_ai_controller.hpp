@@ -157,7 +157,8 @@ private:
     //--------------------------------------------------------------------------
     // Fuzzy AI methods
     int  computeFuzzyModel(const char* file_name,std::vector<float> parameters);
-    int  computePlayerEvaluation( const char*   file_name,
+    int  computePlayerEvaluation( const char*   file_name, 
+		                          int number_of_players,
                                   float       player_average_rank,
                                   int         player_crash_count );
     //--------------------------------------------------------------------------

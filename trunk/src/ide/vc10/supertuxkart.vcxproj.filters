@@ -873,6 +873,9 @@
     <ClCompile Include="..\..\ffll\RuleArray.cpp">
       <Filter>Source Files\ffll</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\karts\controller\fuzzy_data_manager.cpp">
+      <Filter>Source Files\karts\controller</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\main_loop.hpp">
@@ -1666,6 +1669,9 @@
     </ClInclude>
     <ClInclude Include="..\..\ffll\RuleArray.h">
       <Filter>Header Files\ffll</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\karts\controller\fuzzy_data_manager.hpp">
+      <Filter>Header Files\karts\controller</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

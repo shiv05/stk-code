@@ -311,7 +311,10 @@ void FuzzyAIController::update(float dt)
         float av_rank = fuzzy_data_manager->getPlayerAverageRank();
         int   crash_c = fuzzy_data_manager->getPlayerCrashCount();
 
-        int eval = computePlayerEvaluation("test.fcl", av_rank, crash_c);
+		World *world = World::getWorld();
+		int number_of_karts = world->getNumKarts();
+
+        int eval = computePlayerEvaluation("player_evaluation.fcl",number_of_karts, av_rank, crash_c);
 
 #ifdef AI_DEBUG
         // Player evaluation
@@ -355,11 +358,21 @@ void FuzzyAIController::update(float dt)
  *  TODO : make this comment doxygen compliant
  */
 int FuzzyAIController::computePlayerEvaluation( const char* file_name,
+	                                            int number_of_players,
                                                 float player_average_rank,
                                                 int   player_crash_count )
 {
+	//The rank need to be normalized before computing
+
+    float normalized_player_average_rank;
+
+	if(number_of_players > 0)
+	{
+      normalized_player_average_rank = (player_average_rank*10)/number_of_players;
+	}
+
     vector<float> evaluationParameters;
-    evaluationParameters.push_back(player_average_rank);
+    evaluationParameters.push_back(normalized_player_average_rank);
     evaluationParameters.push_back(player_crash_count);
 
     return  computeFuzzyModel(file_name, evaluationParameters);

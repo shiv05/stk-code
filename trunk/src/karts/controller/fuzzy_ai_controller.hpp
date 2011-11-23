@@ -154,9 +154,11 @@ private:
     void  checkCrashes(int steps, const Vec3& pos);
     void  findNonCrashingPoint(Vec3 *result);
 
-    
+    //--------------------------------------------------------------------------
+    // Fuzzy AI methods
 	int  computeFuzzyModel(const char* file_name,std::vector<float> parameters);
 	int	 computePlayerEvaluation(const char* file_name, std::vector<float> parameters);
+    //--------------------------------------------------------------------------
 
     int   calcSteps();
     void  findCurve();

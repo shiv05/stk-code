@@ -287,7 +287,7 @@ void FuzzyAIController::update(float dt)
     AIBaseController::update(dt);
     m_collided = false;
     
-    
+    //==========================================================================
     // -- Fuzzy controller code --
 
     m_timer += dt;
@@ -307,15 +307,14 @@ void FuzzyAIController::update(float dt)
         // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last), and can also be evaluated as bad...
         // see m_kart_info[kart_id].getSector()->getDistanceFromStart()
 
-		//Create vector that contains parameters for player evaluation
+        //Create a vector that contains parameters for player evaluation
 
-		vector<float> evaluationParameters;
-		evaluationParameters.push_back(race_manager->getPlayerAverageRank());
-		evaluationParameters.push_back(race_manager->getPlayerCrashCount());
+        vector<float> evaluationParameters;
+        evaluationParameters.push_back(race_manager->getPlayerAverageRank());
+        evaluationParameters.push_back(race_manager->getPlayerCrashCount());
 
-        
         int eval = computePlayerEvaluation("test.fcl", evaluationParameters);
-        
+
 #ifdef AI_DEBUG
         // Player evaluation
         cout << m_kart->getIdent() << " : player crashes = " << race_manager->getPlayerCrashCount() << endl;
@@ -326,15 +325,15 @@ void FuzzyAIController::update(float dt)
         case (1):
         	cout << "Good!" << endl;
         	break;
-        
+
         case (2):
         	cout << "Average" << endl;
         	break;
-        
+
         case (3):
         	cout << "Bad!" << endl;
         	break;
-        
+
         default :
            cout << "unexpected value : " << eval << endl;
         } // end switch
@@ -369,29 +368,42 @@ int FuzzyAIController::computePlayerEvaluation(const char* file_name,vector<floa
    return  computeFuzzyModel(file_name,parameters);;
 }
 
-int FuzzyAIController::computeFuzzyModel(const char* file_name,vector<float> parameters)
+//------------------------------------------------------------------------------
+/** Generic method to interface with FFLL and compute an output using fuzzy
+ *  logic. The first given parameter is the .fcl file that FFLL has to use for
+ *  the computation.
+ *  The next parameters are the values that correspond to the parameters
+ *  declared in the .fcl file (in the same order !).
+ *  TODO : make this comment doxygen compliant
+ */
+
+int FuzzyAIController::computeFuzzyModel( const char*    file_name,
+                                          vector<float>  parameters )
 {
+    // Create FFLL model. TODO : make this model a class static variable
 	int model = ffll_new_model();
 
-	int ret_val = (int)ffll_load_fcl_file(model,file_name);
+    // Load .fcl file
+	int ret_val = (int) ffll_load_fcl_file(model, file_name);
 
+    // If ffll_load_fcl_file returns an error
 	if(ret_val < 0)
 	{
-		cout << "Error Opening the .fcl file";
-		return 0;
+		cout << "FFLL : Error opening .fcl file" << endl;
+		return ret_val;
 	}
-
+    
+    // Create a child FFLL model
 	int child = ffll_new_child(model);
 
+    // Set parameters value.
 	for (size_t i=0, size=parameters.size(); i < size; i++)
 	{
 		ffll_set_value(model, child, i, parameters[i]); 
 	}
 
-	int output = (int)ffll_get_output_value(model, child);
-
-	return output;
-
+    // Compute and return output
+	return (int) ffll_get_output_value(model, child);
 }
 
 //-----------------------------------------------------------------------------

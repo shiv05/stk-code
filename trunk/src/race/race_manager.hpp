@@ -213,9 +213,6 @@ private:
         int         m_global_player_id; // global ID of player
         int         m_gp_rank;    // In GPs, at the end, will hold the overall
                                   // rank of this kart (0<=m_gp_rank < num_karts-1)
-        // variables used by fuzzy controller
-        int         m_crash_count;
-        float       m_average_rank;
 
         KartStatus(const std::string& ident, const int& prev_finish_pos, 
                    int local_player_id, int global_player_id, 
@@ -225,9 +222,7 @@ private:
                    m_prev_finish_pos(prev_finish_pos), m_kart_type(kt),
                    m_local_player_id(local_player_id),
                    m_global_player_id(global_player_id),
-                   m_gp_rank(init_gp_rank),
-                   m_crash_count(-1),
-                   m_average_rank(-1.0f)
+                   m_gp_rank(init_gp_rank)
                 {}
         
     };   // KartStatus
@@ -527,14 +522,14 @@ public:
 
     // Get the first player kart index
     int          getPlayerKartId();
-        
+    
     // Get the number of crashes of the first found player
     int          getPlayerCrashCount()
                     { return m_kart_status[getPlayerKartId()].m_crash_count; }
-
+    
     float        getPlayerAverageRank()
                     { return m_kart_status[getPlayerKartId()].m_average_rank; }
-       
+    
     // Set the number of crashes (function used by the playerController)
     void         setPlayerCrashCount(int c)
                     {m_kart_status[getPlayerKartId()].m_crash_count = c;}

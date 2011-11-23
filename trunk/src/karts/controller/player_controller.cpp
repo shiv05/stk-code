@@ -62,16 +62,15 @@ PlayerController::PlayerController(Kart *kart, StateManager::ActivePlayer *playe
     m_full_sound  = sfx_manager->createSoundSource( "energy_bar_full" );
 
     // -- Fuzzy controller params --
-    // Player evaluation
-    m_average_rank = m_kart->getPosition();
-    race_manager->setPlayerAverageRank(m_average_rank); // Update race manager data
-    race_manager->setPlayerCrashCount(m_crash_count);       
-
     //m_times_average_rank_was_computed = 0;
     m_timer                   = 0.0f;
     m_crash_count             = 0;
     m_old_speed               = 0.0f;
     
+    // Player evaluation
+    m_average_rank = m_kart->getPosition();
+    race_manager->setPlayerAverageRank(m_average_rank); // Update race manager data
+    race_manager->setPlayerCrashCount(m_crash_count);       
 
     reset();
 }   // PlayerController

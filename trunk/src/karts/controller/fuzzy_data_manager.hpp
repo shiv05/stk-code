@@ -22,10 +22,10 @@
 #define HEADER_FUZZYDATAMANAGER_HPP
 
 /** The FuzzyDataManager is used by multiple instances of the FuzzyAIController,
- *  to store and retrieve data, used for the AI modules' computation.
+ *  to store and retrieve data used for the AI modules' computation.
  *  - Player data (currently 1 player supported)
- *      - player crash count updated by the PlayerController,
- *      - player average rank updated by the PlayerController,
+ *      - player crash count, updated by the PlayerController,
+ *      - player average rank, updated by the PlayerController,
  *      - TODO : player traveled distance
  *  - Racetrack data
  *      - The different possible paths
@@ -38,13 +38,15 @@ class FuzzyDataManager
 {
 private :
     // -- Player data --
-    // TODO : store player data for multiple players
     int         m_player_crash_count;
     float       m_player_average_rank;
+    // TODO : store player data for multiple players
 
-    // TODO racetrack data
+    // -- Racetrack data --
     
-    // Get player kart index ... Not useful if there is only 1 player
+    
+    
+    // Get player kart index -- Not useful currently as only 1 player is handled
 //    int         getPlayerKartId();
 
 public :
@@ -52,10 +54,10 @@ public :
     FuzzyDataManager();
 
     // -- Setters --
-    // Set the number of crashes (used by PlayerController)
+    // Set the number of crashes (called by PlayerController)
     void        setPlayerCrashCount(int c)    { m_player_crash_count = c; }
     
-    // Set player average rank (used by PlayerController)
+    // Set player average rank (called by PlayerController)
     void        setPlayerAverageRank(float r) { m_player_average_rank = r; }
     
     // -- Getters --

@@ -308,13 +308,10 @@ void FuzzyAIController::update(float dt)
         // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last), and can also be evaluated as bad...
         // see m_kart_info[kart_id].getSector()->getDistanceFromStart()
 
-        //Create a vector that contains parameters for player evaluation
+        float av_rank = fuzzy_data_manager->getPlayerAverageRank();
+        int   crash_c = fuzzy_data_manager->getPlayerCrashCount();
 
-        vector<float> evaluationParameters;
-        evaluationParameters.push_back(fuzzy_data_manager->getPlayerAverageRank());
-        evaluationParameters.push_back(fuzzy_data_manager->getPlayerCrashCount());
-
-        int eval = computePlayerEvaluation("test.fcl", evaluationParameters);
+        int eval = computePlayerEvaluation("test.fcl", av_rank, crash_c);
 
 #ifdef AI_DEBUG
         // Player evaluation
@@ -323,20 +320,10 @@ void FuzzyAIController::update(float dt)
         cout << m_kart->getIdent() << " : player evaluation = ";
         switch(eval)
         {
-        case (1):
-        	cout << "Good!" << endl;
-        	break;
-
-        case (2):
-        	cout << "Average" << endl;
-        	break;
-
-        case (3):
-        	cout << "Bad!" << endl;
-        	break;
-
-        default :
-           cout << "unexpected value : " << eval << endl;
+            case (1): cout << "Good!" << endl;   break;
+            case (2): cout << "Average" << endl; break;
+            case (3): cout << "Bad!" << endl;    break;
+            default : cout << "unexpected value : " << eval << endl;
         } // end switch
         
         // Items
@@ -360,13 +347,22 @@ void FuzzyAIController::update(float dt)
 #endif
     }
 
-    
 }   // update
 
-// TODO : make an ffll interface class
-int FuzzyAIController::computePlayerEvaluation(const char* file_name,vector<float> parameters)
+//------------------------------------------------------------------------------
+/** Player evaluation computation method. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliant
+ */
+int FuzzyAIController::computePlayerEvaluation( const char* file_name,
+                                                float player_average_rank,
+                                                int   player_crash_count )
 {
-   return  computeFuzzyModel(file_name,parameters);;
+    vector<float> evaluationParameters;
+    evaluationParameters.push_back(player_average_rank);
+    evaluationParameters.push_back(player_crash_count);
+
+    return  computeFuzzyModel(file_name, evaluationParameters);
 }
 
 //------------------------------------------------------------------------------

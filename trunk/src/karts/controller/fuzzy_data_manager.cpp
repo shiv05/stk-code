@@ -22,8 +22,6 @@
 
 #include "karts/controller/fuzzy_data_manager.hpp"
 
-// TODO include file to have access to the global variable race_manager ?
-
 FuzzyDataManager* fuzzy_data_manager = NULL;
 
 FuzzyDataManager::FuzzyDataManager()
@@ -34,8 +32,7 @@ FuzzyDataManager::FuzzyDataManager()
     m_player_average_rank = -1;
 }
 
-
-// Returns the world player kart ID, -1 if no player is found.
+// Returns the world player kart ID. -1 if no player is found.
 // Currently considers there is only one player.
 //int   FuzzyDataManager::getPlayerKartId()
 //{

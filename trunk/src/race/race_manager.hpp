@@ -517,27 +517,7 @@ public:
 
     /** \} */
 
-    //==========================================================================
-    // Fuzzy controller related functions
-
-    // Get the first player kart index
-    int          getPlayerKartId();
-    
-    // Get the number of crashes of the first found player
-    int          getPlayerCrashCount()
-                    { return m_kart_status[getPlayerKartId()].m_crash_count; }
-    
-    float        getPlayerAverageRank()
-                    { return m_kart_status[getPlayerKartId()].m_average_rank; }
-    
-    // Set the number of crashes (function used by the playerController)
-    void         setPlayerCrashCount(int c)
-                    {m_kart_status[getPlayerKartId()].m_crash_count = c;}
-    
-    void         setPlayerAverageRank(float r)
-                    {m_kart_status[getPlayerKartId()].m_average_rank = r;}
 };
-
 
 extern RaceManager *race_manager;
 #endif

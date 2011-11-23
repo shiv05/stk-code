@@ -53,7 +53,8 @@
 #include "graphics/slip_stream.hpp"
 #include "modes/linear_world.hpp"
 #include "network/network_manager.hpp"
-#include "race/race_manager.hpp"
+#include "race/race_manager.hpp" // TODO : check if really necessary
+#include "karts/controller/fuzzy_data_manager.hpp"
 #include "items/item.hpp"
 #include "items/item_manager.hpp"
 #include "tracks/quad_graph.hpp"
@@ -310,15 +311,15 @@ void FuzzyAIController::update(float dt)
         //Create a vector that contains parameters for player evaluation
 
         vector<float> evaluationParameters;
-        evaluationParameters.push_back(race_manager->getPlayerAverageRank());
-        evaluationParameters.push_back(race_manager->getPlayerCrashCount());
+        evaluationParameters.push_back(fuzzy_data_manager->getPlayerAverageRank());
+        evaluationParameters.push_back(fuzzy_data_manager->getPlayerCrashCount());
 
         int eval = computePlayerEvaluation("test.fcl", evaluationParameters);
 
 #ifdef AI_DEBUG
         // Player evaluation
-        cout << m_kart->getIdent() << " : player crashes = " << race_manager->getPlayerCrashCount() << endl;
-        cout << m_kart->getIdent() << " : player av.rank = " << race_manager->getPlayerAverageRank() << endl;
+        cout << m_kart->getIdent() << " : player crashes = " << fuzzy_data_manager->getPlayerCrashCount() << endl;
+        cout << m_kart->getIdent() << " : player av.rank = " << fuzzy_data_manager->getPlayerAverageRank() << endl;
         cout << m_kart->getIdent() << " : player evaluation = ";
         switch(eval)
         {

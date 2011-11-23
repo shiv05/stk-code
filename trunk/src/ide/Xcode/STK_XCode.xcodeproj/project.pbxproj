@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5610F3561471868600DAD96F /* fuzzy_ai_controller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5610F3541471868600DAD96F /* fuzzy_ai_controller.cpp */; };
+		566E370C147D071400A75C28 /* fuzzy_data_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 566E370A147D071400A75C28 /* fuzzy_data_manager.cpp */; };
 		56887DC314759AFC00800478 /* COGDefuzzSetObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D8B14759AFC00800478 /* COGDefuzzSetObj.cpp */; };
 		56887DC414759AFC00800478 /* COGDefuzzVarObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D8D14759AFC00800478 /* COGDefuzzVarObj.cpp */; };
 		56887DC514759AFC00800478 /* DefuzzSetObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D9014759AFC00800478 /* DefuzzSetObj.cpp */; };
@@ -417,6 +418,8 @@
 		5610F3541471868600DAD96F /* fuzzy_ai_controller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fuzzy_ai_controller.cpp; sourceTree = "<group>"; };
 		5610F3551471868600DAD96F /* fuzzy_ai_controller.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fuzzy_ai_controller.hpp; sourceTree = "<group>"; };
 		56404A4C147ABFB700CC41CC /* crossPlatform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crossPlatform.h; sourceTree = "<group>"; };
+		566E370A147D071400A75C28 /* fuzzy_data_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fuzzy_data_manager.cpp; sourceTree = "<group>"; };
+		566E370B147D071400A75C28 /* fuzzy_data_manager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fuzzy_data_manager.hpp; sourceTree = "<group>"; };
 		56887D8B14759AFC00800478 /* COGDefuzzSetObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = COGDefuzzSetObj.cpp; sourceTree = "<group>"; };
 		56887D8C14759AFC00800478 /* COGDefuzzSetObj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = COGDefuzzSetObj.h; sourceTree = "<group>"; };
 		56887D8D14759AFC00800478 /* COGDefuzzVarObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = COGDefuzzVarObj.cpp; sourceTree = "<group>"; };
@@ -1667,6 +1670,8 @@
 		956C6EC71128D3FB004336C8 /* controller */ = {
 			isa = PBXGroup;
 			children = (
+				566E370A147D071400A75C28 /* fuzzy_data_manager.cpp */,
+				566E370B147D071400A75C28 /* fuzzy_data_manager.hpp */,
 				5610F3541471868600DAD96F /* fuzzy_ai_controller.cpp */,
 				5610F3551471868600DAD96F /* fuzzy_ai_controller.hpp */,
 				957ED47E1163FF18002AB42C /* ai_base_controller.cpp */,
@@ -3338,6 +3343,7 @@
 				56887DDA14759AFD00800478 /* MOMDefuzzSetObj.cpp in Sources */,
 				56887DDB14759AFD00800478 /* MOMDefuzzVarObj.cpp in Sources */,
 				56887DE114759AFD00800478 /* RuleArray.cpp in Sources */,
+				566E370C147D071400A75C28 /* fuzzy_data_manager.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

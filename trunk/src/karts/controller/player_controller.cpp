@@ -34,6 +34,7 @@
 #include "states_screens/race_gui_base.hpp"
 #include "utils/constants.hpp"
 #include "utils/translation.hpp"
+#include "karts/controller/fuzzy_data_manager.hpp"
 
 using namespace std;
 
@@ -69,8 +70,8 @@ PlayerController::PlayerController(Kart *kart, StateManager::ActivePlayer *playe
     
     // Player evaluation
     m_average_rank = m_kart->getPosition();
-    race_manager->setPlayerAverageRank(m_average_rank); // Update race manager data
-    race_manager->setPlayerCrashCount(m_crash_count);       
+    fuzzy_data_manager->setPlayerAverageRank(m_average_rank); // Update race manager data
+    fuzzy_data_manager->setPlayerCrashCount(m_crash_count);       
 
     reset();
 }   // PlayerController
@@ -385,7 +386,7 @@ void PlayerController::update(float dt)
 
         // This formula takes around 15sec to converge towards a new rank
         m_average_rank = (m_average_rank + m_kart->getPosition())/2;
-        race_manager->setPlayerAverageRank(m_average_rank);
+        fuzzy_data_manager->setPlayerAverageRank(m_average_rank);
 
 //#ifdef AI_DEBUG
 //        cout << "player (" << m_kart->getIdent() << ") current rank = " << m_kart->getPosition() << endl;
@@ -402,7 +403,7 @@ void PlayerController::update(float dt)
     if(m_kart->getSpeed() < 10.0f && m_old_speed > 10.0f)
     {
         m_crash_count++;
-        race_manager->setPlayerCrashCount(m_crash_count);
+        fuzzy_data_manager->setPlayerCrashCount(m_crash_count);
 //#ifdef AI_DEBUG
 //        cout << "player (" << m_kart->getIdent() << ") just crashed !" << endl;
 //        cout << "player (" << m_kart->getIdent() << ") crash number = " << m_crash_number << endl;

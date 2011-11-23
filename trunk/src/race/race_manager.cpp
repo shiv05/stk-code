@@ -628,18 +628,5 @@ void RaceManager::startSingleRace(const std::string trackIdent, const int num_la
     startNew();
 }
 
-//==============================================================================
-// Fuzzy controller related functions
-
-// Get the first player
-int RaceManager::getPlayerKartId()
-{
-    for(unsigned int id=0; id<m_kart_status.size(); id++)
-    {
-        if(m_kart_status[id].m_local_player_id != -1)
-            return id;
-    }
-    return 0;
-}
 
 /* EOF */

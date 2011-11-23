@@ -165,6 +165,7 @@
 #include "items/projectile_manager.hpp"
 #include "karts/kart_properties_manager.hpp"
 #include "karts/kart.hpp"
+#include "karts/controller/fuzzy_data_manager.hpp"
 #include "modes/profile_world.hpp"
 #include "network/network_manager.hpp"
 #include "race/grand_prix_manager.hpp"
@@ -1052,6 +1053,8 @@ void initRest()
     race_manager->setDifficulty(
                  (RaceManager::Difficulty)(int)UserConfigParams::m_difficulty);
     race_manager->setNumKarts(2);
+    
+    fuzzy_data_manager      = new FuzzyDataManager     ();
 
 }   // initRest
 

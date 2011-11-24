@@ -158,9 +158,17 @@ private:
     // Fuzzy AI methods
     int  computeFuzzyModel(const char* file_name,std::vector<float> parameters);
     int  computePlayerEvaluation( const char*   file_name, 
-		                          int number_of_players,
-                                  float       player_average_rank,
-                                  int         player_crash_count );
+		                          float   number_of_players,
+                                  float player_average_rank,
+                                  int   player_crash_count );
+    int  computeDrivingStyleCompetitiveness(const char*    file_name, 
+		                          float   number_of_players,
+                                  float player_level,
+                                  float   current_ranking);
+    int  computeDrivingStyleAgressiveness(const char*    file_name, 
+		                          float   number_of_players,
+                                  float Kart_class,
+                                  float   current_ranking);
     //--------------------------------------------------------------------------
 
     int   calcSteps();

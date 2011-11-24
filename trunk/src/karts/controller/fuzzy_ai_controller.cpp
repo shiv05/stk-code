@@ -312,11 +312,30 @@ void FuzzyAIController::update(float dt)
         float av_rank = fuzzy_data_manager->getPlayerAverageRank();
         int   crash_c = fuzzy_data_manager->getPlayerCrashCount();
 
+
+        //Get total number of karts for normalization
 		World *world = World::getWorld();
+
 		int number_of_karts = world->getNumKarts();
 
-        int eval = computePlayerEvaluation("player_evaluation.fcl", number_of_karts, av_rank, crash_c);
 
+        int eval = computePlayerEvaluation("../../../src/ffll/fcl/player_evaluation.fcl",number_of_karts, av_rank, crash_c);
+
+        //Choose the driving style : competitiveness and agressiveness
+
+        //Get the current ranking
+        float current_ranking = m_kart->getPosition();
+
+
+        //TODO : Kart classes are not implemented yet we use a test value.
+
+        int kart_class = 1;
+
+        int competitiveness = computeDrivingStyleCompetitiveness("../../../src/ffll/fcl/driving_style_competitiveness.fcl",number_of_karts,eval,current_ranking);
+        int agressiveness = computeDrivingStyleAgressiveness("../../../src/ffll/fcl/driving_style_agressiveness.fcl",number_of_karts,kart_class,current_ranking);
+
+
+  
 #ifdef AI_DEBUG
         cout << "----------------------------------------" << endl;
         // Player evaluation
@@ -349,7 +368,29 @@ void FuzzyAIController::update(float dt)
         cout << m_kart->getIdent() << " : powerup count = " << m_kart->getNumPowerup() << endl;
         // Agent speed
         cout << m_kart->getIdent() << " : speed = " << m_kart->getSpeed() << endl;
+        // Agent competitiveness
+        cout << m_kart->getIdent() << " : agent current ranking = ";
+        cout << current_ranking << endl;
+        cout << m_kart->getIdent() << " : agent competitiveness = ";
+         switch(competitiveness)
+        {
+            case (1): cout << "Competitive" << endl;   break;
+            case (2): cout << "Not competitive" << endl; break;
+            default : cout << "unexpected value : " << eval << endl;
+        } // end switch
+        cout << m_kart->getIdent() << " : agent agressiveness = ";
+        switch(agressiveness)
+        {
+            case (1): cout << "Agressive" << endl;   break;
+            case (2): cout << "Neutral" << endl; break;
+            case (3): cout << "Careful" << endl; break;
+            default : cout << "unexpected value : " << eval << endl;
+        } // end switch      
 #endif
+
+        
+        
+
     }
 
 }   // update
@@ -360,11 +401,11 @@ void FuzzyAIController::update(float dt)
  *  TODO : make this comment doxygen compliant
  */
 int FuzzyAIController::computePlayerEvaluation( const char* file_name,
-	                                            int number_of_players,
+	                                            float number_of_players,
                                                 float player_average_rank,
                                                 int   player_crash_count )
 {
-	//The rank need to be normalized before computing
+	//The rank of the player need to be normalized before computing
 
     float normalized_player_average_rank;
 
@@ -376,6 +417,53 @@ int FuzzyAIController::computePlayerEvaluation( const char* file_name,
     vector<float> evaluationParameters;
     evaluationParameters.push_back(normalized_player_average_rank);
     evaluationParameters.push_back(player_crash_count);
+
+    return  computeFuzzyModel(file_name, evaluationParameters);
+}
+
+//------------------------------------------------------------------------------
+/** Driving style computation methods for competitiveness and agressiveness. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliant
+ */
+int FuzzyAIController::computeDrivingStyleCompetitiveness(const char*    file_name, 
+		                                   float   number_of_players,
+                                           float player_level,
+                                           float   current_ranking)
+{
+	//The rank need to be normalized before computing
+
+    float normalized_current_ranking;
+
+	if(number_of_players > 0)
+	{
+      normalized_current_ranking = (current_ranking*10)/number_of_players;
+	}
+
+    vector<float> evaluationParameters;
+    evaluationParameters.push_back(player_level);
+    evaluationParameters.push_back(current_ranking);
+
+    return  computeFuzzyModel(file_name, evaluationParameters);
+}
+
+int FuzzyAIController::computeDrivingStyleAgressiveness(const char*    file_name, 
+		                                   float   number_of_players,
+                                           float Kart_class,
+                                           float   current_ranking)
+{
+	//The rank need to be normalized before computing
+
+    float normalized_current_ranking;
+
+	if(number_of_players > 0)
+	{
+      normalized_current_ranking = (current_ranking*10)/number_of_players;
+	}
+
+    vector<float> evaluationParameters;
+    evaluationParameters.push_back(normalized_current_ranking);
+    evaluationParameters.push_back(Kart_class);
 
     return  computeFuzzyModel(file_name, evaluationParameters);
 }

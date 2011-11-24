@@ -1151,9 +1151,6 @@
     <ClInclude Include="..\..\physics\user_pointer.hpp">
       <Filter>Header Files\physics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\karts\emergency_animation.hpp">
-      <Filter>Header Files\karts</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\karts\kart.hpp">
       <Filter>Header Files\karts</Filter>
     </ClInclude>
@@ -1671,6 +1668,9 @@
       <Filter>Header Files\ffll</Filter>
     </ClInclude>
     <ClInclude Include="..\..\karts\controller\fuzzy_data_manager.hpp">
+      <Filter>Header Files\karts\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\karts\emergency_animation.hpp">
       <Filter>Header Files\karts\controller</Filter>
     </ClInclude>
   </ItemGroup>

@@ -32,6 +32,7 @@
 #define PLAYER_CRASHES	1 //  2nd variable
 
 #include "karts/controller/fuzzy_ai_controller.hpp"
+#include "karts/controller/fuzzy_data_manager.hpp"
 
 #ifdef AI_DEBUG
 #  include "irrlicht.h"
@@ -314,9 +315,10 @@ void FuzzyAIController::update(float dt)
 		World *world = World::getWorld();
 		int number_of_karts = world->getNumKarts();
 
-        int eval = computePlayerEvaluation("player_evaluation.fcl",number_of_karts, av_rank, crash_c);
+        int eval = computePlayerEvaluation("player_evaluation.fcl", number_of_karts, av_rank, crash_c);
 
 #ifdef AI_DEBUG
+        cout << "----------------------------------------" << endl;
         // Player evaluation
         cout << m_kart->getIdent() << " : player crashes = " << fuzzy_data_manager->getPlayerCrashCount() << endl;
         cout << m_kart->getIdent() << " : player av.rank = " << fuzzy_data_manager->getPlayerAverageRank() << endl;
@@ -399,7 +401,7 @@ int FuzzyAIController::computeFuzzyModel( const char*    file_name,
     // If ffll_load_fcl_file returns an error
 	if(ret_val < 0)
 	{
-		cout << "FFLL : Error opening .fcl file" << endl;
+		cout << "FFLL : Error opening .fcl file '" << file_name << "'" << endl; // TODO use fprintf(stderr, msg);
 		return ret_val;
 	}
     

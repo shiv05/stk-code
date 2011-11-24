@@ -39,6 +39,7 @@
 #include "karts/controller/fuzzy_ai_controller.hpp"
 #include "karts/controller/player_controller.hpp"
 #include "karts/controller/end_controller.hpp"
+#include "karts/controller/fuzzy_data_manager.hpp"
 #include "karts/kart_properties_manager.hpp"
 #include "modes/profile_world.hpp"
 #include "network/network_manager.hpp"
@@ -138,6 +139,10 @@ void World::init()
     // Load the track models - this must be done before the karts so that the
     // karts can be positioned properly on (and not in) the tracks.
     m_track->loadTrackModel(this);
+    
+    // Load the additionnal path data used for the fuzzy ai. This must be done
+    // after calling loadTrackModel()
+    fuzzy_data_manager->computePossiblePaths();
 
     for(unsigned int i=0; i<num_karts; i++)
     {

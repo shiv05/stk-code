@@ -21,6 +21,7 @@
 #ifndef HEADER_FUZZYDATAMANAGER_HPP
 #define HEADER_FUZZYDATAMANAGER_HPP
 
+class QuadNode;
 /** The FuzzyDataManager is used by multiple instances of the FuzzyAIController,
  *  to store and retrieve data used for the AI modules' computation.
  *  - Player data (currently 1 player supported)
@@ -34,24 +35,56 @@
  *      - 
  */
 
+
+
 class FuzzyDataManager
 {
 private :
     // -- Player data --
     int         m_player_crash_count;
     float       m_player_average_rank;
+    // TODO : traveled distance
     // TODO : store player data for multiple players
+
 
     // -- Racetrack data --
     
+    /** This structure extends the quadgraph to store data about paths (eg.
+     *  bonus count). This data is used by the fuzzy ai controller to choose
+     *  which path to take. */
+    struct FuzzyAiPath
+    {
+        std::vector<unsigned int> *node_indexes;
+        bool                       discovered;
+        unsigned int               bonus_count;
+        unsigned int               malus_count;
+        // TODO turn count, zipper_count (split bonus in boxes & zippers) ?
+        
+        FuzzyAiPath(std::vector<unsigned int> *n_indexes,
+                      bool has_been_discovered, unsigned int bonus_count,
+                      unsigned int malus_count) :
+                node_indexes(n_indexes),
+                discovered(false),
+                bonus_count(0),
+                malus_count(0)
+            {}
+    };
     
+    // Possible paths vector
+    std::vector<FuzzyAiPath *> *m_possible_paths;
     
+    // -- Methods --
+//    void ComputePossiblePaths();
     // Get player kart index -- Not useful currently as only 1 player is handled
 //    int         getPlayerKartId();
 
 public :
     //
     FuzzyDataManager();
+    //virtual ~FuzzyDataManager(); // TODO clean everything (Fuzzy AI Path)
+                                   // TODO init function, and clear function
+                                   // compute paths in the init function
+                                   // call clear when the track is unloaded.
 
     // -- Setters --
     // Set the number of crashes (called by PlayerController)
@@ -66,7 +99,9 @@ public :
     
     // Get player average rank
     float       getPlayerAverageRank()        { return m_player_average_rank; }
-    
+  
+    // Test
+    void        computePossiblePaths();  
 };
 
 extern FuzzyDataManager *fuzzy_data_manager;

@@ -174,7 +174,15 @@ public:
     /** Returns the length of the main driveline. */
     float        getLapLength() const {return m_lap_length; }
     // ----------------------------------------------------------------------
-    
+    /** Returns the QuadSet */
+    //Quad&        getQuad(unsigned int index)
+    //                                       {return m_all_quads->getQuad(index);}
+    // ----------------------------------------------------------------------
+    /** Returns the QuadSet (const) */
+    const Quad&  getQuad(unsigned int index) const
+                                           {return m_all_quads->getQuad(index);}
+
+    //-----------------------------------------------------------------------
     void         setChecklineRequirements()
     {
         setChecklineRequirements(m_all_nodes[0], -1);

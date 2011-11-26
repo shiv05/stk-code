@@ -24,6 +24,8 @@
 
 #include "karts/controller/fuzzy_data_manager.hpp"
 #include "tracks/quad_graph.hpp"
+#include "items/item_manager.hpp"
+#include "tracks/fuzzy_ai_path_tree.hpp"
 
 using namespace std;
 
@@ -97,7 +99,6 @@ void FuzzyDataManager::computePossiblePaths()
                     newPathNodes->push_back(next[k]);         // 2nd node
                     FuzzyAiPath newPath(newPathNodes, false, 0, 0);
                     m_possible_paths->push_back(&newPath);
-                    
                 } // Add the newly detected path(s) to the path list
             } // If the current node is a path fork
             
@@ -111,11 +112,14 @@ void FuzzyDataManager::computePossiblePaths()
         m_possible_paths->at(i)->discovered = true;
     } // For each entry in the path list, discover the path
 
+    setPathsItemCount();
 #ifdef AI_DEBUG
     cout << "Found paths : " << endl;
     for(unsigned int i2=0 ; i2 < m_possible_paths->size() ; i2++)
     {
-        cout << "\t path " << i2 << " = ";
+        cout << "\t path " << i2;
+        cout << " : bonus_count = " << m_possible_paths->at(i2)->bonus_count;
+        cout << ", malus_count = " << m_possible_paths->at(i2)->malus_count << endl;
         for(unsigned int j2=0 ; j2 < m_possible_paths->at(i2)->node_indexes->size(); j2++)
         {
             cout << m_possible_paths->at(i2)->node_indexes->at(j2) << ", ";
@@ -123,8 +127,28 @@ void FuzzyDataManager::computePossiblePaths()
         cout << endl;
     }
 #endif
+
+    m_fork_trees = new FuzzyAiPathTree(0);
+    m_fork_trees->printTree(m_fork_trees->getRoot());
 }
-    
+
+//------------------------------------------------------------------------------
+/**
+ *
+ */
+void FuzzyDataManager::setPathsItemCount()
+{
+    for(unsigned int i=0 ; i<m_possible_paths->size() ; i++)
+    {
+        FuzzyAiPath *currentPath = m_possible_paths->at(i);
+        for(unsigned int j=0 ; j<currentPath->node_indexes->size() ; j++)
+        {
+            const Quad& q = QuadGraph::get()->getQuad(currentPath->node_indexes->at(j));
+            currentPath->bonus_count += item_manager->getQuadBonusCount(q);
+            currentPath->malus_count += item_manager->getQuadMalusCount(q);
+        }
+    }
+}
 
 // Returns the world player kart ID. -1 if no player is found.
 // Currently considers there is only one player.

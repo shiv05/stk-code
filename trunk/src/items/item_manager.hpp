@@ -76,8 +76,12 @@ public:
     void           setSwitchItems  (const std::vector<int> &switch_items);
     scene::IMesh*  getItemModel    (Item::ItemType type)
                                       {return m_item_mesh[type];}
-    std::vector<Item*> getCloseItems (Kart* kart, float max_dist,
-                                       Item::ItemType type);
+                                      
+    std::vector<Item*>*getQuadItems     (const Quad& quad, Item::ItemType type);
+    unsigned int       getQuadBonusCount(const Quad& q);
+    unsigned int       getQuadMalusCount(const Quad& q);
+    std::vector<Item*> getCloseItems    (Kart *kart, float max_dist,
+                                          Item::ItemType type);
 };
 
 extern ItemManager* item_manager;

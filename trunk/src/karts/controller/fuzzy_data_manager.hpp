@@ -22,6 +22,7 @@
 #define HEADER_FUZZYDATAMANAGER_HPP
 
 class QuadNode;
+class FuzzyAiPathTree;
 /** The FuzzyDataManager is used by multiple instances of the FuzzyAIController,
  *  to store and retrieve data used for the AI modules' computation.
  *  - Player data (currently 1 player supported)
@@ -49,16 +50,45 @@ private :
 
     // -- Racetrack data --
     
+    /** This structure represents a branch of a FuzzyAiPath.
+     *  It is used by the fuzzy ai to compare the possible paths in case of
+     *  fork, storing data about the paths.
+     *  The given bonus and malus count are the ones of the "main path" (ie. the
+     *  branch which has its 2nd quad index = 1st quad index + 1 ), and are to
+     *  be compared with the values in the recursively stored FuzzyAiPathBranch.
+     * TODO better comment, explain why there is recursivity.
+     */
+//    struct FuzzyAiPathBranch
+//    {
+//        unsigned int       fork_quad_id;
+//        unsigned int       end_quad_id;
+//        unsigned int       main_path_bonus_count;
+//        unsigned int       main_path_malus_count;
+//        FuzzyAiPathBranch* alt_paths;
+//        
+//        FuzzyAiPathBranch(unsigned int fork_quad_id,
+//                          unsigned int main_path_bonus_count,
+//                          unsigned int main_path_malus_count,
+//                          FuzzyAiPathBranch pathBranch) :
+//                   fork_quad_id(0),
+//                   main_path_bonus_count(0),
+//                   main_path_malus_count(0),
+//                   pathBranch(NULL)
+//                {}
+//    };
+    
     /** This structure extends the quadgraph to store data about paths (eg.
      *  bonus count). This data is used by the fuzzy ai controller to choose
      *  which path to take. */
+     // TODO what is called "node_indexes" might actually be the quad indexes
     struct FuzzyAiPath
     {
-        std::vector<unsigned int> *node_indexes;
-        bool                       discovered;
-        unsigned int               bonus_count;
-        unsigned int               malus_count;
-        // TODO turn count, zipper_count (split bonus in boxes & zippers) ?
+        std::vector<unsigned int>  *node_indexes;
+        bool                        discovered;
+        unsigned int                bonus_count;
+        unsigned int                malus_count;
+//        std::vector<FuzzyAiSubPath> subpaths;
+        // TODO turn count, zipper_count ?
         
         FuzzyAiPath(std::vector<unsigned int> *n_indexes,
                       bool has_been_discovered, unsigned int bonus_count,
@@ -73,19 +103,20 @@ private :
     // Possible paths vector
     std::vector<FuzzyAiPath *> *m_possible_paths;
     
+    FuzzyAiPathTree            *m_fork_trees;
+    
     // -- Methods --
 //    void ComputePossiblePaths();
     // Get player kart index -- Not useful currently as only 1 player is handled
 //    int         getPlayerKartId();
 
 public :
-    //
+
     FuzzyDataManager();
     //virtual ~FuzzyDataManager(); // TODO clean everything (Fuzzy AI Path)
                                    // TODO init function, and clear function
                                    // compute paths in the init function
                                    // call clear when the track is unloaded.
-
     // -- Setters --
     // Set the number of crashes (called by PlayerController)
     void        setPlayerCrashCount(int c)    { m_player_crash_count = c; }
@@ -99,9 +130,10 @@ public :
     
     // Get player average rank
     float       getPlayerAverageRank()        { return m_player_average_rank; }
-  
+    
     // Test
-    void        computePossiblePaths();  
+    void        computePossiblePaths();
+    void        setPathsItemCount();
 };
 
 extern FuzzyDataManager *fuzzy_data_manager;

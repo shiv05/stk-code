@@ -208,7 +208,7 @@ void  ItemManager::checkItemHit(Kart* kart)
     // Only do this on the server
     if(network_manager->getMode()==NetworkManager::NW_CLIENT) return;
 
-    for(AllItemTypes::iterator i =m_all_items.begin();
+    for(AllItemTypes::iterator i = m_all_items.begin();
         i!=m_all_items.end();  i++)
     {
         if((!*i) || (*i)->wasCollected()) continue;
@@ -219,21 +219,88 @@ void  ItemManager::checkItemHit(Kart* kart)
     }   // for m_all_items
 }   // checkItemHit
 
-//-----------------------------------------------------------------------------
-/** Get items close to the given kart.
- *  \param kart Pointer to the kart. 
+//------------------------------------------------------------------------------
+/** Get all the items inside the given quad.
+ * TODO make this comment doxygen compliant
  */
+std::vector<Item*> *ItemManager::getQuadItems(const Quad& quad,
+                                        Item::ItemType type = Item::ITEM_NONE)
+{
+    // Only do this on the server
+    //if(network_manager->getMode()==NetworkManager::NW_CLIENT) return NULL;
+    
+    std::vector<Item*> *items = new vector<Item*>();
+    
+    // for each item of the given type, keep it if it is inside the given quad
+    for(AllItemTypes::iterator i=m_all_items.begin(); i!=m_all_items.end(); i++)
+    {        
+        if(quad.pointInQuad((*i)->getXYZ()))
+        {
+            if(type == Item::ITEM_NONE || (*i)->getType() == type)
+                items->push_back(*i);
+        }
+    } // For each item
+    return items;
+} // getQuadItems
+
+//------------------------------------------------------------------------------
+/** Get bonus items inside the given quad
+ *
+ */
+unsigned int ItemManager::getQuadBonusCount(const Quad& q)
+{
+    vector<Item*> *quadItems = getQuadItems(q);
+    vector<Item*> quadBonusItems = vector<Item*>();
+    for(unsigned int i=0; i!=quadItems->size(); i++)
+    {
+        Item* currentItem = quadItems->at(i);
+        if(currentItem->getType() == Item::ITEM_BONUS_BOX ||
+           currentItem->getType() == Item::ITEM_NITRO_BIG ||
+           currentItem->getType() == Item::ITEM_NITRO_SMALL)
+            quadBonusItems.push_back(currentItem);
+    }
+    delete quadItems;
+    return quadBonusItems.size();
+} // getQuadBonusCount
+
+
+//------------------------------------------------------------------------------
+/** Get bad items inside the given quad
+ *
+ */
+unsigned int ItemManager::getQuadMalusCount(const Quad& q)
+{
+    vector<Item*> *quadItems = getQuadItems(q);
+    vector<Item*> quadMalusItems = vector<Item*>();
+    for(unsigned int i=0; i!=quadItems->size(); i++)
+    {
+        Item* currentItem = quadItems->at(i);
+        if(currentItem->getType() == Item::ITEM_BANANA ||
+           currentItem->getType() == Item::ITEM_BUBBLEGUM)
+            quadMalusItems.push_back(currentItem);
+    }
+    delete quadItems;
+    return quadMalusItems.size();
+} // getQuadMalusCount
+
+//------------------------------------------------------------------------------
+/** Get items close to the given kart.
+ *  \param kart Pointer to the kart.
+ * TODO make this comment doxygen compliant
+ */
+
 std::vector<Item*> ItemManager::getCloseItems(Kart* kart, float max_dist,
-        Item::ItemType type = Item::ITEM_NONE)
+                                        Item::ItemType type = Item::ITEM_NONE)
 {
     // Only do this on the server
     //if(network_manager->getMode()==NetworkManager::NW_CLIENT) return NULL;
   
     std::vector<Item*> items;
     
-    for(AllItemTypes::iterator i = m_all_items.begin();
-        i != m_all_items.end();  i++)
+    // for each item of the given type, keep it if it is close to the kart
+    for(AllItemTypes::iterator i=m_all_items.begin(); i!=m_all_items.end(); i++)
     {
+        // Don't take in account collected items
         if((!*i) || (*i)->wasCollected()) continue;
 
         if(((*i)->getXYZ() - kart->getXYZ()).length() < max_dist)
@@ -241,7 +308,7 @@ std::vector<Item*> ItemManager::getCloseItems(Kart* kart, float max_dist,
             if(type == Item::ITEM_NONE || (*i)->getType() == type)
                 items.push_back(*i);
         }
-    }   // for m_all_items
+    } // for m_all_items
 
     return items;
 }   // getCloseItems

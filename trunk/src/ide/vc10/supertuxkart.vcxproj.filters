@@ -876,6 +876,9 @@
     <ClCompile Include="..\..\karts\controller\fuzzy_data_manager.cpp">
       <Filter>Source Files\karts\controller</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\tracks\fuzzy_ai_path_tree.cpp">
+      <Filter>Source Files\tracks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\main_loop.hpp">
@@ -1672,6 +1675,9 @@
     </ClInclude>
     <ClInclude Include="..\..\karts\emergency_animation.hpp">
       <Filter>Header Files\karts\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tracks\fuzzy_ai_path_tree.hpp">
+      <Filter>Header Files\tracks</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

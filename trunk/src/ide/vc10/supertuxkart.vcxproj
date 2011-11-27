@@ -191,6 +191,7 @@
     <ClCompile Include="..\..\tinygettext\po_parser.cpp" />
     <ClCompile Include="..\..\tinygettext\stk_file_system.cpp" />
     <ClCompile Include="..\..\tinygettext\tinygettext.cpp" />
+    <ClCompile Include="..\..\tracks\fuzzy_ai_path_tree.cpp" />
     <ClCompile Include="..\..\tracks\track_sector.cpp" />
     <ClCompile Include="..\..\utils\constants.cpp" />
     <ClCompile Include="..\..\utils\leak_check.cpp" />
@@ -450,6 +451,7 @@
     <ClInclude Include="..\..\tinygettext\po_parser.hpp" />
     <ClInclude Include="..\..\tinygettext\stk_file_system.hpp" />
     <ClInclude Include="..\..\tinygettext\tinygettext.hpp" />
+    <ClInclude Include="..\..\tracks\fuzzy_ai_path_tree.hpp" />
     <ClInclude Include="..\..\tracks\track_sector.hpp" />
     <ClInclude Include="..\..\utils\constants.hpp" />
     <ClInclude Include="..\..\utils\leak_check.hpp" />

@@ -334,6 +334,14 @@ void FuzzyAIController::update(float dt)
         int competitiveness = computeDrivingStyleCompetitiveness("../../../src/ffll/fcl/driving_style_competitiveness.fcl",number_of_karts,eval,current_ranking);
         int agressiveness = computeDrivingStyleAgressiveness("../../../src/ffll/fcl/driving_style_agressiveness.fcl",number_of_karts,kart_class,current_ranking);
 
+        //Decide if it is interesting to take a path
+        //TODO : Use value from quadgraph
+
+        int number_of_items=10;
+        int length = 30;
+
+        int interest = computePathChooser("../../../src/ffll/fcl/path_chooser.fcl",number_of_items,length,competitiveness);
+
 
   
 #ifdef AI_DEBUG
@@ -449,7 +457,7 @@ int FuzzyAIController::computeDrivingStyleCompetitiveness(const char*    file_na
 
 int FuzzyAIController::computeDrivingStyleAgressiveness(const char*    file_name, 
 		                                   float   number_of_players,
-                                           float Kart_class,
+                                           float kart_class,
                                            float   current_ranking)
 {
 	//The rank need to be normalized before computing
@@ -463,10 +471,32 @@ int FuzzyAIController::computeDrivingStyleAgressiveness(const char*    file_name
 
     vector<float> evaluationParameters;
     evaluationParameters.push_back(normalized_current_ranking);
-    evaluationParameters.push_back(Kart_class);
+    evaluationParameters.push_back(kart_class);
 
     return  computeFuzzyModel(file_name, evaluationParameters);
 }
+
+//------------------------------------------------------------------------------
+/** Path chooser computation methods when there are multiple path to choose. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliante
+           Use the number of turns and the kart class.
+ */
+
+ int  FuzzyAIController::computePathChooser(const char*    file_name, 
+		                          float   number_of_items,
+                                  float   length,
+                                  float   competitiveness)
+ {
+
+    vector<float> PathParameters;
+    PathParameters.push_back(number_of_items);
+    PathParameters.push_back(length);
+    PathParameters.push_back(competitiveness);
+
+    return  computeFuzzyModel(file_name, PathParameters);
+
+ }
 
 //------------------------------------------------------------------------------
 /** Generic method to interface with FFLL and compute an output using fuzzy

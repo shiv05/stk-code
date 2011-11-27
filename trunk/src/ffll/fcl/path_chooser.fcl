@@ -1,0 +1,64 @@
+(* FCL File Created From FFLL Model*)
+FUNCTION_BLOCK
+
+VAR_INPUT
+	Number_of_items	REAL; (* RANGE(0 .. 100) *) 
+	Length	REAL; (* RANGE(0 .. 100) *) 
+	Competitiveness	REAL; (* RANGE(0 .. 4) *) 
+END_VAR
+
+VAR_OUTPUT
+	Interest	REAL; (* RANGE(0 .. 6) *) 
+END_VAR
+
+FUZZIFY Number_of_items
+	TERM High := (0, 0) (0, 1) (30, 0) ;
+	TERM Medium:= (20, 0) (50, 1) (80, 0) ;
+	TERM Low := (70, 0) (100, 1) (100, 0) ;
+END_FUZZIFY
+
+FUZZIFY Length
+	TERM Short := (0, 0) (0, 1) (40, 0) ;
+	TERM Medium:= (30, 0) (50, 1) (70, 0) ;
+	TERM Long := (60, 0) (100, 1) (100, 0) ;
+END_FUZZIFY
+
+FUZZIFY Competitiveness
+	TERM Competitive := 1 ;
+	TERM Noncompetitive := 2 ;
+END_FUZZIFY
+
+FUZZIFY Interest
+	TERM Profitable := 1 ;
+	TERM Neutral := 2 ;
+	TERM Unnecessary := 3 ;
+END_FUZZIFY
+
+DEFUZZIFY valve
+	METHOD: MoM;
+END_DEFUZZIFY
+
+RULEBLOCK first
+	AND:MIN;
+	ACCUM:MAX;
+	RULE 0: IF High AND Short AND Competitive THEN Profitable;
+	RULE 1: IF High AND Medium AND Competitive THEN Profitable;
+	RULE 2: IF High AND Long AND Competitive THEN Unnecessary;
+	RULE 3: IF Medium AND Short AND Competitive THEN Profitable;
+	RULE 4: IF Medium AND Medium AND Competitive THEN Neutral;
+	RULE 5: IF Medium AND Long AND Competitive THEN Unnecessary;
+	RULE 6: IF Low AND Short AND Competitive THEN Neutral;
+	RULE 7: IF Low AND Medium AND Competitive THEN Unnecessary;
+	RULE 8: IF Low AND Long AND Competitive THEN Unnecessary;
+	RULE 0: IF High AND Short AND Noncompetitive THEN Unnecessary;
+	RULE 1: IF High AND Medium AND Noncompetitive THEN Unnecessary;
+	RULE 2: IF High AND Long AND Noncompetitive THEN Unnecessary;
+	RULE 3: IF Medium AND Short AND Noncompetitive THEN Unnecessary;
+	RULE 4: IF Medium AND Medium AND Noncompetitive THEN Unnecessary;
+	RULE 5: IF Medium AND Long AND Noncompetitive THEN Unnecessary;
+	RULE 6: IF Low AND Short AND Noncompetitive THEN Unnecessary;
+	RULE 7: IF Low AND Medium AND Noncompetitive THEN Unnecessary;
+	RULE 8: IF Low AND Long AND Noncompetitive THEN Unnecessary;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

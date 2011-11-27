@@ -167,8 +167,12 @@ private:
                                   float   current_ranking);
     int  computeDrivingStyleAgressiveness(const char*    file_name, 
 		                          float   number_of_players,
-                                  float Kart_class,
+                                  float kart_class,
                                   float   current_ranking);
+    int  computePathChooser(const char*    file_name, 
+		                          float   number_of_items,
+                                  float   length,
+                                  float   competitiveness);
     //--------------------------------------------------------------------------
 
     int   calcSteps();

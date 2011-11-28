@@ -337,10 +337,12 @@ void FuzzyAIController::update(float dt)
         //Decide if it is interesting to take a path
         //TODO : Use value from quadgraph
 
-        int number_of_items=10;
-        int length = 30;
+        // Just an example :
 
-        int interest = computePathChooser("../../../src/ffll/fcl/path_chooser.fcl",number_of_items,length,competitiveness);
+        int length = 30;
+        int number_of_items=70;
+
+        int interest = computePathChooser("../../../src/ffll/fcl/path_chooser.fcl",length,number_of_items,competitiveness);
 
 
   
@@ -393,7 +395,11 @@ void FuzzyAIController::update(float dt)
             case (2): cout << "Neutral" << endl; break;
             case (3): cout << "Careful" << endl; break;
             default : cout << "unexpected value : " << eval << endl;
-        } // end switch      
+        } // end switch
+        //Agent path interest
+        cout << m_kart->getIdent() << " : Path interest = ";
+        cout << interest << endl;
+
 #endif
 
         
@@ -484,17 +490,37 @@ int FuzzyAIController::computeDrivingStyleAgressiveness(const char*    file_name
  */
 
  int  FuzzyAIController::computePathChooser(const char*    file_name, 
-		                          float   number_of_items,
-                                  float   length,
+		                          float   length,
+                                  float   number_of_items,
                                   float   competitiveness)
  {
 
     vector<float> PathParameters;
-    PathParameters.push_back(number_of_items);
     PathParameters.push_back(length);
+    PathParameters.push_back(number_of_items);
     PathParameters.push_back(competitiveness);
 
     return  computeFuzzyModel(file_name, PathParameters);
+
+ }
+
+ //------------------------------------------------------------------------------
+/** Generic module to compute the difficulty to reach an object. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliante
+           Use the direction?
+ */
+
+ int  FuzzyAIController::difficultyTagging(const char*    file_name, 
+		                          float   Distance,
+                                  float   Angle)
+ {
+
+    vector<float> ObjectParameters;
+    ObjectParameters.push_back(Distance);
+    ObjectParameters.push_back(Angle);
+
+    return  computeFuzzyModel(file_name, ObjectParameters);
 
  }
 

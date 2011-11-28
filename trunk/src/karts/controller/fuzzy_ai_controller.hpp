@@ -170,9 +170,12 @@ private:
                                   float kart_class,
                                   float   current_ranking);
     int  computePathChooser(const char*    file_name, 
-		                          float   number_of_items,
-                                  float   length,
+		                          float   length,
+                                  float   number_of_items,
                                   float   competitiveness);
+    int  difficultyTagging(const char*    file_name, 
+		                          float   Distance,
+                                  float   Angle);
     //--------------------------------------------------------------------------
 
     int   calcSteps();

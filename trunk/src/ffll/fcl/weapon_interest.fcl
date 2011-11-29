@@ -1,4 +1,4 @@
-(* FCL File Created From FFLL Model*)
+(* FCL File Created From FFLL Model. Used to evaluate the interest to use the possessed weapon regarding the difficulty and the competitiveness*)
 FUNCTION_BLOCK
 
 VAR_INPUT

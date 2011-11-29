@@ -1,4 +1,4 @@
-(* FCL File Created From FFLL Model*)
+(* FCL File Created From FFLL Model. Used to know the agressiveness of the agent regarding his current ranking and his class*)
 FUNCTION_BLOCK
 
 VAR_INPUT

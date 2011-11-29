@@ -342,7 +342,17 @@ void FuzzyAIController::update(float dt)
         int length = 30;
         int number_of_items=70;
 
-        int interest = computePathChooser("../../../src/ffll/fcl/path_chooser.fcl",length,number_of_items,competitiveness);
+        int path_interest = computePathChooser("../../../src/ffll/fcl/path_chooser.fcl",length,number_of_items,competitiveness);
+
+        //Decide if it is interesting to use the current possessed weapon
+
+        //Get current powerup
+        //Use m_distance_ahead ? to get the closest kart
+
+        /*const Powerup* current_powerup = m_kart->getPowerup();
+        PowerupManager::PowerupType possessed_item = current_powerup->getType();
+
+        int  weapon_interest = computeWeaponHitEstimation("../../../src/ffll/fcl/weapon_hit_estimation.fcl",possessed_item,m_distance_ahead*/
 
 
   
@@ -398,7 +408,8 @@ void FuzzyAIController::update(float dt)
         } // end switch
         //Agent path interest
         cout << m_kart->getIdent() << " : Path interest = ";
-        cout << interest << endl;
+        cout << path_interest << endl;
+
 
 #endif
 
@@ -505,7 +516,7 @@ int FuzzyAIController::computeDrivingStyleAgressiveness(const char*    file_name
  }
 
  //------------------------------------------------------------------------------
-/** Generic module to compute the difficulty to reach an object. Simply call computeFuzzyModel with the
+/** Module to compute the difficulty to reach an object. Simply call computeFuzzyModel with the
  *  right parameters.
  *  TODO : make this comment doxygen compliante
            Use the direction?
@@ -523,6 +534,25 @@ int FuzzyAIController::computeDrivingStyleAgressiveness(const char*    file_name
     return  computeFuzzyModel(file_name, ObjectParameters);
 
  }
+
+  //------------------------------------------------------------------------------
+/** Module to compute the difficulty hit an opponent with a weapon. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliante
+           Find how to get current powerup.
+ */
+
+  /*int  computeWeaponHitEstimation(const char*    file_name,
+                                   PowerupManager::PowerupType possessed_item,
+                                  float other_kart_position)
+  {
+      int test = other_kart_position;
+
+      cout << possessed_item << endl;
+      cout << test << endl;
+
+      return 1;
+  }*/
 
 //------------------------------------------------------------------------------
 /** Generic method to interface with FFLL and compute an output using fuzzy

@@ -1,4 +1,4 @@
-(* FCL File Created From FFLL Model*)
+(* FCL File Created From FFLL Model. Generic module to know the difficulty to reach an object. The output of this module is used to tag the interest of objects*)
 FUNCTION_BLOCK
 
 VAR_INPUT

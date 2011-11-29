@@ -1,4 +1,4 @@
-(* FCL File Created From FFLL Model*)
+(* FCL File Created From FFLL Model. A module to evalutate the interest of a path*)
 FUNCTION_BLOCK
 
 VAR_INPUT

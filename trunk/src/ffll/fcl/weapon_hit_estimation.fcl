@@ -1,4 +1,4 @@
-(* FCL File Created From FFLL Model*)
+(* FCL File Created From FFLL Model. Used to know if it is difficult to use the possessed weapon to hit someone*)
 FUNCTION_BLOCK
 
 VAR_INPUT

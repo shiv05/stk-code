@@ -1,4 +1,5 @@
-(* FCL File Created From FFLL Model*)
+(* FCL File Created From FFLL Model. Used to evaluate the competitiveness of the agent regarding the player level *)
+
 FUNCTION_BLOCK
 
 VAR_INPUT

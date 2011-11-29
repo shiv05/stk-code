@@ -1,4 +1,5 @@
-(* FCL File Created From FFLL Model*)
+(* FCL File Created From FFLL Model. Used to evaluate the level of the player by using the player average  rank and the number of crash of the player*)
+
 FUNCTION_BLOCK
 
 VAR_INPUT

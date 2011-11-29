@@ -176,6 +176,9 @@ private:
     int  difficultyTagging(const char*    file_name, 
 		                          float   Distance,
                                   float   Angle);
+    /*int  computeWeaponHitEstimation(const char*    file_name,
+                                  PowerupManager::PowerupType possessed_item,
+                                  float other_kart_position);*/
     //--------------------------------------------------------------------------
 
     int   calcSteps();

@@ -129,7 +129,7 @@ void FuzzyDataManager::computePossiblePaths()
 #endif
 
     m_fork_trees = new FuzzyAiPathTree(0);
-    m_fork_trees->printTree(m_fork_trees->getRoot());
+    m_fork_trees->print();
 }
 
 //------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ void FuzzyDataManager::setPathsItemCount()
         FuzzyAiPath *currentPath = m_possible_paths->at(i);
         for(unsigned int j=0 ; j<currentPath->node_indexes->size() ; j++)
         {
-            const Quad& q = QuadGraph::get()->getQuad(currentPath->node_indexes->at(j));
+            const Quad& q = QuadGraph::get()->getQuadOfNode(currentPath->node_indexes->at(j));
             currentPath->bonus_count += item_manager->getQuadBonusCount(q);
             currentPath->malus_count += item_manager->getQuadMalusCount(q);
         }

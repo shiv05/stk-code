@@ -23,56 +23,113 @@
 
 #include <vector>
 
+//------------------------------------------------------------------------------
+/** This class is used to create a tree of paths based on a main driveline fork.
+ *  The paths from in the tree all end at the first main-driveline node that one
+ *  can reach after taking any of the possible paths.
+ *  
+ *  This path tree is used by the fuzzy AI to compare paths and choose which one
+ *  to take when it meets a fork.
+ *  Todo comment
+ */
 class FuzzyAiPathTree
 {
 public :
-//--------------------------------------------------------------------------
-/**
+//------------------------------------------------------------------------------
+/** The PathData structure is simply use to store data about a path from the
+  * path tree (made of multiple TreeNodes). This data is what will be used by
+  * the fuzzy AI to compare the paths :
+  *     - Path length,
+  *     - bonus item count,
+  *     - malus item count.
   *
+  * This structure can be extended for the AI to take in account more parameters
+  * in its path choice (eg. turnCount, as in the future heavy karts may be more
+  * efficient on straigther paths).
   */
-struct TreeNode
+struct PathData
 {
-    // -- Tree data --
-    unsigned int            quadGraphNodeId;
-    std::vector<TreeNode*>* children;
-    // -- Road data --
     float                   pathLength;
     unsigned int            bonusCount;
     unsigned int            malusCount;
+//    unsigned int            zipperCount; TODO
+//    unsigned int            turnCount; TODO
 
-    TreeNode(unsigned int quad_graph_node_index,
-             std::vector<TreeNode*>* children, float path_length,
-             unsigned int bonus_count, unsigned int malus_count) :
-                quadGraphNodeId(quad_graph_node_index),
-                children(NULL),
-                pathLength(0.0f),
-                bonusCount(0),
-                malusCount(0)
-            {}
+    PathData(float path_len = 0.f, 
+             unsigned int bonus_count = 0,
+             unsigned int malus_count = 0) :
+        pathLength(path_len),
+        bonusCount(bonus_count),
+        malusCount(malus_count)
+      {}
+};
+
+//------------------------------------------------------------------------------
+/** The TreeNode structure is a node of the FuzzyAiPathTree. It contains the Id
+  * of a QuadGraph node, pointers toward the potential children nodes, and a
+  * PathData instance which holds data about the direct upper part of the tree.
+  *
+  * The referenced QuadGraph node in a TreeNode depends on the TreeNode
+  * situation in the tree : if it is root (including a sub-tree root) the
+  * referenced QuadGraph node is located just before a path fork, on the
+  * driveline.
+  * If it is a tree leave, it references the QuadGraph node on which the paths
+  * are considered to end (because they join back the main driveline).
+  */
+
+struct TreeNode
+{
+    // -- Tree data --
+    unsigned int            nodeId;
+    std::vector<TreeNode*> *children;           // /!\ NULL if no children
+    // -- Road data --
+    PathData               *data;               // /!\ NULL if no data
+
+    TreeNode(unsigned int     quad_graph_node_index,
+             std::vector<TreeNode*>    *children_nodes,
+             PathData                  *road_data) :
+                nodeId(quad_graph_node_index),
+                children(children_nodes),
+                data(road_data)
+           {}
 };
 
 private :
-    
-    TreeNode* m_pathRoot;
-    
-    TreeNode* buildTree(unsigned int rootNodeId);
+    // -- Variables --
+    TreeNode* m_treeRoot;
+    std::vector<std::vector<PathData*>*> *m_compareData;
+
+    // -- Constructor & destructor related functions --
+    TreeNode*        buildTree       (unsigned int rootNodeId);
+    TreeNode*        setPathData     (TreeNode* rootNode,
+                                      PathData* pathData = NULL);
+    unsigned int     getFarthestNode (const TreeNode* rootNode) const;
+    void             deleteTree      (TreeNode* rootNode);
+
+    std::vector<std::vector<PathData*>*> *getComparableData
+                                     (const TreeNode* root); //const;
+
+    // -- Misc functions --
+    void             sumPathData     (PathData* result, const PathData* data1,
+                                      const PathData* data2);
+
+    // -- Debug functions --
+    void const printNode(const TreeNode *rootNode);
 
 public :
 
-    // Constructor
-    FuzzyAiPathTree(unsigned int rootNodeId);
+    // -- Constructor & Destructor --
+    FuzzyAiPathTree (unsigned int rootNodeId);
+    ~FuzzyAiPathTree(); 
     
-    // Destructor
-    virtual ~FuzzyAiPathTree() { /* TODO clean tree */ }; 
+    // -- Debug functions --
+    void const print();
     
-    // Debug function
-    void const printTree(const TreeNode *rootNode);
-    
-    // Getter
-    const TreeNode* getRoot() const {return m_pathRoot;}
-};
+    // -- Getters --
+    const TreeNode* getRoot() const {return m_treeRoot;}
+
+}; // class FuzzyAiPathTree
 
 #endif /* HEADER_FUZZYAIPATHTREE_HPP */
 
 /* EOF */
-

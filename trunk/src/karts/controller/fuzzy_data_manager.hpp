@@ -25,7 +25,7 @@
 
 class  QuadNode;
 class  FuzzyAiPathTree;
-struct PathTree;
+struct PathData;
 struct TreeNode;
 
 /** The FuzzyDataManager is used by multiple instances of the FuzzyAIController,
@@ -52,37 +52,7 @@ private :
 
     // -- Racetrack data --
     std::vector<FuzzyAiPathTree*> m_pathTrees;
-    
-    /** This structure extends the quadgraph to store data about paths (eg.
-     *  bonus count). This data is used by the fuzzy ai controller to choose
-     *  which path to take. */
-     // TODO what is called "node_indexes" might actually be the quad indexes
-//    struct FuzzyAiPath
-//    {
-//        std::vector<unsigned int>  *node_indexes;
-//        bool                        discovered;
-//        unsigned int                bonus_count;
-//        unsigned int                malus_count;
-////        std::vector<FuzzyAiSubPath> subpaths;
-//        // TODO turn count, zipper_count ?
-//        
-//        FuzzyAiPath(std::vector<unsigned int> *n_indexes,
-//                      bool has_been_discovered, unsigned int bonus_count,
-//                      unsigned int malus_count) :
-//                node_indexes(n_indexes),
-//                discovered(false),
-//                bonus_count(0),
-//                malus_count(0)
-//            {}
-//    };
-    
-    // Possible paths vector
-//    std::vector<FuzzyAiPath *> *m_possible_paths;
-    
-//    FuzzyAiPathTree            *m_fork_trees;
-    
-    // -- Methods --
-//    void ComputePossiblePaths();
+        
     // Get player kart index -- Not useful currently as only 1 player is handled
 //    int         getPlayerKartId();
 
@@ -101,10 +71,12 @@ public :
     int         getPlayerCrashCount()         { return m_player_crash_count; }
     float       getPlayerAverageRank()        { return m_player_average_rank; }
     
+    const std::vector<std::vector<PathData*>*>* getPathData(
+                                                    unsigned int nodeId ) const;
+    
     // Test
     void        createPathTrees();
-//    void        computePossiblePaths();
-//    void        setPathsItemCount();
+    
 };
 
 extern FuzzyDataManager *fuzzy_data_manager;

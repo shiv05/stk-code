@@ -18,6 +18,8 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+#define AI_DEBUG
+
 #ifndef HEADER_FUZZYAIPATHTREE_HPP
 #define HEADER_FUZZYAIPATHTREE_HPP
 
@@ -103,7 +105,6 @@ private :
     // Data used to compare the possible paths. See getComparableData for more.
     std::vector<std::vector<PathData*>*> *m_compareData;
 
-
     // -- Constructor & destructor related functions --
     TreeNode*        buildTree       (unsigned int rootNodeId);
     TreeNode*        setPathData     (TreeNode* rootNode,
@@ -111,7 +112,7 @@ private :
     unsigned int     getFarthestNode (const TreeNode* rootNode) const;
     void             deleteTree      (TreeNode* rootNode);
 
-    std::vector<std::vector<PathData*>*> *getComparableData
+    std::vector<std::vector<PathData*>*> *setComparableData
                                      (const TreeNode* root);
 
     // -- Misc functions --
@@ -120,6 +121,7 @@ private :
 
     // -- Debug functions --
     void printNode(const TreeNode *rootNode) const;
+    void printPossiblePaths();
 
 public :
 

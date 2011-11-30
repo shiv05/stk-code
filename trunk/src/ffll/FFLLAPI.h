@@ -3,7 +3,7 @@
 //
 // Purpose:		This file contains the API declarations for FFLL
 //
-// Copyright © 2001 Louder Than A Bomb! Software
+// Copyright ï¿½ 2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.

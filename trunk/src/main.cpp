@@ -1080,6 +1080,7 @@ void cleanSuperTuxKart()
     if(powerup_manager)         delete powerup_manager;   
     if(projectile_manager)      delete projectile_manager;
     if(kart_properties_manager) delete kart_properties_manager;
+    if(fuzzy_data_manager)      delete fuzzy_data_manager;
     if(track_manager)           delete track_manager;
     if(material_manager)        delete material_manager;
     if(history)                 delete history;

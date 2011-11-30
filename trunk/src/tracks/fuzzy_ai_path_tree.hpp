@@ -24,18 +24,6 @@
 #include <vector>
 
 //------------------------------------------------------------------------------
-/** This class is used to create a tree of paths based on a main driveline fork.
- *  The paths from in the tree all end at the first main-driveline node that one
- *  can reach after taking any of the possible paths.
- *  
- *  This path tree is used by the fuzzy AI to compare paths and choose which one
- *  to take when it meets a fork.
- *  Todo comment
- */
-class FuzzyAiPathTree
-{
-public :
-//------------------------------------------------------------------------------
 /** The PathData structure is simply use to store data about a path from the
   * path tree (made of multiple TreeNodes). This data is what will be used by
   * the fuzzy AI to compare the paths :
@@ -62,7 +50,7 @@ struct PathData
         bonusCount(bonus_count),
         malusCount(malus_count)
       {}
-};
+}; // struct PathData
 
 //------------------------------------------------------------------------------
 /** The TreeNode structure is a node of the FuzzyAiPathTree. It contains the Id
@@ -92,12 +80,29 @@ struct TreeNode
                 children(children_nodes),
                 data(road_data)
            {}
-};
+}; // struct TreeNode
 
+
+//------------------------------------------------------------------------------
+/** This class is used to create a tree of paths based on a main driveline fork.
+ *  Each node of the tree corresponds to a path fork, and stores data about the
+ *  road section to reach this fork.
+ *  All the paths from the tree finish at the first main-driveline node that one
+ *  can reach after taking any of the possible paths.
+ *      See functions comments for more information about the tree structure.
+ *  
+ *  The path tree is used by the fuzzy AI to compare paths and choose which one
+ *  to take when it meets a fork.
+ */
+class FuzzyAiPathTree
+{
 private :
     // -- Variables --
+    // Root node for the tree 
     TreeNode* m_treeRoot;
+    // Data used to compare the possible paths. See getComparableData for more.
     std::vector<std::vector<PathData*>*> *m_compareData;
+
 
     // -- Constructor & destructor related functions --
     TreeNode*        buildTree       (unsigned int rootNodeId);
@@ -107,14 +112,14 @@ private :
     void             deleteTree      (TreeNode* rootNode);
 
     std::vector<std::vector<PathData*>*> *getComparableData
-                                     (const TreeNode* root); //const;
+                                     (const TreeNode* root);
 
     // -- Misc functions --
     void             sumPathData     (PathData* result, const PathData* data1,
                                       const PathData* data2);
 
     // -- Debug functions --
-    void const printNode(const TreeNode *rootNode);
+    void printNode(const TreeNode *rootNode) const;
 
 public :
 
@@ -123,10 +128,13 @@ public :
     ~FuzzyAiPathTree(); 
     
     // -- Debug functions --
-    void const print();
+    void print() const;
     
     // -- Getters --
-    const TreeNode* getRoot() const {return m_treeRoot;}
+    const unsigned int  getRootId()     const { return m_treeRoot->nodeId; }
+    const TreeNode*     getRoot()       const { return m_treeRoot; }
+    const std::vector<std::vector<PathData*>*>* getComparableData()
+                                        const { return m_compareData; }
 
 }; // class FuzzyAiPathTree
 

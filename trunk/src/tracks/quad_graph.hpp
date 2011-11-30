@@ -68,6 +68,8 @@ private:
 
     /** The length of the first loop. */
     float                    m_lap_length;
+    /** The length of the first loop in quads */
+    unsigned int             m_lap_quad_count;
 
     /** The minimum coordinates of the quad graph. */
     Vec3                     m_min_coord;
@@ -173,6 +175,9 @@ public:
     // ----------------------------------------------------------------------
     /** Returns the length of the main driveline. */
     float        getLapLength() const {return m_lap_length; }
+    // ----------------------------------------------------------------------
+    /** Returns the quad count of the main driveline. */
+    float        getLapQuadCount() const { return m_lap_quad_count; }
     // ----------------------------------------------------------------------
     /** Returns the QuadSet */
     //Quad&        getQuad(unsigned int index)

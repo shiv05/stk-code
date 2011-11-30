@@ -180,7 +180,22 @@ void QuadGraph::load(const std::string &filename)
             break;
         }
     }
-    setDefaultSuccessors();    
+    setDefaultSuccessors();
+    
+    // -- Set the main driveline quad count --
+    unsigned int              quadCount = 1;
+    unsigned int              curNode = 1;
+    std::vector<unsigned int> nextNodes = std::vector<unsigned int>();
+    
+    while(curNode != 0)
+    {
+        nextNodes.clear();
+        getSuccessors(curNode, nextNodes, true);
+        curNode = nextNodes[0];
+        quadCount ++;
+    }
+    m_lap_quad_count = quadCount;
+    
 }   // load
 
 // ----------------------------------------------------------------------------
@@ -856,3 +871,4 @@ void QuadGraph::mapPoint2MiniMap(const Vec3 &xyz,Vec3 *draw_at) const
     draw_at->setY((xyz.getZ()-m_min_coord.getZ())*m_scaling);
 
 }   // mapPoint
+

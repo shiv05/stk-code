@@ -142,7 +142,8 @@ void World::init()
     
     // Load the additionnal path data used for the fuzzy ai. This must be done
     // after calling loadTrackModel()
-    fuzzy_data_manager->computePossiblePaths();
+    if(QuadGraph::get())
+        fuzzy_data_manager->createPathTrees();
 
     for(unsigned int i=0; i<num_karts; i++)
     {

@@ -349,10 +349,10 @@ void FuzzyAIController::update(float dt)
         //Get current powerup
         //Use m_distance_ahead ? to get the closest kart
 
-        /*const Powerup* current_powerup = m_kart->getPowerup();
+        const Powerup* current_powerup = m_kart->getPowerup();
         PowerupManager::PowerupType possessed_item = current_powerup->getType();
-
-        int  weapon_interest = computeWeaponHitEstimation("../../../src/ffll/fcl/weapon_hit_estimation.fcl",possessed_item,m_distance_ahead*/
+        //m_distance_ahead
+        int  weapon_interest = computeWeaponHitEstimation("../../../src/ffll/fcl/weapon_hit_estimation.fcl",possessed_item,m_distance_ahead);
 
 
   
@@ -409,6 +409,12 @@ void FuzzyAIController::update(float dt)
         //Agent path interest
         cout << m_kart->getIdent() << " : Path interest = ";
         cout << path_interest << endl;
+
+        //Agent hit estimation
+        cout << m_kart->getIdent() << " : agent current powerup type = ";
+        cout << possessed_item << endl;
+        cout << m_kart->getIdent() << " : agent distance from ahead kart = ";
+        cout << m_distance_ahead << endl;
 
 
 #endif
@@ -539,20 +545,21 @@ int FuzzyAIController::computeDrivingStyleAgressiveness(const char*    file_name
 /** Module to compute the difficulty hit an opponent with a weapon. Simply call computeFuzzyModel with the
  *  right parameters.
  *  TODO : make this comment doxygen compliante
-           Find how to get current powerup.
+           Normalize the parameters
+           Check for distance
+           Switch for item_type
  */
 
-  /*int  computeWeaponHitEstimation(const char*    file_name,
-                                   PowerupManager::PowerupType possessed_item,
-                                  float other_kart_position)
+  int  FuzzyAIController::computeWeaponHitEstimation(const char*    file_name,
+                                   int possessed_item_type,
+                                  float next_kart_distance)
   {
-      int test = other_kart_position;
+    vector<float> HitEstimation;
+    HitEstimation.push_back(possessed_item_type);
+    HitEstimation.push_back(next_kart_distance);
 
-      cout << possessed_item << endl;
-      cout << test << endl;
-
-      return 1;
-  }*/
+    return  computeFuzzyModel(file_name, HitEstimation);
+  }
 
 //------------------------------------------------------------------------------
 /** Generic method to interface with FFLL and compute an output using fuzzy

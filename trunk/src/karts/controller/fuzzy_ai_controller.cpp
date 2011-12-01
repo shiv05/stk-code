@@ -33,6 +33,7 @@
 
 #include "karts/controller/fuzzy_ai_controller.hpp"
 #include "karts/controller/fuzzy_data_manager.hpp"
+#include "tracks/fuzzy_ai_path_tree.hpp"
 
 #ifdef AI_DEBUG
 #  include "irrlicht.h"
@@ -292,6 +293,33 @@ void FuzzyAIController::update(float dt)
     //==========================================================================
     // -- Fuzzy controller code --
 
+
+    // path fork detection
+    vector<unsigned int> nextNodes;
+    QuadGraph::get()->getSuccessors(m_track_node, nextNodes, true);
+    const vector<vector<PathData*>*>* pathData = NULL;
+    if(nextNodes.size() > 1)
+    {
+        cout << "foooooooooooooooooooooooooooooooooooooooork !" << endl;
+        pathData = fuzzy_data_manager->getPathData(m_track_node);
+#ifdef AI_DEBUG
+        if(pathData)
+        {
+            cout << "PATH DATA Debug : " << endl;
+            for(unsigned int i=0; i<pathData->size() ; i++)
+            {
+                cout << "vector " << i << ":" << endl;
+                for(unsigned int j=0; j<pathData->at(i)->size() ; j++)
+                {
+                    cout << "pathData " << j << " = ";
+                    cout << pathData->at(i)->at(j)->pathLength << endl;
+                }
+            }
+        }
+
+#endif
+    }
+
     m_timer += dt;
     if(m_timer >= 1.0f)        // every second, do
     {
@@ -327,7 +355,7 @@ void FuzzyAIController::update(float dt)
         float current_ranking = m_kart->getPosition();
 
 
-        //TODO : Kart classes are not implemented yet we use a test value.
+        //TODO: Kart classes (heavy..) are not implemented. We use a test value.
 
         int kart_class = 1;
 
@@ -353,7 +381,6 @@ void FuzzyAIController::update(float dt)
         PowerupManager::PowerupType possessed_item = current_powerup->getType();
         //m_distance_ahead
         int  weapon_interest = computeWeaponHitEstimation("../../../src/ffll/fcl/weapon_hit_estimation.fcl",possessed_item,m_distance_ahead);
-
 
   
 #ifdef AI_DEBUG
@@ -418,9 +445,6 @@ void FuzzyAIController::update(float dt)
 
 
 #endif
-
-        
-        
 
     }
 

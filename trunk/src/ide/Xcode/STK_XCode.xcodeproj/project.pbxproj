@@ -2486,7 +2486,6 @@
 		95C2ABA60F29653F000D3E5D /* src */ = {
 			isa = PBXGroup;
 			children = (
-				56887D8914759AFC00800478 /* ffll */,
 				9551B27311DC0D6A002DD140 /* addons */,
 				954E4C240FF98B6E0047FE3E /* animations */,
 				95C2AC260F296540000D3E5D /* audio */,
@@ -2494,6 +2493,7 @@
 				95C2AE250F296541000D3E5D /* challenges */,
 				95D950CC0FE473CA002E10AD /* config */,
 				95C2AE370F296541000D3E5D /* enet */,
+				56887D8914759AFC00800478 /* ffll */,
 				952A152C103F66D600B1895D /* graphics */,
 				958330B110122B4A00C5137E /* guiengine */,
 				95C65D750F532F7D00BE7BA7 /* io */,
@@ -2979,7 +2979,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# copy data files\n\necho \"Copying Data Files\"\n\nif [ \"${CONFIGURATION}\" = \"Release\" ]\nthen\n\nmkdir -p \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/data\"\ncp -rf \"${PROJECT_DIR}/../../../data\" \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/\"\n\"${PROJECT_DIR}/cleanupRelease.sh\"\n\nelse\n\nmkdir -p \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/\"\nln -sFhf \"${PROJECT_DIR}/../../../data\" \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/\"\n\nfi";
+			shellScript = "# copy data files\n\necho \"Copying Data Files\"\n\nif [ \"${CONFIGURATION}\" = \"Release\" ]\nthen\n\nmkdir -p \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/data\"\ncp -rf \"${PROJECT_DIR}/../../../data\" \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/\"\n\"${PROJECT_DIR}/cleanupRelease.sh\"\n\nelse\n\nmkdir -p \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/\"\nln -sFhf \"${PROJECT_DIR}/../../../data\" \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/\"\ncp -rf \"${PROJECT_DIR}/../../ffll/fcl\" \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/data/ai/\"\nfi";
 		};
 /* End PBXShellScriptBuildPhase section */
 

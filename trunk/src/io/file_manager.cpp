@@ -820,6 +820,15 @@ std::string FileManager::getTutorialFile(const std::string &file_name) const
 }   // getTutorialFile
 
 //-----------------------------------------------------------------------------
+/** Returns the full path of a fcl (ffll input parameters) file. 
+ *  \param file_name Name of the fcl file to return.
+ */
+std::string FileManager::getFclFile(const std::string &file_name) const
+{
+    return m_root_dir+"/data/ai/fcl/"+file_name;
+}   // getFclFile
+
+//-----------------------------------------------------------------------------
 /** Returns true if the given name is a directory.
  *  \param path File name to test.
  */

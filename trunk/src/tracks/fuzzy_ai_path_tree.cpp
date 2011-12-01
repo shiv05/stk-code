@@ -45,12 +45,12 @@ FuzzyAiPathTree::FuzzyAiPathTree(unsigned int rootNodeId = 0)
 #ifdef AI_DEBUG
     printPossiblePaths();
 #endif
-
+    m_treeBottom = 0;
     m_treeRoot = buildTree(rootNodeId);
-//    print(); // debug
+    print(); // debug
     m_treeRoot = setPathData(m_treeRoot);
-    m_compareData = setComparableData(m_treeRoot);
-
+    m_compareData = computeComparableData(m_treeRoot);
+    print(); // debug
 
 // Debug output
 //    cout << "COMPARE DATA is AFTER BUILDING : " << endl;
@@ -82,14 +82,19 @@ TreeNode* FuzzyAiPathTree::buildTree(unsigned int startNodeId)
 {
 //    cout << "Building tree... begin : " << startNodeId << endl;
     unsigned int         curNodeId = startNodeId;
+    unsigned int         mainLapLen = QuadGraph::get()->getLapQuadCount();
     TreeNode*            rootNode = new TreeNode(startNodeId, NULL, NULL);
     vector<unsigned int> nextGraphNodes(1, curNodeId); // Init to enter loop
 
 //    cout << "Current node : ";
     // While there is no fork, and no path change (eg. an alt. path that merges
     //  back with the main path), go forward.
-    while(nextGraphNodes.size() == 1 && nextGraphNodes[0] == curNodeId)
+    while(nextGraphNodes.size() == 1 &&
+          (nextGraphNodes[0] == curNodeId))// || TODO thecube
+           //(curNodeId = nextGraphNodes[0]) > mainLapLen)) TODO
     {
+//        if(nextGraphNodes[0] > mainLapLen)
+//            curNodeId = nextGraphNodes[0];
 //        cout << curNodeId << ", ";
         nextGraphNodes.clear();
         QuadGraph::get()->getSuccessors(curNodeId, nextGraphNodes, true);
@@ -135,7 +140,7 @@ TreeNode* FuzzyAiPathTree::buildTree(unsigned int startNodeId)
  *
  *  To compare a path 0.x with the path 1, the end point of the path 1 must be
  *  set to the point where the path 0.1 joins back the main path. So the path 1
- *  is "rallongé" (todo translate).
+ *  is extended with a part of the main driveline (path 0.0).
  *
  *  When all the paths have the same ending point, data about each path is
  *  recursively computed and added to the nodes (length, bonus & malus count).
@@ -152,7 +157,8 @@ TreeNode* FuzzyAiPathTree::buildTree(unsigned int startNodeId)
 TreeNode* FuzzyAiPathTree::setPathData(TreeNode* rootNode, PathData* rootData)
 {
     unsigned int rootNodeId = rootNode->nodeId;
-    unsigned int treeEndNodeId = getFarthestNode(rootNode);
+    if(!m_treeBottom)
+        m_treeBottom = getFarthestNode(m_treeRoot);
 
     if(rootData)       // If the rootData parameter exists, set this node's data
         rootNode->data = rootData;
@@ -179,7 +185,7 @@ TreeNode* FuzzyAiPathTree::setPathData(TreeNode* rootNode, PathData* rootData)
             curChild = rootNode->children->at(i);
             // If the current node is a leave, set its node to the "tree end"
             if(curChild->children == NULL)
-                curChild->nodeId = treeEndNodeId;
+                curChild->nodeId = m_treeBottom;
             
             branchEndNodeId = curChild->nodeId;
             
@@ -227,14 +233,17 @@ unsigned int FuzzyAiPathTree::getFarthestNode(const TreeNode* rootNode) const
         vector<unsigned int> nextGraphNodes;
         unsigned int curNodeId = rootNode->nodeId;
         unsigned int mainPathLength = QuadGraph::get()->getLapQuadCount();
+   
         // Don't take in account the nodes which id > last node of the main path
-        if(curNodeId <= mainPathLength - 1)
-        {
-            QuadGraph::get()->getSuccessors(curNodeId, nextGraphNodes, true);
+        QuadGraph::get()->getSuccessors(curNodeId, nextGraphNodes, true);
 #ifdef AI_DEBUG
-            assert(nextGraphNodes.size() == 1); // Can only be 1 (see buildTree)
+        assert(nextGraphNodes.size() == 1); // Can only be 1 (see buildTree)
 #endif
-            branchLastNodes.push_back(nextGraphNodes[0]);
+        unsigned int nextNode = nextGraphNodes[0];
+
+        if(nextNode < mainPathLength - 1)
+        {
+            branchLastNodes.push_back(nextNode);
         } // If current node is the last main driveline node, or higher
         else
         {
@@ -281,77 +290,93 @@ unsigned int FuzzyAiPathTree::getFarthestNode(const TreeNode* rootNode) const
  *  The AI will then be able to compare these 3 paths with the only PathData*
  *  stored in the 2nd sub-vector (path 1), to take the decision (right or left)
  */
-vector<vector<PathData*>*> *FuzzyAiPathTree::setComparableData
-                                                          (const TreeNode* root)
+vector<vector<PathData*>*> *FuzzyAiPathTree::computeComparableData
+                                                    (const TreeNode* node) const
 {
     vector<vector<PathData*>*> *data = new vector<vector<PathData*>*>();
-//    cout << "setComparableData debug :";
+//    cout << "computeComparableData debug :";
     
-    if(root->children)
+    if(node->children)
     {
-//        cout << "has Children : " << root->nodeId << endl;
+//        cout << "has Children : " << node->nodeId << endl;
         vector<vector<PathData*>*> *childData;
-        for(unsigned int i=0 ; i<root->children->size() ; i++)
+        for(unsigned int i=0 ; i<node->children->size() ; i++)
         {
-//            cout<<"child "<<i<<", node "<<root->children->at(i)->nodeId<<endl; 
-            childData = setComparableData(root->children->at(i));
+//            cout<<"child "<<i<<", node "<<node->children->at(i)->nodeId<<endl;
+//            unsigned int newStNode;
+//            if(node->nodeId == startNode)
+//                newStNode = node->children->at(i)->nodeId;
+//            else
+//                newStNode = startNode;
+            
+            childData = computeComparableData(node->children->at(i));
+
+//            if(!childData)
+//                continue;
+//            else if(node->nodeId != startNode)
+//                return childData;
+            vector<PathData*>* childCurChoiceData = new vector<PathData*>();            
             for(unsigned int j=0 ; j<childData->size() ; j++)
             {
 //                cout << endl << "\tvector " << j << " : " << endl;
-                vector<PathData*>* childCurChoiceData = new vector<PathData*>();
                 for(unsigned int k=0 ; k<childData->at(j)->size() ; k++)
                 {
 //                    cout << "\t\t pathData " << k;
                     PathData* curData = childData->at(j)->at(k);
-                    PathData* rootData = root->data;
-
-                    if(rootData)
+                    
+                    if(node->data)
                     {
-//                        cout<<" : rootHasData (" << rootData->pathLength;
+//                        cout<<" : nodeHasData (" << nodeData->pathLength;
 //                        cout<<")adding childData "<<curData->pathLength<<endl;
-                        rootData = new PathData(root->data->pathLength,
-                                                root->data->bonusCount,
-                                                root->data->malusCount);
-                        sumPathData(rootData, rootData, curData);
-                    } // if rootData is not NULL
-                    else
+                        curData->pathLength += node->data->pathLength;
+                        curData->bonusCount += node->data->bonusCount;
+                        curData->malusCount += node->data->malusCount;
+                    } // if current node has data
+                    else // if(!node->data)
                     {
-//                        cout<<" : no data in root...just copying childData (";
+//                        cout<<" : no data in node...just copying childData (";
 //                        cout << curData->pathLength << endl;
-                        rootData = new PathData(curData->pathLength,
-                                                curData->bonusCount,
-                                                curData->malusCount);
-                    } // if rootData is NULL
+                    } // if current node has no data
                     
 //                    cout << "\t\t ... adding data to choice vector";
-                    childCurChoiceData->push_back(rootData);
+                    childCurChoiceData->push_back(curData);
 
                 } // for each data object in the current child data vector
-                
-//                cout << "... adding choice vector to global vector" << endl;
-                data->push_back(childCurChoiceData);
             } // for each children data vector
-        } // for each children
-    } // if has children
-    else  // If this is a leave, just add a single data vector to the big vector
-    {
-//        cout << "no children.. just copying : " << root->nodeId << endl;
 
+//            cout << "... adding choice vector to global vector" << endl;
+            data->push_back(childCurChoiceData);
+        } // for each children
+        
+        // Delete children vectors & sub-vectors, after clearing sub-vectors
+        for(int j=childData->size()-1 ; j >= 0 ; j--)
+        {
+            childData->at(j)->clear();
+            delete childData->at(j);
+        }
+        delete childData;
+    
+    } // if has children
+    // If this is a leave, just add a single data vector to the big vector
+    else //if(node->nodeId == startNode)
+    {
+//        cout << "no children.. just copying : " << node->nodeId << endl;
         vector<PathData*> *currentData = new vector<PathData*>();
-        currentData->push_back(new PathData(root->data->pathLength,
-                                            root->data->bonusCount,
-                                            root->data->malusCount));
+        currentData->push_back(new PathData(node->data->pathLength,
+                                            node->data->bonusCount,
+                                            node->data->malusCount));
         data->push_back(currentData);
+//    cout << "Function end" << endl;
     } // if does not have any children
 //    cout << "Function end" << endl;
+
     return data;
-    
-} // setComparableData
+} // computeComparableData
 
 //------------------------------------------------------------------------------
 /** Destructor
  *  Releases the allocated memory for the whole tree and the m_compareData
- *  vectors. */
+ *  sub-vectors. */
 FuzzyAiPathTree::~FuzzyAiPathTree()
 {
     int i = m_compareData->size()-1; // int because with unsigned ints, 0-1 > 0
@@ -387,6 +412,88 @@ void FuzzyAiPathTree::deleteTree(TreeNode* rootNode)
 // End of constructor & destructor related functions
 //==============================================================================
 
+//------------------------------------------------------------------------------
+/** TODO Comment
+ *  recursivity init
+ */
+const TreeNode* FuzzyAiPathTree::getTreeNode(unsigned int nodeId) const
+{
+    if(nodeId == m_treeRoot->nodeId)
+        return m_treeRoot;
+    else
+        return getTreeNode(nodeId, m_treeRoot);
+} // getTreeNode
+
+// -- Recursive function --
+const TreeNode* FuzzyAiPathTree::getTreeNode(unsigned int nodeId,
+                                             TreeNode* curNode) const
+{
+    if(curNode->children)
+    {
+        for(unsigned int i=0 ; i<curNode->children->size() ; i++)
+        {
+            if(curNode->children->at(i)->nodeId == nodeId)
+                return curNode->children->at(i);
+            else
+            {
+                const TreeNode* result;
+                result = getTreeNode(nodeId, curNode->children->at(i));
+                if(result)
+                    return result;
+            }
+        } // for each child
+    } // if node has children
+    
+    return NULL; // node not found
+} // getTreeNode
+
+//------------------------------------------------------------------------------
+/** TODO Comment
+ */
+const vector<vector<PathData*>*>* FuzzyAiPathTree::getComparableData(
+                                                  unsigned int forkNodeId) const
+{
+    const TreeNode* forkNode = getTreeNode(forkNodeId);
+    if(forkNode)
+        return computeComparableData(forkNode);
+    else
+        return NULL;
+}
+
+//------------------------------------------------------------------------------
+/** Returns the list of all fork nodes Id (quadGraph node Id) present in the
+ *  tree, so that the FuzzyDataManager is able to know which pathTree call for
+ *  a given fork node Id. */
+void FuzzyAiPathTree::getForkNodes(const TreeNode       *node,
+                                   vector<unsigned int> &result) const
+{
+    if(node->children)
+    {
+        result.push_back(node->nodeId);
+        for(unsigned int i=0 ; i<node->children->size() ; i++)
+            getForkNodes(node->children->at(i), result);
+    }
+}
+
+// Initialisation
+void FuzzyAiPathTree::getForkNodes(vector<unsigned int> &result) const
+{
+    getForkNodes(m_treeRoot, result);
+}
+
+
+//------------------------------------------------------------------------------
+/** Sums the data1 and data2 attributes to the result parameter.
+ */
+//void FuzzyAiPathTree::sumPathData( const PathData* data1, const PathData* data2,
+//                                         PathData* result )
+//{
+//    result->bonusCount = data1->bonusCount + data2->bonusCount;
+//    result->malusCount = data1->malusCount + data2->malusCount;
+//    result->pathLength = data1->pathLength + data2->pathLength;
+//} // sumPathData
+
+
 //==============================================================================
 // Debug functions
 //------------------------------------------------------------------------------
@@ -421,7 +528,7 @@ void FuzzyAiPathTree::print() const
 } // print
 
 //------------------------------------------------------------------------------
-/** 
+/** TODO comment
  *  
  */
 #ifdef AI_DEBUG
@@ -536,20 +643,8 @@ void FuzzyAiPathTree::printPossiblePaths()
         
         cout << endl;
     }
-}
-
+} // printPossiblePaths
 #endif
 
 // End of debug functions
 //==============================================================================
-
-//------------------------------------------------------------------------------
-/** Sums the data1 and data2 attributes to the result parameter.
- */
-void FuzzyAiPathTree::sumPathData( PathData* result, const PathData* data1,
-                                                     const PathData* data2 )
-{
-    result->bonusCount = data1->bonusCount + data2->bonusCount;
-    result->malusCount = data1->malusCount + data2->malusCount;
-    result->pathLength = data1->pathLength + data2->pathLength;
-} // sumPathData

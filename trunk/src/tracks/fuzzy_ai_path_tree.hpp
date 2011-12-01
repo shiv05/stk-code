@@ -104,6 +104,8 @@ private :
     TreeNode* m_treeRoot;
     // Data used to compare the possible paths. See getComparableData for more.
     std::vector<std::vector<PathData*>*> *m_compareData;
+    // 
+    unsigned int m_treeBottom;
 
     // -- Constructor & destructor related functions --
     TreeNode*        buildTree       (unsigned int rootNodeId);
@@ -112,13 +114,14 @@ private :
     unsigned int     getFarthestNode (const TreeNode* rootNode) const;
     void             deleteTree      (TreeNode* rootNode);
 
-    std::vector<std::vector<PathData*>*> *setComparableData
-                                     (const TreeNode* root);
+    std::vector<std::vector<PathData*>*> *computeComparableData
+                                                   (const TreeNode* root) const;
 
+   
     // -- Misc functions --
-    void             sumPathData     (PathData* result, const PathData* data1,
-                                      const PathData* data2);
-
+    //void             sumPathData     ( const PathData* data1,
+    //                                 const PathData* data2, PathData* result);
+    const TreeNode*  getTreeNode(unsigned int nodeId, TreeNode* curNode) const;
     // -- Debug functions --
     void printNode(const TreeNode *rootNode) const;
     void printPossiblePaths();
@@ -132,11 +135,21 @@ public :
     // -- Debug functions --
     void print() const;
     
-    // -- Getters --
-    const unsigned int  getRootId()     const { return m_treeRoot->nodeId; }
-    const TreeNode*     getRoot()       const { return m_treeRoot; }
-    const std::vector<std::vector<PathData*>*>* getComparableData()
-                                        const { return m_compareData; }
+    // -- Getters --    
+    const unsigned int   getRootId()    const { return m_treeRoot->nodeId;}
+    const TreeNode*      getRoot()      const { return m_treeRoot; }
+    
+    const TreeNode*      getTreeNode(unsigned int nodeId) const;
+    
+    void getForkNodes (std::vector<unsigned int> &result) const;
+    void getForkNodes (const TreeNode* node,
+                       std::vector<unsigned int> &result) const;
+
+    const std::vector<std::vector<PathData*>*>* getComparableData()      const
+                                                       { return m_compareData; }
+    const std::vector<std::vector<PathData*>*>* getComparableData(
+                                                      unsigned int from) const;
+
 
 }; // class FuzzyAiPathTree
 

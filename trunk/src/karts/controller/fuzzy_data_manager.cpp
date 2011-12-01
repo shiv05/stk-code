@@ -60,6 +60,8 @@ FuzzyDataManager::~FuzzyDataManager()
  */
 void FuzzyDataManager::createPathTrees()
 {
+    assert(QuadGraph::get()); // Cannot build trees if QuadGraph does not exist
+
     unsigned int         curNode = 0;
     unsigned int         lapLength = QuadGraph::get()->getLapQuadCount();
     vector<unsigned int> nextNodes;
@@ -77,10 +79,19 @@ void FuzzyDataManager::createPathTrees()
         curNode ++;
     } // while
     
+    cout << "create Trees debug " << endl;
     for(unsigned int i=0; i<m_pathTrees.size() ; i++)
     {
         m_pathTrees[i]->print();
+        
+        vector<unsigned int> forkNodes;
+        m_pathTrees[i]->getForkNodes(forkNodes);
+        cout << " ... Tree fork nodes : ";
+        for(unsigned int j=0 ; j<forkNodes.size() ; j++)
+            cout << forkNodes[j] << " ";
+        cout << endl;
     }
+
 } // createPathTrees
 
 //------------------------------------------------------------------------------
@@ -91,10 +102,15 @@ void FuzzyDataManager::createPathTrees()
 const vector<vector<PathData*>*>* FuzzyDataManager::getPathData(
                                                       unsigned int nodeId) const
 {
-    for(unsigned int i=0; i<m_pathTrees.size() ; i++)
+    for(unsigned int i=0 ; i<m_pathTrees.size() ; i++)
     {
-        if(m_pathTrees[i]->getRootId() == nodeId)
-            return m_pathTrees[i]->getComparableData();
+        vector<unsigned int> treeForks;
+        m_pathTrees[i]->getForkNodes(treeForks);
+        for(unsigned int j=0 ; j<treeForks.size() ; j++)
+        {
+            if(treeForks[j] == nodeId)
+                return m_pathTrees[i]->getComparableData(nodeId);
+        }
     }
     return NULL;
 } // getPathData

@@ -17,7 +17,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-#define AI_DEBUG
+//#define AI_DEBUG
 
 #include <iostream>
 
@@ -42,8 +42,8 @@ FuzzyAiPathTree::FuzzyAiPathTree(unsigned int rootNodeId = 0)
 {
     assert(QuadGraph::get()); // Cannot build tree if QuadGraph does not exist
 
-#ifdef AI_DEBUG
-    printPossiblePaths();
+#ifdef AI_DEBUG 
+    //printPossiblePaths(); // /!\ This code does not execute well on Windows
 #endif
     m_treeBottom = 0;
     m_treeRoot = buildTree(rootNodeId);
@@ -82,6 +82,7 @@ TreeNode* FuzzyAiPathTree::buildTree(unsigned int startNodeId)
 {
 //    cout << "Building tree... begin : " << startNodeId << endl;
     unsigned int         curNodeId = startNodeId;
+    unsigned int         lastValidNode = curNodeId;
     unsigned int         mainLapLen = QuadGraph::get()->getLapQuadCount();
     TreeNode*            rootNode = new TreeNode(startNodeId, NULL, NULL);
     vector<unsigned int> nextGraphNodes(1, curNodeId); // Init to enter loop
@@ -90,11 +91,10 @@ TreeNode* FuzzyAiPathTree::buildTree(unsigned int startNodeId)
     // While there is no fork, and no path change (eg. an alt. path that merges
     //  back with the main path), go forward.
     while(nextGraphNodes.size() == 1 &&
-          (nextGraphNodes[0] == curNodeId))// || TODO thecube
-           //(curNodeId = nextGraphNodes[0]) > mainLapLen)) TODO
+          (nextGraphNodes[0] == curNodeId ||
+           (curNodeId = nextGraphNodes[0]) > mainLapLen))
     {
-//        if(nextGraphNodes[0] > mainLapLen)
-//            curNodeId = nextGraphNodes[0];
+        lastValidNode = nextGraphNodes[0];
 //        cout << curNodeId << ", ";
         nextGraphNodes.clear();
         QuadGraph::get()->getSuccessors(curNodeId, nextGraphNodes, true);
@@ -105,7 +105,7 @@ TreeNode* FuzzyAiPathTree::buildTree(unsigned int startNodeId)
 //        cout << "unexpected nodeID, current path has changed. Expected = ";
 //        cout << curNodeId << ", Got = " << nextGraphNodes[0] << endl;
     
-    rootNode->nodeId = curNodeId - 1;
+    rootNode->nodeId = lastValidNode;
 
     if(nextGraphNodes.size() > 1) // if there is a fork, build sub-trees
     {
@@ -485,7 +485,7 @@ void FuzzyAiPathTree::getForkNodes(vector<unsigned int> &result) const
 //------------------------------------------------------------------------------
 /** Sums the data1 and data2 attributes to the result parameter.
  */
-//void FuzzyAiPathTree::sumPathData( const PathData* data1, const PathData* data2,
+//void FuzzyAiPathTree::sumPathData(const PathData* data1,const PathData* data2,
 //                                         PathData* result )
 //{
 //    result->bonusCount = data1->bonusCount + data2->bonusCount;
@@ -531,7 +531,8 @@ void FuzzyAiPathTree::print() const
 /** TODO comment
  *  
  */
-#ifdef AI_DEBUG
+#ifdef AI_DEBUG // This debug code does not build the path 100% correctly,
+                // & does not execute well on windows
 struct FuzzyAiPath
 {
     vector<unsigned int>    *node_indexes;
@@ -557,7 +558,6 @@ void FuzzyAiPathTree::printPossiblePaths()
      *  bonus count). This data is used by the fuzzy ai controller to choose
      *  which path to take. */
 
-
     vector<FuzzyAiPath *> possiblePaths = vector<FuzzyAiPath*>();
     
     vector<unsigned int> next;
@@ -576,8 +576,9 @@ void FuzzyAiPathTree::printPossiblePaths()
             continue;
         
         vector<unsigned int> *currentPathNodes = possiblePaths.at(i)->node_indexes;
-        unsigned int last_node_index = currentPathNodes->back();
+
         unsigned int next_node_index;
+        unsigned int last_node_index = currentPathNodes->back();
         
         do  // Follow the current path until its end & detect forks (=new paths)
         {
@@ -644,6 +645,7 @@ void FuzzyAiPathTree::printPossiblePaths()
         cout << endl;
     }
 } // printPossiblePaths
+
 #endif
 
 // End of debug functions

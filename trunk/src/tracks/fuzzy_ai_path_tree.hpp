@@ -26,7 +26,7 @@
 #include <vector>
 
 //------------------------------------------------------------------------------
-/** The PathData structure is simply use to store data about a path from the
+/** The PathData structure is simply used to store data about a path from the
   * path tree (made of multiple TreeNodes). This data is what will be used by
   * the fuzzy AI to compare the paths :
   *     - Path length,

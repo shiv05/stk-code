@@ -2,20 +2,19 @@
 FUNCTION_BLOCK
 
 VAR_INPUT
-	Possessed_item_type	REAL; (* RANGE(0 .. 4) *) 
+	Possessed_item_type	REAL; (* RANGE(0 .. 3) *) 
 	Other_kart_postions	REAL; (* RANGE(0 .. 10) *) 
 END_VAR
 
 VAR_OUTPUT
-	Difficulty	REAL; (* RANGE(0 .. 4) *) 
+	Difficulty	REAL; (* RANGE(0 .. 10) *) 
 END_VAR
 
 FUZZIFY Possessed_item_type
 	TERM Type1 := 1 ;
-	TERM Type2:= 2 ;
-	TERM Type3 := 3 ;
+	TERM Type2 := 2 ;
 END_FUZZIFY
-s
+
 FUZZIFY Other_kart_postions
 	TERM Near := (0, 0) (0, 1) (3, 0) ;
 	TERM Normal:= (2, 0) (5, 1) (8, 0) ;
@@ -24,26 +23,23 @@ END_FUZZIFY
 
 FUZZIFY Difficulty
 	TERM Easy := 1 ;
-	TERM Normal := 2 ;
+	TERM Normal:= 2 ;
 	TERM Hard := 3 ;
 END_FUZZIFY
 
 DEFUZZIFY valve
-	METHOD: MoM;
+	METHOD:MoM;
 END_DEFUZZIFY
 
 RULEBLOCK first
 	AND:MIN;
 	ACCUM:MAX;
 	RULE 0: IF Type1 AND Near THEN Easy;
-	RULE 1: IF Type1 AND Normal THEN Easy ;
+	RULE 1: IF Type1 AND Normal THEN Easy;
 	RULE 2: IF Type1 AND Far THEN Easy;
-	RULE 3: IF Type2 AND Near THEN  Normal;
+	RULE 3: IF Type2 AND Near THEN  Easy;
 	RULE 4: IF Type2 AND Normal THEN  Normal;
 	RULE 5: IF Type2 AND Far THEN Hard;
-	RULE 6: IF Type3 AND Near THEN Normal;
-	RULE 7: IF Type3 AND Normal THEN Hard;
-	RULE 8: IF Type3 AND Far THEN Hard;
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

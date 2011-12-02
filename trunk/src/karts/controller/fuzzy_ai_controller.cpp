@@ -375,12 +375,16 @@ void FuzzyAIController::update(float dt)
         //Decide if it is interesting to use the current possessed weapon
 
         //Get current powerup
-        //Use m_distance_ahead ? to get the closest kart
-
         const Powerup* current_powerup = m_kart->getPowerup();
         PowerupManager::PowerupType possessed_item = current_powerup->getType();
-        //m_distance_ahead
-        int  weapon_interest = computeWeaponHitEstimation("../../../src/ffll/fcl/weapon_hit_estimation.fcl",possessed_item,m_distance_ahead);
+        //TODO m_distance_ahead only refreshed when a position change.
+
+        int weapon_interest = 0;
+
+       if(possessed_item != 0)
+        {
+            weapon_interest = computeWeaponHitEstimation("../../../src/ffll/fcl/weapon_hit_estimation.fcl",possessed_item,m_distance_ahead);
+        }
 
   
 #ifdef AI_DEBUG
@@ -442,6 +446,8 @@ void FuzzyAIController::update(float dt)
         cout << possessed_item << endl;
         cout << m_kart->getIdent() << " : agent distance from ahead kart = ";
         cout << m_distance_ahead << endl;
+        cout << m_kart->getIdent() << " : agent weapon hit difficulty = ";
+        cout << weapon_interest << endl;
 
 
 #endif
@@ -569,20 +575,62 @@ int FuzzyAIController::computeDrivingStyleAgressiveness(const char*    file_name
 /** Module to compute the difficulty hit an opponent with a weapon. Simply call computeFuzzyModel with the
  *  right parameters.
  *  TODO : make this comment doxygen compliante
-           Normalize the parameters
-           Check for distance
-           Switch for item_type
+    Fuzzy model for each weapon?
  */
 
   int  FuzzyAIController::computeWeaponHitEstimation(const char*    file_name,
                                    int possessed_item_type,
                                   float next_kart_distance)
   {
-    vector<float> HitEstimation;
-    HitEstimation.push_back(possessed_item_type);
-    HitEstimation.push_back(next_kart_distance);
 
-    return  computeFuzzyModel(file_name, HitEstimation);
+    float normalized_distance;
+
+    //Check if the distance is too important for fuzzyfication.
+
+    if (next_kart_distance > 10)
+    {
+        normalized_distance = 10;
+    }
+    else
+    {
+        normalized_distance = next_kart_distance;
+    }
+
+
+    int type;
+
+    switch(possessed_item_type)
+    {
+        //Weapon that don't need an opponent close.
+        case 1 : //POWERUP_BUBBLEGUM
+        case 4 : //POWERUP_ZIPPER
+        case 6 : //POWERUP_SWITCH
+        case 9 : //POWERUP_PARACHUTE
+        case 10 : //POWERUP_ANVIL
+        case 7 : //POWERUP_SWATTER
+
+            type = 1;
+            break;
+
+        //Weapon that need a short distance for better result.
+        case 2 : //POWERUP_CAKE
+        case 3 : //POWERUP_BOWLING
+        case 5 : //POWERUP_PLUNGER
+        case 8 : //POWERUP_RUBBERBALL
+
+            type = 2;
+            break;
+
+        default :
+
+            type = 0;
+    }
+
+    vector<float> HitEstimation;
+    HitEstimation.push_back(type);
+    HitEstimation.push_back(normalized_distance);
+
+     return  computeFuzzyModel(file_name, HitEstimation);
   }
 
 //------------------------------------------------------------------------------

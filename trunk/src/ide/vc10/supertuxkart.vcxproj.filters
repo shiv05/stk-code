@@ -384,9 +384,6 @@
     <ClCompile Include="..\..\karts\kart_properties_manager.cpp">
       <Filter>Source Files\karts</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\karts\max_speed.cpp">
-      <Filter>Source Files\karts</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\karts\moveable.cpp">
       <Filter>Source Files\karts</Filter>
     </ClCompile>
@@ -878,6 +875,9 @@
     </ClCompile>
     <ClCompile Include="..\..\tracks\fuzzy_ai_path_tree.cpp">
       <Filter>Source Files\tracks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\karts\max_speed.cpp">
+      <Filter>Source Files\modes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

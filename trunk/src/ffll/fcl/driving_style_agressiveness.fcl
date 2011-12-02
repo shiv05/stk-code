@@ -36,7 +36,7 @@ RULEBLOCK first
 	AND:MIN;
 	ACCUM:MAX;
 	RULE 0: IF High AND Light THEN Careful;
-	RULE 1: IF High AND Medium THEN Careful ;
+	RULE 1: IF High AND Medium THEN Careful;
 	RULE 2: IF High AND Heavy THEN Neutral;
 	RULE 3: IF Medium AND Light THEN Careful;
 	RULE 4: IF Medium AND Medium THEN Neutral;

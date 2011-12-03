@@ -2,7 +2,7 @@
 FUNCTION_BLOCK
 
 VAR_INPUT
-	Length	REAL; (* RANGE(0 .. 100) *) 
+	Length	REAL; (* RANGE(0 .. 1000) *) 
 	Number_of_items	REAL; (* RANGE(0 .. 100) *) 
 	Competitiveness	REAL; (* RANGE(0 .. 4) *) 
 END_VAR
@@ -12,9 +12,9 @@ VAR_OUTPUT
 END_VAR
 
 FUZZIFY Length
-	TERM Short := (0, 0) (0, 1) (40, 0) ;
-	TERM Medium:= (30, 0) (50, 1) (70, 0) ;
-	TERM Long := (60, 0) (100, 1) (100, 0) ;
+	TERM Short := (0, 0) (0, 1) (400, 0) ;
+	TERM Medium:= (300, 0) (500, 1) (700, 0) ;
+	TERM Long := (600, 0) (1000, 1) (1000, 0) ;
 END_FUZZIFY
 
 FUZZIFY Number_of_items

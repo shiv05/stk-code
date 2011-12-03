@@ -57,7 +57,6 @@
 #include "modes/linear_world.hpp"
 #include "network/network_manager.hpp"
 #include "race/race_manager.hpp" // TODO : check if really necessary
-#include "karts/controller/fuzzy_data_manager.hpp"
 #include "items/item.hpp"
 #include "items/item_manager.hpp"
 #include "tracks/quad_graph.hpp"
@@ -348,12 +347,14 @@ void FuzzyAIController::update(float dt)
 		int number_of_karts = world->getNumKarts();
 
 
-        int eval = computePlayerEvaluation("player_evaluation.fcl",number_of_karts, av_rank, crash_c);
+
+        int eval = (int)computePlayerEvaluation("player_evaluation.fcl",number_of_karts, av_rank, crash_c);
+
 
         //Choose the driving style : competitiveness and agressiveness
 
         //Get the current ranking
-        float current_ranking = m_kart->getPosition();
+        int current_ranking = m_kart->getPosition();
 
 
         //TODO: Kart classes (heavy..) are not implemented. We use a test value.
@@ -363,15 +364,15 @@ void FuzzyAIController::update(float dt)
         int competitiveness = computeCompetitiveness("driving_style_competitiveness.fcl",number_of_karts,eval,current_ranking);
         int agressiveness = computeAgressiveness("driving_style_agressiveness.fcl",number_of_karts,kart_class,current_ranking);
 
-        //Decide if it is interesting to take a path
-        //TODO : Use value from quadgraph -> use if(pathData) (see l.298)
 
-        // Just an example :
+    
+        //Decide the best path to take !
+        if(pathData)
+        {
+            computePathChooser("path_chooser.fcl",pathData,competitiveness);
+        }
 
-        int length = 30;
-        int number_of_items=70;
 
-        int path_interest = computePathChooser("path_chooser.fcl",length,number_of_items,competitiveness);
 
         //Decide if it is interesting or not to use the current possessed weapon
 
@@ -438,9 +439,6 @@ void FuzzyAIController::update(float dt)
             case (3): cout << "Careful" << endl; break;
             default : cout << "unexpected value : " << eval << endl;
         } // end switch
-        //Agent path interest
-        cout << m_kart->getIdent() << " : Path interest = ";
-        cout << path_interest << endl;
 
         //Agent hit estimation
         cout << m_kart->getIdent() << " : agent current powerup type = ";
@@ -462,25 +460,29 @@ void FuzzyAIController::update(float dt)
  *  right parameters.
  *  TODO : make this comment doxygen compliant
  */
-int FuzzyAIController::computePlayerEvaluation( const string& fileName,
-	                                            unsigned int  numberOfPlayers,
-                                                unsigned int  playerAverageRank,
-                                                unsigned int  playerCrashCount)
+
+int FuzzyAIController::computePlayerEvaluation( const char* file_name,
+	                                            int number_of_players,
+                                                float player_average_rank,
+                                                int   player_crash_count )
+
 {
 	//The rank of the player need to be normalized before computing
 
     float normalized_player_average_rank;
 
-	if(numberOfPlayers > 0)
+	if(number_of_players > 0)
 	{
-      normalized_player_average_rank = (playerAverageRank*10)/numberOfPlayers;
+      normalized_player_average_rank = (player_average_rank*10)/number_of_players;
 	}
 
     vector<float> evaluationParameters;
     evaluationParameters.push_back(normalized_player_average_rank);
-    evaluationParameters.push_back(playerCrashCount);
+    evaluationParameters.push_back(player_crash_count);
 
-    return  computeFuzzyModel(fileName, evaluationParameters);
+
+    return  (int)computeFuzzyModel(file_name, evaluationParameters);
+
 }
 
 //------------------------------------------------------------------------------
@@ -488,10 +490,12 @@ int FuzzyAIController::computePlayerEvaluation( const string& fileName,
  *  Simply call computeFuzzyModel with the right parameters.
  *  TODO : make this comment doxygen compliant
  */
-int FuzzyAIController::computeCompetitiveness(const string& file_name, 
-		                                      unsigned int  number_of_players,
-                                              int           player_level,
-                                              unsigned int  current_ranking)
+
+int FuzzyAIController::computeCompetitiveness(const char*    file_name, 
+		                                   int   number_of_players,
+                                           int player_level,
+                                           int   current_ranking)
+
 {
 	//The rank need to be normalized before computing
 
@@ -506,13 +510,15 @@ int FuzzyAIController::computeCompetitiveness(const string& file_name,
     evaluationParameters.push_back(player_level);
     evaluationParameters.push_back(current_ranking);
 
-    return  computeFuzzyModel(file_name, evaluationParameters);
+    return  (int)computeFuzzyModel(file_name, evaluationParameters);
 }
 
-int FuzzyAIController::computeAgressiveness(const string& file_name, 
-		                                    unsigned int  number_of_players,
-                                            unsigned int  kart_class,
-                                            unsigned int  current_ranking)
+
+int FuzzyAIController::computeAgressiveness(const char*    file_name, 
+		                                   int   number_of_players,
+                                           int kart_class,
+                                           int   current_ranking)
+
 {
 	//The rank need to be normalized before computing
 
@@ -527,7 +533,7 @@ int FuzzyAIController::computeAgressiveness(const string& file_name,
     evaluationParameters.push_back(normalized_current_ranking);
     evaluationParameters.push_back(kart_class);
 
-    return  computeFuzzyModel(file_name, evaluationParameters);
+    return  (int)computeFuzzyModel(file_name, evaluationParameters);
 }
 
 //------------------------------------------------------------------------------
@@ -537,18 +543,55 @@ int FuzzyAIController::computeAgressiveness(const string& file_name,
  *         Use the number of turns and the kart class.
  */
 
- int  FuzzyAIController::computePathChooser(const string& file_name, 
-		                                    float         length,
-                                            unsigned int  number_of_items,
-                                            int           competitiveness)
+
+  PathData*  FuzzyAIController::computePathChooser(const char*    file_name, 
+		                          const vector<vector<PathData*>*>* pathData,
+                                  float   competitiveness)
+
  {
-
+    float length;
+    float bonuscount;
     vector<float> PathParameters;
-    PathParameters.push_back(length);
-    PathParameters.push_back(number_of_items);
-    PathParameters.push_back(competitiveness);
+    float interest;
+    float best_interest = 0;
+    PathData* bestPath;
 
-    return  computeFuzzyModel(file_name, PathParameters);
+    //Checking for each path.
+   
+    for (unsigned int i=0; i < pathData->size(); i++)
+	{
+         for (unsigned int j=0; j < pathData->at(i)->size(); j++)
+	      {
+              //Getting the length and bonus count
+
+              length = pathData->at(i)->at(j)->pathLength;
+              bonuscount = pathData->at(i)->at(j)->bonusCount;
+
+              PathParameters.push_back(length);
+              PathParameters.push_back(bonuscount);
+              PathParameters.push_back(competitiveness);
+
+              //Computing the interest for the path
+
+              interest = computeFuzzyModel(file_name, PathParameters);
+
+              PathParameters.clear();
+
+              //Comparing the interest with the best interest
+
+              if(interest > best_interest)
+              {
+                  //If the path has a better interest we store it
+
+                  best_interest = interest;
+                  bestPath = *&(pathData->at(i)->at(j));
+
+              }
+
+	      }
+	}
+
+    return  (bestPath);
 
  }
 
@@ -559,9 +602,11 @@ int FuzzyAIController::computeAgressiveness(const string& file_name,
  *         Use the direction?
  */
 
- int  FuzzyAIController::difficultyTagging(const string&    file_name, 
-		                                   float   distance,
-                                           float   angle)
+
+ float  FuzzyAIController::difficultyTagging(const char*    file_name, 
+		                          float   distance,
+                                  float   angle)
+
  {
 
     vector<float> ObjectParameters;
@@ -579,7 +624,7 @@ int FuzzyAIController::computeAgressiveness(const string& file_name,
  *  Fuzzy model for each weapon?
  */
 
-  int  FuzzyAIController::computeHitEstimation(const string& file_name,
+  int  FuzzyAIController::computeHitEstimation(const char* file_name,
                                                int          possessed_item_type,
                                                float        next_kart_distance)
   {
@@ -588,9 +633,9 @@ int FuzzyAIController::computeAgressiveness(const string& file_name,
 
     //Check if the distance is too important for fuzzyfication.
 
-    if (next_kart_distance > 10)
+    if (next_kart_distance > 30)
     {
-        normalized_distance = 10;
+        normalized_distance = 30;
     }
     else
     {
@@ -634,7 +679,7 @@ int FuzzyAIController::computeAgressiveness(const string& file_name,
     HitEstimation.push_back(type);
     HitEstimation.push_back(normalized_distance);
 
-     return  computeFuzzyModel(file_name, HitEstimation);
+     return  (int)computeFuzzyModel(file_name, HitEstimation);
   }
 
 //------------------------------------------------------------------------------
@@ -646,7 +691,8 @@ int FuzzyAIController::computeAgressiveness(const string& file_name,
  *  TODO : make this comment doxygen compliant
  */
 
-int FuzzyAIController::computeFuzzyModel( const string&  file_name,
+
+float FuzzyAIController::computeFuzzyModel( const char*    file_name,
                                           vector<float>  parameters )
 {
     // Create FFLL model. TODO : make this model a class static variable
@@ -673,7 +719,7 @@ int FuzzyAIController::computeFuzzyModel( const string&  file_name,
 	}
 
     // Compute and return output
-	return (int) ffll_get_output_value(model, child);
+	return (float) ffll_get_output_value(model, child);
 }
 
 //-----------------------------------------------------------------------------

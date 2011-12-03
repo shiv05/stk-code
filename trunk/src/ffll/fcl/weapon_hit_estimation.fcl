@@ -3,7 +3,7 @@ FUNCTION_BLOCK
 
 VAR_INPUT
 	Possessed_item_type	REAL; (* RANGE(0 .. 3) *) 
-	Other_kart_postions	REAL; (* RANGE(0 .. 10) *) 
+	Other_kart_postions	REAL; (* RANGE(0 .. 30) *) 
 END_VAR
 
 VAR_OUTPUT

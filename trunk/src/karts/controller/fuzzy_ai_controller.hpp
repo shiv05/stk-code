@@ -24,11 +24,11 @@
 #define HEADER_FUZZY_AI_CONTROLLER_HPP
 
 #include "karts/controller/ai_base_controller.hpp"
-#include "karts/controller/fuzzy_data_manager.hpp"
 
-class Track;
-class LinearWorld;
-class QuadGraph;
+struct PathData;
+class  Track;
+class  LinearWorld;
+class  QuadGraph;
 
 namespace irr
 {
@@ -158,28 +158,31 @@ private:
     //--------------------------------------------------------------------------
     // Fuzzy AI methods
 
-    float  computeFuzzyModel(const char* file_name,std::vector<float> parameters);
-    int  computePlayerEvaluation( const char*   file_name, 
-		                          int   number_of_players,
-                                  float player_average_rank,
-                                  int   player_crash_count );
-    int  computeCompetitiveness(const char*    file_name, 
-		                          int   number_of_players,
-                                  int player_level,
-                                  int   current_ranking);
-    int  computeAgressiveness(const char*    file_name, 
-		                          int   number_of_players,
-                                  int kart_class,
-                                  int   current_ranking);
-    PathData*  computePathChooser(const char*    file_name, 
-		                          const std::vector<std::vector<PathData*>*>* pathData,
-                                  float   competitiveness);
-    float  difficultyTagging(const char*    file_name, 
-		                          float   distance,
-                                  float   angle);
-    int  computeHitEstimation(const char*    file_name,
-                                  int possessed_item_type,
-                                  float next_kart_distance);
+    float computeFuzzyModel       (const std::string& file_name,
+                                  std::vector<float> parameters );
+    int   computePlayerEvaluation (const std::string& file_name, 
+                                         unsigned int number_of_players,
+                                         unsigned int player_average_rank,
+                                         unsigned int player_crash_count );
+    int   computeCompetitiveness  (const std::string& file_name, 
+                                         unsigned int number_of_players,
+                                         int          player_level,
+                                         unsigned int current_ranking );
+    int   computeAgressiveness    (const std::string& file_name, 
+                                         unsigned int number_of_players,
+                                         unsigned int kart_class,
+                                         unsigned int current_ranking );
+    int   computePathChooser      (const std::string& file_name, 
+		                   const std::vector<std::vector<PathData*>*>* pathData,
+                                         float        competitiveness);
+    float difficultyTagging       (const std::string& file_name, 
+                                         float        distance,
+                                         float        angle );
+    int   computeHitEstimation    (const std:: string& file_name,
+                                         int          possessed_item_type,
+                                         float        next_kart_distance );
+    // -- Debug method --
+    //void  printFuzzyData();
     //--------------------------------------------------------------------------
 
     int   calcSteps();

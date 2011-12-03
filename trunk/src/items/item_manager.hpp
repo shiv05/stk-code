@@ -77,11 +77,14 @@ public:
     scene::IMesh*  getItemModel    (Item::ItemType type)
                                       {return m_item_mesh[type];}
                                       
+    // TODO : const correctness
     std::vector<Item*>*getQuadItems     (const Quad& quad, Item::ItemType type);
     unsigned int       getQuadBonusCount(const Quad& q);
     unsigned int       getQuadMalusCount(const Quad& q);
-    std::vector<Item*> getCloseItems    (Kart *kart, float max_dist,
-                                          Item::ItemType type);
+    // TODO : const correctness
+    void               getCloseItems    (std::vector<Item*> &closeItems,
+                                         Kart *kart, float max_dist,
+                                         Item::ItemType type = Item::ITEM_NONE);
 };
 
 extern ItemManager* item_manager;

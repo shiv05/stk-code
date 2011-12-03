@@ -178,9 +178,14 @@ private:
     float difficultyTagging       (const std::string& file_name, 
                                          float        distance,
                                          float        angle );
-    int   computeHitEstimation    (const std:: string& file_name,
+    int   computeHitEstimation    (const std::string& file_name,
                                          int          possessed_item_type,
                                          float        next_kart_distance );
+    
+    // -- Detection methods --
+    void  getCloseKarts           (std::vector<const Kart*>& closeKarts,
+                                   float max_dist = 40.f);
+    
     // -- Debug method --
     //void  printFuzzyData();
     //--------------------------------------------------------------------------

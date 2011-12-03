@@ -289,14 +289,13 @@ unsigned int ItemManager::getQuadMalusCount(const Quad& q)
  * TODO make this comment doxygen compliant
  */
 
-std::vector<Item*> ItemManager::getCloseItems(Kart* kart, float max_dist,
-                                        Item::ItemType type = Item::ITEM_NONE)
+void ItemManager::getCloseItems(std::vector<Item*>& items,
+                                Kart* kart, float max_dist,
+                                Item::ItemType type)
 {
     // Only do this on the server
     //if(network_manager->getMode()==NetworkManager::NW_CLIENT) return NULL;
-  
-    std::vector<Item*> items;
-    
+        
     // for each item of the given type, keep it if it is close to the kart
     for(AllItemTypes::iterator i=m_all_items.begin(); i!=m_all_items.end(); i++)
     {
@@ -309,8 +308,6 @@ std::vector<Item*> ItemManager::getCloseItems(Kart* kart, float max_dist,
                 items.push_back(*i);
         }
     } // for m_all_items
-
-    return items;
 }   // getCloseItems
 
 

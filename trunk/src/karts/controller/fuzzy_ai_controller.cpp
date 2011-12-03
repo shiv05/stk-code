@@ -295,30 +295,39 @@ void FuzzyAIController::update(float dt)
     // -- Fuzzy controller code --
 
 
-    // path fork detection
+    // -- Path fork detection --
     vector<unsigned int> nextNodes;
     QuadGraph::get()->getSuccessors(m_track_node, nextNodes, true);
     const vector<vector<PathData*>*>* pathData = NULL;
     if(nextNodes.size() > 1)
     {
-        cout << "foooooooooooooooooooooooooooooooooooooooork !" << endl;
         pathData = fuzzy_data_manager->getPathData(m_track_node);
-#ifdef AI_DEBUG
-        if(pathData)
-        {
-            cout << "PATH DATA Debug : " << endl;
-            for(unsigned int i=0; i<pathData->size() ; i++)
-            {
-                cout << "choice " << i << ":" << endl;
-                for(unsigned int j=0; j<pathData->at(i)->size() ; j++)
-                {
-                    cout << "pathData " << j << " = ";
-                    cout << pathData->at(i)->at(j)->pathLength << endl;
-                }
-            }
-        }
-
-#endif
+//#ifdef AI_DEBUG
+//        cout << "path fork detected !" << endl;
+//        if(pathData)
+//        {
+//            cout << "PATH DATA Debug : " << endl;
+//            for(unsigned int i=0; i<pathData->size() ; i++)
+//            {
+//                cout << "choice " << i << ":" << endl;
+//                for(unsigned int j=0; j<pathData->at(i)->size() ; j++)
+//                {
+//                    cout << "pathData " << j << " = ";
+//                    cout << pathData->at(i)->at(j)->pathLength << endl;
+//                }
+//            }
+//        }
+//#endif
+    } // If there is a fork
+    
+    // -- Close karts detection --
+    vector<const Kart*> closeKarts;
+    getCloseKarts(closeKarts, 40.0f);
+    for(unsigned int i=0; i<closeKarts.size() ; i++)
+    {
+        float dist = (closeKarts[i]->getXYZ() - m_kart->getXYZ()).length();
+        // TODO : compute class (heavy, light) difference between kart and this
+        cout << m_kart->getIdent() << " : close kart detected ! " << closeKarts[i]->getIdent() << ", dist = " << dist << endl;   
     }
 
     m_timer += dt;
@@ -326,13 +335,19 @@ void FuzzyAIController::update(float dt)
     {
         m_timer -= 1.0f;
         // Item position & type
-        vector<Item*> nitro_b = item_manager->getCloseItems(m_kart, 40, Item::ITEM_NITRO_BIG);
-        vector<Item*> nitro_s = item_manager->getCloseItems(m_kart, 40, Item::ITEM_NITRO_SMALL);
-        vector<Item*> maluses = item_manager->getCloseItems(m_kart, 40, Item::ITEM_BANANA);
-        vector<Item*> bubgums = item_manager->getCloseItems(m_kart, 40, Item::ITEM_BUBBLEGUM);
+        vector<Item*> nitro_b;
+        vector<Item*> nitro_s;
+        vector<Item*> maluses;
+        vector<Item*> bubgums;
+        vector<Item*> boxes;
+        vector<Item*> allItems;
+        item_manager->getCloseItems(nitro_b, m_kart, 40, Item::ITEM_NITRO_BIG);
+        item_manager->getCloseItems(nitro_s, m_kart, 40, Item::ITEM_NITRO_SMALL);
+        item_manager->getCloseItems(maluses, m_kart, 40, Item::ITEM_BANANA);
+        item_manager->getCloseItems(bubgums, m_kart, 40, Item::ITEM_BUBBLEGUM);
         maluses.insert(maluses.end(), bubgums.begin(), bubgums.end());
-        vector<Item*> boxes = item_manager->getCloseItems(m_kart, 40, Item::ITEM_BONUS_BOX);
-        vector<Item*> allItems = item_manager->getCloseItems(m_kart, 40, Item::ITEM_NONE);
+        item_manager->getCloseItems(boxes, m_kart, 40, Item::ITEM_BONUS_BOX);
+        item_manager->getCloseItems(allItems, m_kart, 40, Item::ITEM_NONE);
 
         // Player evaluation
         // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last), and can also be evaluated as bad...
@@ -455,7 +470,6 @@ void FuzzyAIController::update(float dt)
         cout << weapon_interest << endl;
 #endif
     }
-
 }   // update
 
 //------------------------------------------------------------------------------
@@ -469,7 +483,7 @@ int FuzzyAIController::computePlayerEvaluation( const string& fileName,
                                                 unsigned int  playerAverageRank,
                                                 unsigned int  playerCrashCount)
 {
-	//The rank of the player need to be normalized before computing
+	// The rank of the player need to be normalized before computing
 
     float normalized_player_average_rank;
 
@@ -1073,16 +1087,41 @@ void FuzzyAIController::computeNearestKarts()
             if(m_distance_behind<0.0f)
                 m_distance_behind += m_track->getTrackLength();
         }
-        else 
-            if(k->getPosition()==my_position-1)
-            {
-                m_kart_ahead = k;
-                m_distance_ahead = m_world->getDistanceDownTrackForKart(i) - my_dist;
-                if(m_distance_ahead<0.0f)
-                    m_distance_ahead += m_track->getTrackLength();
-            }
+        else if(k->getPosition()==my_position-1)
+        {
+            m_kart_ahead = k;
+            m_distance_ahead = m_world->getDistanceDownTrackForKart(i) - my_dist;
+            if(m_distance_ahead<0.0f)
+                m_distance_ahead += m_track->getTrackLength();
+        }
     }   // for i<world->getNumKarts()
 }   // computeNearestKarts
+
+//------------------------------------------------------------------------------
+/** Get close karts (computed using real distance, not "on track distance").
+ * TODO make this comment doxygen compliant
+ */
+
+void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
+                                      float max_dist)
+{
+    // Only do this on the server
+    //if(network_manager->getMode()==NetworkManager::NW_CLIENT) return NULL;
+    
+    // for each kart in the world, keep it if it is close
+    for(unsigned int i=0; i<m_world->getNumKarts(); i++)
+    {
+        const Kart* curKart = m_world->getKart(i);
+        if(curKart != m_kart)
+        {
+            if((curKart->getXYZ() - m_kart->getXYZ()).length() < max_dist)
+            {
+                closeKarts.push_back(curKart);
+            }
+        }
+    } // for all karts
+}   // getCloseKarts
+
 
 //-----------------------------------------------------------------------------
 void FuzzyAIController::handleAcceleration( const float dt)

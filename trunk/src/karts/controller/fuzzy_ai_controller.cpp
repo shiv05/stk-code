@@ -381,9 +381,11 @@ void FuzzyAIController::update(float dt)
 
     
         //Decide the best path to take !
+        int bestPath = 0;
+
         if(pathData)
         {
-            computePathChooser("path_chooser.fcl",pathData,competitiveness);
+           bestPath = computePathChooser("path_chooser.fcl",pathData,competitiveness);
         }
 
 
@@ -395,12 +397,22 @@ void FuzzyAIController::update(float dt)
         PowerupManager::PowerupType possessed_item = current_powerup->getType();
         //TODO m_distance_ahead only refreshed when a position change.
 
-        int weapon_interest = 0;
+        float hit_estimation = 0;
+        float weapon_interest = 0;
 
        if(possessed_item != 0)
         {
-            weapon_interest = computeHitEstimation("weapon_hit_estimation.fcl",possessed_item,m_distance_ahead);
-        }
+
+         //Get the hit estimation
+
+         hit_estimation = computeHitEstimation("weapon_hit_estimation.fcl",possessed_item,m_distance_ahead);
+
+         //Now get the interest the possessed weapons.
+
+         weapon_interest = computeWeaponInterest("weapon_interest.fcl",competitiveness,hit_estimation);
+
+       }
+
 
   
 #ifdef AI_DEBUG
@@ -467,7 +479,19 @@ void FuzzyAIController::update(float dt)
         cout << m_kart->getIdent() << " : agent distance from ahead kart = ";
         cout << m_distance_ahead << endl;
         cout << m_kart->getIdent() << " : agent weapon hit difficulty = ";
-        cout << weapon_interest << endl;
+        cout << hit_estimation << endl;
+        cout << m_kart->getIdent() << " : agent interest to use the possessed weapon = ";
+        cout << weapon_interest << endl; 
+
+        // -- Path choice --
+        if(pathData)
+        {
+         cout << " -- PATH CHOICE -- " << endl;
+         cout << m_kart->getIdent() << " best path number = ";
+         cout << bestPath << endl;
+        }
+
+        
 #endif
     }
 }   // update
@@ -628,7 +652,7 @@ float FuzzyAIController::difficultyTagging(const string& file_name,
  *  Fuzzy model for each weapon?
  */
 
-  int  FuzzyAIController::computeHitEstimation(const string& file_name,
+  float  FuzzyAIController::computeHitEstimation(const string& file_name,
                                                int          possessed_item_type,
                                                float        next_kart_distance)
   {
@@ -683,8 +707,27 @@ float FuzzyAIController::difficultyTagging(const string& file_name,
     HitEstimation.push_back(type);
     HitEstimation.push_back(normalized_distance);
 
-     return (int) computeFuzzyModel(file_name, HitEstimation);
+     return computeFuzzyModel(file_name, HitEstimation);
   }
+
+  //------------------------------------------------------------------------------
+/** Module to know if it is interesting to use the possessed weapon. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliant
+ *  Fuzzy model for each weapon?
+ */
+
+  float   FuzzyAIController::computeWeaponInterest    (const std::string& file_name,
+                                         int          competitiveness,
+                                         float        hit_estimation )
+  {
+      vector<float> interestParameters;
+    interestParameters.push_back(competitiveness);
+    interestParameters.push_back(hit_estimation);
+
+    return  computeFuzzyModel(file_name, interestParameters);
+  }
+
 
 //------------------------------------------------------------------------------
 /** Generic method to interface with FFLL and compute an output using fuzzy

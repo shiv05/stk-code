@@ -160,32 +160,32 @@ private:
 
     float computeFuzzyModel       (const std::string& file_name,
                                   std::vector<float> parameters );
-    int   computePlayerEvaluation (const std::string& file_name, 
-                                         unsigned int number_of_players,
-                                         unsigned int player_average_rank,
-                                         unsigned int player_crash_count );
-    int   computeCompetitiveness  (const std::string& file_name, 
-                                         unsigned int number_of_players,
-                                         int          player_level,
-                                         unsigned int current_ranking );
-    int   computeAgressiveness    (const std::string& file_name, 
-                                         unsigned int number_of_players,
-                                         unsigned int kart_class,
-                                         unsigned int current_ranking );
-    int   computePathChooser      (const std::string& file_name, 
+
+    int   computePlayerEvaluation (unsigned int number_of_players,
+                                   unsigned int player_average_rank,
+                                   unsigned int player_crash_count );
+
+    int   computeCompetitiveness  (unsigned int number_of_players,
+                                   int          player_level,
+                                   unsigned int current_ranking );
+
+    int   computeAgressiveness    (unsigned int number_of_players,
+                                   unsigned int kart_class,
+                                   unsigned int current_ranking );
+
+    int   computePathChooser      (
 		                   const std::vector<std::vector<PathData*>*>* pathData,
-                                         float        competitiveness);
-    float difficultyTagging       (const std::string& file_name, 
-                                         float        distance,
-                                         float        angle );
-    float   computeHitEstimation    (const std::string& file_name,
-                                         int          possessed_item_type,
-                                         float        next_kart_distance );
-    float   computeWeaponInterest    (const std::string& file_name,
-                                         int          competitiveness,
-                                         float        hit_estimation );
+                                   float        competitiveness);
 
+    float difficultyTagging       (float        distance,
+                                   float        angle,
+                                   unsigned int direction );
 
+    float   computeHitEstimation  (int          possessed_item_type,
+                                   float        next_kart_distance );
+
+    float   computeWeaponInterest (int          competitiveness,
+                                   float        hit_estimation );
     
     // -- Detection methods --
     void  getCloseKarts           (std::vector<const Kart*>& closeKarts,

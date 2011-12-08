@@ -1,0 +1,49 @@
+(* FCL File Created From FFLL Model. Used to know if it is interesting to take a zipper. We use the difficulty  to reach it and the current speed*)
+FUNCTION_BLOCK
+
+VAR_INPUT
+	Difficulty	REAL; (* RANGE(0 .. 10) *) 
+	Speed	REAL; (* RANGE(0 .. 40) *) 
+END_VAR
+
+VAR_OUTPUT
+	Attraction_value	REAL; (* RANGE(0 .. 10) *) 
+END_VAR
+
+FUZZIFY Difficulty
+	TERM Easy := (0, 0) (0, 1) (3, 0) ;
+	TERM Normal:= (2, 0) (5, 1) (8, 0) ;
+	TERM Difficult := (7, 0) (10, 1) (10, 0) ;
+END_FUZZIFY
+
+FUZZIFY Speed
+	TERM Slow:= (0, 0) (0, 1) (15, 0) ;
+	TERM Normal:= (10, 0) (20, 1) (30, 0) ;
+	TERM Fast := (25, 0) (40, 1) (40, 0) ;
+END_FUZZIFY
+
+FUZZIFY Attraction_value
+	TERM Low := (0, 0) (0, 1) (3, 0) ;
+	TERM Normal:= (2, 0) (5, 1) (8, 0) ;
+	TERM High := (7, 0) (10, 1) (10, 0) ;
+END_FUZZIFY
+
+DEFUZZIFY valve
+	METHOD: CoG;
+END_DEFUZZIFY
+
+RULEBLOCK first
+	AND:MIN;
+	ACCUM:MAX;
+	RULE 0: IF Easy AND Slow THEN High;
+	RULE 1: IF Easy AND Normal THEN High;
+	RULE 2: IF Easy AND Fast  THEN Normal;
+	RULE 3: IF Normal AND Slow  THEN High;
+	RULE 4: IF Normal AND Normal  THEN Normal;
+	RULE 5: IF Normal AND Fast  THEN Low;
+	RULE 6: IF Difficult AND Slow  THEN Normal;
+	RULE 7: IF Difficult AND Normal  THEN Low;
+	RULE 8: IF Difficult AND Fast  THEN Low;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

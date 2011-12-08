@@ -627,7 +627,7 @@ int FuzzyAIController::computePathChooser(const string& file_name,
 }
 
 //------------------------------------------------------------------------------
-/** Module to compute the difficulty to reach an object. Simply call computeFuzzyModel with the
+/** A generic module to compute the difficulty to reach an object (items, karts ...). Simply call computeFuzzyModel with the
  *  right parameters.
  *  TODO : make this comment doxygen compliant
  *         Use the direction?

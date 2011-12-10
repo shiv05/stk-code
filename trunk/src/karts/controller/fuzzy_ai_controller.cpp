@@ -31,6 +31,11 @@
 #define PLAYER_RANK	0 //  1st variable
 #define PLAYER_CRASHES	1 //  2nd variable
 
+#include <math.h>
+
+#include <vector2d.h>
+#include <IBillboardTextSceneNode.h>
+
 #include "io/file_manager.hpp"
 #include "karts/controller/fuzzy_ai_controller.hpp"
 #include "karts/controller/fuzzy_data_manager.hpp"
@@ -38,7 +43,6 @@
 
 #ifdef AI_DEBUG
 #  include "irrlicht.h"
-   using namespace irr;
 #endif
 
 #include <cstdlib>
@@ -65,6 +69,8 @@
 #include "utils/constants.hpp"
 
 using namespace std;
+using namespace irr;
+using namespace core;
 
 FuzzyAIController::FuzzyAIController(Kart *kart) : AIBaseController(kart)
 {
@@ -113,15 +119,15 @@ FuzzyAIController::FuzzyAIController(Kart *kart) : AIBaseController(kart)
         m_nitro_level             = NITRO_ALL;
         m_handle_bomb             = true;
         setSkiddingFraction(2.0f);
-
-        // -- Fuzzy controller params --
-        // Player evaluation
-        m_timer                   = 0.0f;
-        
-                
+ 
         break;
     }
 
+    // -- Fuzzy controller params --
+    // Player evaluation
+    m_timer                   = 0.0f;
+    m_texts                   = new vector<DebugText*>();
+    
 #ifdef AI_DEBUG
     m_debug_sphere = irr_driver->getSceneManager()->addSphereSceneNode(1);
 #endif
@@ -133,6 +139,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) : AIBaseController(kart)
  */
 FuzzyAIController::~FuzzyAIController()
 {
+//    delete[] m_texts;
 #ifdef AI_DEBUG
     irr_driver->removeNode(m_debug_sphere);
 #endif
@@ -327,13 +334,13 @@ void FuzzyAIController::update(float dt)
     {
         float dist = (closeKarts[i]->getXYZ() - m_kart->getXYZ()).length();
         // TODO : compute class (heavy, light) difference between kart and this
-        cout << m_kart->getIdent() << " : close kart detected ! " << closeKarts[i]->getIdent() << ", dist = " << dist << endl;   
+        //cout << m_kart->getIdent() << " : close kart detected ! " << closeKarts[i]->getIdent() << ", dist = " << dist << endl;   
     }
 
     m_timer += dt;
-    if(m_timer >= 1.0f)        // every second, do
+    if(m_timer >= 0.5f)        // every 1/2 second, do
     {
-        m_timer -= 1.0f;
+        m_timer -= 0.5f;
         // Item position & type
         vector<Item*> nitro_b;
         vector<Item*> nitro_s;
@@ -442,6 +449,11 @@ void FuzzyAIController::update(float dt)
         for(int i=0; i < boxes.size(); i++)
             cout << ", boxes : " << (boxes[i])->getXYZ()[1];
         cout << endl;
+        if(allItems.size()>0)
+        {
+            vector<TaggedItem*> tItems = vector<TaggedItem*>();
+            tItems = tagItems((const vector<Item*>)allItems, tItems);
+        }
         
         // -- Agent Data --
         cout << " -- AGENT DATA -- " << endl;
@@ -506,7 +518,7 @@ int FuzzyAIController::computePlayerEvaluation( unsigned int  numberOfPlayers,
                                                 unsigned int  playerAverageRank,
                                                 unsigned int  playerCrashCount)
 {
-    const string& fileName = "player_evaluation.fcl";
+    const std::string &fileName = "player_evaluation.fcl";
 	// The rank of the player need to be normalized before computing
 
     float normalized_player_average_rank;
@@ -533,7 +545,7 @@ int FuzzyAIController::computeCompetitiveness(unsigned int  number_of_players,
                                               int           player_level,
                                               unsigned int  current_ranking)
 {
-    const string& file_name = "driving_style_competitiveness.fcl";
+    const std::string& file_name = "driving_style_competitiveness.fcl";
     
 	//The rank need to be normalized before computing
     float normalized_current_ranking;
@@ -555,7 +567,7 @@ int FuzzyAIController::computeAgressiveness(unsigned int  number_of_players,
                                             unsigned int  kart_class,
                                             unsigned int  current_ranking)
 {
-    const string& file_name = "driving_style_agressiveness.fcl";
+    const std::string& file_name = "driving_style_agressiveness.fcl";
     
 	//The rank need to be normalized before computing
 
@@ -563,7 +575,7 @@ int FuzzyAIController::computeAgressiveness(unsigned int  number_of_players,
 
 	if(number_of_players > 0)
 	{
-      normalized_current_ranking = (current_ranking*10)/number_of_players;
+        normalized_current_ranking = (current_ranking*10)/number_of_players;
 	}
 
     vector<float> evaluationParameters;
@@ -585,7 +597,7 @@ int FuzzyAIController::computePathChooser(
 	                                 const vector<vector<PathData*>*>* pathData,
                                      float competitiveness)
 {
-    const string& file_name = "path_chooser.fcl";
+    const std::string& file_name = "path_chooser.fcl";
     float length;
     float bonuscount;
     vector<float> PathParameters;
@@ -635,16 +647,16 @@ int FuzzyAIController::computePathChooser(
  *         Use the direction?
  */
 
-float FuzzyAIController::difficultyTagging(      float        distance,
-                                                 float        angle,
-                                                 unsigned int direction)
+float FuzzyAIController::computeDifficultyTag(float        distance,
+                                              float        angle,
+                                              unsigned int direction)
 {
-    const string& file_name = "weapon_hit_estimation.fcl";
+    const std::string file_name = "weapon_hit_estimation.fcl";
     vector<float> objectParameters;
     objectParameters.push_back(distance);
     objectParameters.push_back(angle);
 
-    return  computeFuzzyModel(file_name, objectParameters);
+    return computeFuzzyModel(file_name, objectParameters);
 }
 
 //------------------------------------------------------------------------------
@@ -657,7 +669,7 @@ float FuzzyAIController::difficultyTagging(      float        distance,
   float  FuzzyAIController::computeHitEstimation(int     possessed_item_type,
                                                  float   next_kart_distance)
   {
-    const string& file_name = "weapon_hit_estimation.fcl";
+      const std::string file_name = "weapon_hit_estimation.fcl";
 
     float normalized_distance;
 
@@ -741,13 +753,13 @@ float FuzzyAIController::computeWeaponInterest(int   competitiveness,
  *  TODO : make this comment doxygen compliant
  */
 
-float FuzzyAIController::computeFuzzyModel(const string&  file_name,
+float FuzzyAIController::computeFuzzyModel(const std::string&  file_name,
                                            vector<float>  parameters )
 {
     // Create FFLL model. TODO : make this model a class static variable
 	int model = ffll_new_model();
 
-    string full_name = file_manager->getFclFile(file_name);
+    std::string full_name = file_manager->getFclFile(file_name);
     // Load .fcl file
 	int ret_val = (int) ffll_load_fcl_file(model, full_name.c_str());
 
@@ -871,7 +883,7 @@ void FuzzyAIController::handleSteering(float dt)
         m_debug_sphere->setPosition(QuadGraph::get()->getQuadOfNode(next)
                        .getCenter().toIrrVector());
         std::cout << "- Outside of road: steer to center point." <<
-            std::endl;
+        std::endl;
 #endif
     }
     //If we are going to crash against a kart, avoid it if it doesn't
@@ -918,6 +930,9 @@ void FuzzyAIController::handleSteering(float dt)
         findNonCrashingPoint(&straight_point);
 #ifdef AI_DEBUG
         m_debug_sphere->setPosition(straight_point.toIrrVector());
+        
+        m_target_x = straight_point.getX();
+        m_target_z = straight_point.getZ();
 #endif
         steer_angle = steerToPoint(straight_point);
     }
@@ -1142,32 +1157,6 @@ void FuzzyAIController::computeNearestKarts()
         }
     }   // for i<world->getNumKarts()
 }   // computeNearestKarts
-
-//------------------------------------------------------------------------------
-/** Get close karts (computed using real distance, not "on track distance").
- * TODO make this comment doxygen compliant
- */
-
-void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
-                                      float max_dist)
-{
-    // Only do this on the server
-    //if(network_manager->getMode()==NetworkManager::NW_CLIENT) return NULL;
-    
-    // for each kart in the world, keep it if it is close
-    for(unsigned int i=0; i<m_world->getNumKarts(); i++)
-    {
-        const Kart* curKart = m_world->getKart(i);
-        if(curKart != m_kart)
-        {
-            if((curKart->getXYZ() - m_kart->getXYZ()).length() < max_dist)
-            {
-                closeKarts.push_back(curKart);
-            }
-        }
-    } // for all karts
-}   // getCloseKarts
-
 
 //-----------------------------------------------------------------------------
 void FuzzyAIController::handleAcceleration( const float dt)
@@ -1554,3 +1543,115 @@ void FuzzyAIController::findCurve()
     
     m_curve_target_speed = m_kart->getCurrentMaxSpeed();
 }   // findCurve
+
+//==============================================================================
+// Fuzzy AI controller functions
+
+//------------------------------------------------------------------------------
+/** Get close karts (computed using real distance, not "on track distance").
+ * TODO make this comment doxygen compliant
+ */
+
+void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
+                                      float max_dist)
+{
+    // Only do this on the server
+    //if(network_manager->getMode()==NetworkManager::NW_CLIENT) return NULL;
+    
+    // for each kart in the world, keep it if it is close
+    for(unsigned int i=0; i<m_world->getNumKarts(); i++)
+    {
+        const Kart* curKart = m_world->getKart(i);
+        if(curKart != m_kart)
+        {
+            if((curKart->getXYZ() - m_kart->getXYZ()).length() < max_dist)
+            {
+                closeKarts.push_back(curKart);
+            }
+        }
+    } // for all karts
+}   // getCloseKarts
+
+//------------------------------------------------------------------------------
+/** Get 
+ * TODO make this comment doxygen compliant
+ * Check if Y in Irrlicht is not the vertical dimension
+ */
+vector<TaggedItem*>& FuzzyAIController::tagItems( const vector<Item*>& items,
+                                                  vector<TaggedItem*>& output )
+{
+    if(!m_texts)
+        m_texts = new vector<DebugText*>();
+
+    vector2d<float> kartToItem, kartToNextNode, kartVel;
+    int          tag;
+    float        dist, x, z, vel, angle;
+    float        kartX = m_kart->getXYZ().getX();
+    float        kartZ = m_kart->getXYZ().getZ();
+    int          direction;
+    vector<std::string*> texts = vector<std::string*>();
+
+//    const int next = m_next_node_index[m_track_node]; // TODO update this when the next node will be chosen using FL.
+
+    for(unsigned int i=0 ; i < items.size() ; i++)
+    {
+        dist = (m_kart->getXYZ() - items[i]->getXYZ()).length();
+        
+        cout << "Item" << i << " : X = " << items[i]->getXYZ().getX() << ", Z = " << items[i]->getXYZ().getZ() << endl;
+        cout << "Kart : X = " << kartX << ", Z = " << kartZ << endl; 
+        x = items[i]->getXYZ().getX() - kartX;
+        z = items[i]->getXYZ().getZ() - kartZ;
+        kartToItem = vector2d<float>(x, z);
+        
+        cout << "Kart To Item vector : X = " << x << ", Z = " << z << endl;
+        
+        x = m_target_x - kartX; 
+        z = m_target_z - kartZ;
+        kartToNextNode = vector2d<float>(x, z);
+        
+        cout << "Targetted point : X = " << m_target_x << ", Z = " << m_target_z << endl;
+        cout << "Kart To Targetted point vector : X = " << x << ", Z = " << z << endl;
+
+        angle = /*(float)*/ kartToNextNode.getAngleTrig() - kartToItem.getAngleTrig();
+        cout << "Angle (kart2Item, kart2Target)= " << angle << endl;
+        
+        x = m_kart->getVelocity().getX();
+        z = m_kart->getVelocity().getZ();
+        cout << "Velocity vector : X = " << x << ", Z = " << z << endl;
+        kartVel = vector2d<float>(x, z);
+        vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig();
+        cout << "Angle (Velocity, kart2Target)= " << vel << endl;
+        direction = 100 * vel / angle;
+        cout << "relative direction " << direction << endl;
+        tag = computeDifficultyTag(dist, angle, direction);
+        
+        std::stringstream * t = new std::stringstream();
+        (*t) << "D=" << (floorf(dist * 100 + 0.5)/100) << " A=" << floorf(angle * 100 + 0.5)/100 << " D=" << floorf(direction * 100 + 0.5)/100 << " T=" << tag;
+        setDebugText(items[i], &(t->str()));
+        cout << "ITEM TAG DEBUG : " << t->str() << endl;
+    }
+}
+
+void FuzzyAIController::setDebugText(const Item* item, const std::string* text)
+{
+    float h;
+    for(unsigned int j=0; j<m_texts->size() ; j++)
+    {
+        if(item == m_texts->at(j)->item)
+        {
+            if(!m_texts->at(j)->text)
+            {
+                h = 1 + rand()%4;
+                vector3d<float> pos = vector3d<float>(item->getXYZ().getX(), item->getXYZ().getY() + h, item->getXYZ().getZ());
+                m_texts->at(j)->text = irr_driver->getSceneManager()->addBillboardTextSceneNode(0, 0, 0, core::dimension2d< f32 >(6.f, 1.f), pos);
+            }
+            std::wstring textw = std::wstring(text->begin(), text->end());
+            const wchar_t* textwc = textw.c_str();
+            m_texts->at(j)->text->setText(textwc);
+            return;
+        }
+    }
+    // If the item has not a DebugText yet, create it and re-launch the function 
+    m_texts->push_back(new DebugText(item, NULL));
+    setDebugText(item, text);
+}

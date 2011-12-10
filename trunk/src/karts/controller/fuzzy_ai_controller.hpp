@@ -35,8 +35,31 @@ namespace irr
     namespace scene
     {
         class ISceneNode;
+        class IBillboardTextSceneNode;
     }
 }
+
+struct TaggedItem
+{
+    Item* item;
+    int   interestTag;
+    int   difficultyTag;
+    
+    TaggedItem(Item* i, int interest, int difficulty):item(i),
+                                                      interestTag(interest),
+                                                      difficultyTag(difficulty)
+    {};
+};
+
+struct DebugText
+{
+    const Item* item;
+    irr::scene::IBillboardTextSceneNode* text;
+    
+    DebugText(const Item* i, irr::scene::IBillboardTextSceneNode* t) : item(i),
+                                                                       text(t)
+    {};
+};
 
 /**
   * \ingroup controller
@@ -72,7 +95,10 @@ private:
     /* Collision tagger */
     // Vector<int> m_speed_diff;
     
+    std::vector<DebugText*> *m_texts;
     // End of Fuzzy AI variables
+    int                      m_target_x;
+    int                      m_target_z;
     //==========================================================================
     
     /*Difficulty handling variables*/
@@ -177,7 +203,7 @@ private:
 		                   const std::vector<std::vector<PathData*>*>* pathData,
                                    float        competitiveness);
 
-    float difficultyTagging       (float        distance,
+    float computeDifficultyTag    (float        distance,
                                    float        angle,
                                    unsigned int direction );
 
@@ -191,7 +217,11 @@ private:
     void  getCloseKarts           (std::vector<const Kart*>& closeKarts,
                                    float max_dist = 40.f);
     
+    // -- Items tagging method --
+    std::vector<TaggedItem*>& tagItems(const std::vector<Item*>& items,
+                                       std::vector<TaggedItem*>& output);
     // -- Debug method --
+    void setDebugText(const Item* item, const std::string* text);
     //void  printFuzzyData();
     //--------------------------------------------------------------------------
 

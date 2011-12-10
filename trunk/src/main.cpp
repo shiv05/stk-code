@@ -946,6 +946,8 @@ int handleCmdLine(int argc, char **argv)
         UserConfigParams::m_music = false;// and music when profiling
     }
 
+    UserConfigParams::m_camera_debug=1; // Kinsu
+
     return 1;
 }   // handleCmdLine
 

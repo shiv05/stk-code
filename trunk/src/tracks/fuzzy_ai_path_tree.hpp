@@ -55,7 +55,7 @@ struct PathData
 }; // struct PathData
 
 //------------------------------------------------------------------------------
-/** The TreeNode structure is a node of the FuzzyAiPathTree. It contains the Id
+/** The TreeNode structure is a node of the FuzzyAIPathTree. It contains the Id
   * of a QuadGraph node, pointers toward the potential children nodes, and a
   * PathData instance which holds data about the direct upper part of the tree.
   *
@@ -96,7 +96,7 @@ struct TreeNode
  *  The path tree is used by the fuzzy AI to compare paths and choose which one
  *  to take when it meets a fork.
  */
-class FuzzyAiPathTree
+class FuzzyAIPathTree
 {
 private :
     // -- Variables --
@@ -129,8 +129,8 @@ private :
 public :
 
     // -- Constructor & Destructor --
-    FuzzyAiPathTree (unsigned int rootNodeId);
-    ~FuzzyAiPathTree(); 
+    FuzzyAIPathTree (unsigned int rootNodeId);
+    ~FuzzyAIPathTree(); 
     
     // -- Debug functions --
     void print() const;
@@ -151,7 +151,7 @@ public :
                                                       unsigned int from) const;
 
 
-}; // class FuzzyAiPathTree
+}; // class FuzzyAIPathTree
 
 #endif /* HEADER_FUZZYAIPATHTREE_HPP */
 

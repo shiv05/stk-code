@@ -91,7 +91,7 @@ private:
     // Fuzzy AI variables
     
     float          m_timer;
-    
+    int            m_compet; // Competitiveness of the agent TODO Constant
     /* Collision tagger */
     // Vector<int> m_speed_diff;
     
@@ -199,8 +199,7 @@ private:
                                    unsigned int kart_class,
                                    unsigned int current_ranking );
 
-    int   computePathChooser      (
-		                   const std::vector<std::vector<PathData*>*>* pathData,
+    int   choosePath      (const std::vector<std::vector<PathData*>*>* pathData,
                                    float        competitiveness);
 
     float computeDifficultyTag    (float        distance,
@@ -220,6 +219,10 @@ private:
     // -- Items tagging method --
     std::vector<TaggedItem*>& tagItems(const std::vector<Item*>& items,
                                        std::vector<TaggedItem*>& output);
+
+    // -- Path Choosing method --
+    std::vector<unsigned int>& computeForkChoices(std::vector<unsigned int>& output);
+    
     // -- Debug method --
     void setDebugText(const Item* item, const std::string* text);
     //void  printFuzzyData();

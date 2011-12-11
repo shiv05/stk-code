@@ -24,7 +24,7 @@
 #include <vector>
 
 class  QuadNode;
-class  FuzzyAiPathTree;
+class  FuzzyAIPathTree;
 struct PathData;
 struct TreeNode;
 
@@ -51,7 +51,7 @@ private :
     // TODO : store player data for multiple players
 
     // -- Racetrack data --
-    std::vector<FuzzyAiPathTree*> m_pathTrees;
+    std::vector<FuzzyAIPathTree*> m_pathTrees;
         
     // Get player kart index -- Not useful currently as only 1 player is handled
 //    int         getPlayerKartId();

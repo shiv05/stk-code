@@ -72,7 +72,8 @@ using namespace std;
 using namespace irr;
 using namespace core;
 
-FuzzyAIController::FuzzyAIController(Kart *kart) : AIBaseController(kart)
+FuzzyAIController::FuzzyAIController(Kart *kart) :
+                                                 AIBaseController(kart, NULL, 1)
 {
     reset();
 
@@ -123,11 +124,15 @@ FuzzyAIController::FuzzyAIController(Kart *kart) : AIBaseController(kart)
         break;
     }
 
-    // -- Fuzzy controller params --
+    // -- Fuzzy controller attributes --
     // Player evaluation
     m_timer                   = 0.0f;
     m_texts                   = new vector<DebugText*>();
+
+    m_compet                  = 1; // TODO Constants
     
+    m_fork_choices = computeForkChoices(m_fork_choices);
+    computePath();
 #ifdef AI_DEBUG
     m_debug_sphere = irr_driver->getSceneManager()->addSphereSceneNode(1);
 #endif
@@ -139,6 +144,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) : AIBaseController(kart)
  */
 FuzzyAIController::~FuzzyAIController()
 {
+    cout << "FAIC : DESTRUCTOR" << endl;
 //    delete[] m_texts;
 #ifdef AI_DEBUG
     irr_driver->removeNode(m_debug_sphere);
@@ -300,32 +306,18 @@ void FuzzyAIController::update(float dt)
     
     //==========================================================================
     // -- Fuzzy controller code --
-
-
-    // -- Path fork detection --
-    vector<unsigned int> nextNodes;
-    QuadGraph::get()->getSuccessors(m_track_node, nextNodes, true);
-    const vector<vector<PathData*>*>* pathData = NULL;
-    if(nextNodes.size() > 1)
+    
+    if(m_last_seen_track_node != m_track_node)
     {
-        pathData = fuzzy_data_manager->getPathData(m_track_node);
-//#ifdef AI_DEBUG
-//        cout << "path fork detected !" << endl;
-//        if(pathData)
-//        {
-//            cout << "PATH DATA Debug : " << endl;
-//            for(unsigned int i=0; i<pathData->size() ; i++)
-//            {
-//                cout << "choice " << i << ":" << endl;
-//                for(unsigned int j=0; j<pathData->at(i)->size() ; j++)
-//                {
-//                    cout << "pathData " << j << " = ";
-//                    cout << pathData->at(i)->at(j)->pathLength << endl;
-//                }
-//            }
-//        }
-//#endif
-    } // If there is a fork
+        m_fork_choices = computeForkChoices(m_fork_choices);
+        
+        vector<unsigned int> next = vector<unsigned int>();
+        QuadGraph::get()->getSuccessors(m_track_node, next, true);
+        if(next.size() > 1)
+            m_fork_choices.erase(m_fork_choices.begin());
+    }
+    computePath();
+
     
     // -- Close karts detection --
     vector<const Kart*> closeKarts;
@@ -382,23 +374,10 @@ void FuzzyAIController::update(float dt)
 
         int kart_class = 1;
 
-        int competitiveness = computeCompetitiveness(number_of_karts,eval,current_ranking);
+        m_compet = computeCompetitiveness(number_of_karts,eval,current_ranking);
         int agressiveness = computeAgressiveness(number_of_karts,kart_class,current_ranking);
-
-
-    
-        //Decide the best path to take !
-        int bestPath = 0;
-
-        if(pathData)
-        {
-           bestPath = computePathChooser(pathData,competitiveness);
-        }
-
-
-
+        
         //Decide if it is interesting or not to use the current possessed weapon
-
         //Get current powerup
         const Powerup* current_powerup = m_kart->getPowerup();
         PowerupManager::PowerupType possessed_item = current_powerup->getType();
@@ -416,7 +395,7 @@ void FuzzyAIController::update(float dt)
 
          //Now get the interest the possessed weapons.
 
-         weapon_interest = computeWeaponInterest(competitiveness,hit_estimation);
+         weapon_interest = computeWeaponInterest(m_compet,hit_estimation);
 
        }
 
@@ -469,7 +448,7 @@ void FuzzyAIController::update(float dt)
         cout << m_kart->getIdent() << " : agent current ranking = ";
         cout << current_ranking << endl;
         cout << m_kart->getIdent() << " : agent competitiveness = ";
-         switch(competitiveness)
+         switch(m_compet)
         {
             case (1): cout << "Competitive" << endl;   break;
             case (2): cout << "Not competitive" << endl; break;
@@ -496,12 +475,12 @@ void FuzzyAIController::update(float dt)
         cout << weapon_interest << endl; 
 
         // -- Path choice --
-        if(pathData)
-        {
-         cout << " -- PATH CHOICE -- " << endl;
-         cout << m_kart->getIdent() << " best path number = ";
-         cout << bestPath << endl;
-        }
+//        if(pathData)
+//        {
+//         cout << " -- PATH CHOICE -- " << endl;
+//         cout << m_kart->getIdent() << " best path number = ";
+//         cout << bestPath << endl;
+//        }
 
         
 #endif
@@ -586,59 +565,53 @@ int FuzzyAIController::computeAgressiveness(unsigned int  number_of_players,
 }
 
 //------------------------------------------------------------------------------
-/** Path chooser computation methods when there are multiple path to choose. Simply call computeFuzzyModel with the
- *  right parameters.
+/** Path choice computation method, useful when there are multiple paths.
+ *  This methode evaluates each one of the given paths, and returns the best
+ *  path. The evaluation is based on data about the paths, computed by the
+ *  FuzzyAIPathTree class.
  *  TODO : make this comment doxygen compliant
- *         Use the number of turns and the kart class.
+ *         improvement for later : Use the number of turns and the kart class.
  */
 
-
-int FuzzyAIController::computePathChooser(
-	                                 const vector<vector<PathData*>*>* pathData,
-                                     float competitiveness)
+int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
+                                  float competitiveness)
 {
-    const std::string& file_name = "path_chooser.fcl";
+    const std::string& file_name = "path_chooser.fcl";  // Fcl file
+    vector<float> pathParameters;
+    float bonusCount;
     float length;
-    float bonuscount;
-    vector<float> PathParameters;
     float interest;
-    float best_interest = 0;
-    int   bestChoice;
-
-    //Checking for each path.
-   
+    float bestInterest = 0;
+    int   bestChoice; 
+       
+    // Evaluate each path.
     for (unsigned int i=0; i < pathData->size(); i++)
 	{
         for (unsigned int j=0; j < pathData->at(i)->size(); j++)
         {
-            //Getting the length and bonus count
-
+            // Get the length and bonus count of the path
             length = pathData->at(i)->at(j)->pathLength;
-            bonuscount = pathData->at(i)->at(j)->bonusCount;
+            bonusCount = pathData->at(i)->at(j)->bonusCount;
 
-            PathParameters.push_back(length);
-            PathParameters.push_back(bonuscount);
-            PathParameters.push_back(competitiveness);
+            pathParameters.push_back(length);
+            pathParameters.push_back(bonusCount);
+            pathParameters.push_back(competitiveness);
 
-            //Computing the interest for the path
+            // Compute the interest of the path
+            interest = computeFuzzyModel(file_name, pathParameters);
+            pathParameters.clear();
 
-            interest = computeFuzzyModel(file_name, PathParameters);
-
-            PathParameters.clear();
-
-            //Comparing the interest with the best interest
-
-            if(interest > best_interest)
+            // Compare the computed interest with the best interest so far
+            if(interest > bestInterest)
             {
-                //If the path has a better interest we store it
-
-                best_interest = interest;
+                // If the path has a better interest, store it
+                bestInterest = interest;
                 bestChoice = i;
             } // if current path has a better interest than current max interest
         } // for each path in the current choice
 	} // for each possible choice
     return bestChoice;
-}
+} // choosePath
 
 //------------------------------------------------------------------------------
 /** A generic module to compute the difficulty to reach an object (items, karts ...). Simply call computeFuzzyModel with the
@@ -1575,7 +1548,6 @@ void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
 //------------------------------------------------------------------------------
 /** Get 
  * TODO make this comment doxygen compliant
- * Check if Y in Irrlicht is not the vertical dimension
  */
 vector<TaggedItem*>& FuzzyAIController::tagItems( const vector<Item*>& items,
                                                   vector<TaggedItem*>& output )
@@ -1591,47 +1563,48 @@ vector<TaggedItem*>& FuzzyAIController::tagItems( const vector<Item*>& items,
     int          direction;
     vector<std::string*> texts = vector<std::string*>();
 
-//    const int next = m_next_node_index[m_track_node]; // TODO update this when the next node will be chosen using FL.
-
     for(unsigned int i=0 ; i < items.size() ; i++)
     {
         dist = (m_kart->getXYZ() - items[i]->getXYZ()).length();
         
-        cout << "Item" << i << " : X = " << items[i]->getXYZ().getX() << ", Z = " << items[i]->getXYZ().getZ() << endl;
-        cout << "Kart : X = " << kartX << ", Z = " << kartZ << endl; 
+//        cout << "Item" << i << " : X = " << items[i]->getXYZ().getX() << ", Z = " << items[i]->getXYZ().getZ() << endl;
+//        cout << "Kart : X = " << kartX << ", Z = " << kartZ << endl; 
         x = items[i]->getXYZ().getX() - kartX;
         z = items[i]->getXYZ().getZ() - kartZ;
         kartToItem = vector2d<float>(x, z);
         
-        cout << "Kart To Item vector : X = " << x << ", Z = " << z << endl;
+//        cout << "Kart To Item vector : X = " << x << ", Z = " << z << endl;
         
         x = m_target_x - kartX; 
         z = m_target_z - kartZ;
         kartToNextNode = vector2d<float>(x, z);
         
-        cout << "Targetted point : X = " << m_target_x << ", Z = " << m_target_z << endl;
-        cout << "Kart To Targetted point vector : X = " << x << ", Z = " << z << endl;
+//        cout << "Targetted point : X = " << m_target_x << ", Z = " << m_target_z << endl;
+//        cout << "Kart To Targetted point vector : X = " << x << ", Z = " << z << endl;
 
         angle = /*(float)*/ kartToNextNode.getAngleTrig() - kartToItem.getAngleTrig();
-        cout << "Angle (kart2Item, kart2Target)= " << angle << endl;
+//        cout << "Angle (kart2Item, kart2Target)= " << angle << endl;
         
         x = m_kart->getVelocity().getX();
         z = m_kart->getVelocity().getZ();
-        cout << "Velocity vector : X = " << x << ", Z = " << z << endl;
+//        cout << "Velocity vector : X = " << x << ", Z = " << z << endl;
         kartVel = vector2d<float>(x, z);
         vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig();
-        cout << "Angle (Velocity, kart2Target)= " << vel << endl;
+//        cout << "Angle (Velocity, kart2Target)= " << vel << endl;
         direction = 100 * vel / angle;
-        cout << "relative direction " << direction << endl;
+//        cout << "relative direction " << direction << endl;
         tag = computeDifficultyTag(dist, angle, direction);
         
         std::stringstream * t = new std::stringstream();
         (*t) << "D=" << (floorf(dist * 100 + 0.5)/100) << " A=" << floorf(angle * 100 + 0.5)/100 << " D=" << floorf(direction * 100 + 0.5)/100 << " T=" << tag;
         setDebugText(items[i], &(t->str()));
-        cout << "ITEM TAG DEBUG : " << t->str() << endl;
+//        cout << "ITEM TAG DEBUG : " << t->str() << endl;
     }
 }
 
+/**-----------------------------------------------------------------------------
+ *  TODO Comment
+ */
 void FuzzyAIController::setDebugText(const Item* item, const std::string* text)
 {
     float h;
@@ -1651,7 +1624,51 @@ void FuzzyAIController::setDebugText(const Item* item, const std::string* text)
             return;
         }
     }
-    // If the item has not a DebugText yet, create it and re-launch the function 
+    // If the item does not have a DebugText yet, create it and re-launch the function 
     m_texts->push_back(new DebugText(item, NULL));
     setDebugText(item, text);
 }
+
+/**-----------------------------------------------------------------------------
+ *  TODO Comment
+ */
+vector<unsigned int>& FuzzyAIController::computeForkChoices(
+                                                   vector<unsigned int>& output)
+{
+    vector<unsigned int> nextNodes;
+    unsigned int curNode = m_track_node;
+    ///////     // TODO remove 1st fork choice when current node is a fork
+    unsigned int forkId = 0;
+    unsigned int nextId = 0;
+    for(unsigned int i=0 ; i < m_look_ahead ; i++)
+    {
+        nextNodes.clear();
+        QuadGraph::get()->getSuccessors(curNode, nextNodes, true);
+
+        if(nextNodes.size() > 1)
+        {
+            if(forkId + 1 > m_fork_choices.size()) // if the fork choices vector does not contain a choice for this fork
+            {
+            const vector<vector<PathData*>*>* pathData = NULL;
+            pathData = fuzzy_data_manager->getPathData(curNode);
+#ifdef AI_DEBUG
+            assert(pathData);
+#endif
+ 
+            unsigned int pathChoice = choosePath(pathData, m_compet);
+            output.push_back(pathChoice);
+            nextId = pathChoice;
+            forkId++;
+#ifdef AI_DEBUG
+            //cout << "path fooooooooooooooooooooooooooooooooork detected ! choice = " << pathChoice << endl;
+#endif
+            }
+        } // if there is a fork
+        else
+            nextId = 0;
+        curNode = nextNodes[nextId];
+    } // for the next look ahead nodes
+    
+    return output;
+} // computeForkChoices
+

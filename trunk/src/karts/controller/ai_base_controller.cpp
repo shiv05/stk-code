@@ -28,18 +28,29 @@
 #include "utils/constants.hpp"
 
 AIBaseController::AIBaseController(Kart *kart,
-                                   StateManager::ActivePlayer *player) 
+                                   StateManager::ActivePlayer *player,
+                                   int pathChoiceMethod) 
                 : Controller(kart, player)
 {
     m_kart        = kart;
     m_kart_length = m_kart->getKartModel()->getLength();
     m_kart_width  = m_kart->getKartModel()->getWidth();
 
+    m_path_choice = pathChoiceMethod; // This attribute is set to 1 by fuzzy_ai_controller
+    m_fork_choices = std::vector<unsigned int>();
+    m_look_ahead = 10;
+//    m_last_seen_track_node = 0;
+//    m_track_node = 0;
+    
     if(race_manager->getMinorMode()!=RaceManager::MINOR_MODE_3_STRIKES)
     {
         m_world       = dynamic_cast<LinearWorld*>(World::getWorld());
         m_track       = m_world->getTrack();
-        computePath();
+        if(m_path_choice == 0 /* RANDOM */)
+            computePath();
+        // In Fuzzy path choice mode, the computePath Methode is called by the
+        // fuzzyAiController constructor, once the choice has been made (if
+        // there is a fork in the first look ahead nodes).
     }
     else
     {
@@ -60,7 +71,7 @@ AIBaseController::AIBaseController(Kart *kart,
  */
 void  AIBaseController::newLap(int lap)
 {
-    if(lap>0)
+    if(lap>0 && m_path_choice == 0 /* RANDOM */)
     {
         computePath();
     }
@@ -73,44 +84,86 @@ void AIBaseController::computePath()
 {
     m_next_node_index.resize(QuadGraph::get()->getNumNodes());
     m_successor_index.resize(QuadGraph::get()->getNumNodes());
-    std::vector<unsigned int> next;
-    for(unsigned int i=0; i<QuadGraph::get()->getNumNodes(); i++)
-    {
-        next.clear();
-        // Get all successors the AI is allowed to take.
-        QuadGraph::get()->getSuccessors(i, next, /*for_ai*/true);
-        // For now pick one part on random, which is not adjusted during the 
-        // race. Long term statistics might be gathered to determine the
-        // best way, potentially depending on race position etc.
-        int r = rand();
-        int indx = (int)( r / ((float)(RAND_MAX)+1.0f) * next.size() );
-        // In case of rounding errors0
-        if(indx>=(int)next.size()) indx--;
-        m_successor_index[i] = indx;
-        assert(indx <(int)next.size() && indx>=0);
-        m_next_node_index[i] = next[indx];
-    }
+    std::vector<unsigned int> next    = std::vector<unsigned int>();
+    unsigned int              fork_id = 0;
 
-    const unsigned int look_ahead=10;
-    // Now compute for each node in the graph the list of the next 'look_ahead'
-    // graph nodes. This is the list of node that is tested in checkCrashes.
-    // If the look_ahead is too big, the AI can skip loops (see 
-    // QuadGraph::findRoadSector for details), if it's too short the AI won't
-    // find too good a driveline. Note that in general this list should
-    // be computed recursively, but since the AI for now is using only 
-    // (randomly picked) path this is fine
-    m_all_look_aheads.resize(QuadGraph::get()->getNumNodes());
-    for(unsigned int i=0; i<QuadGraph::get()->getNumNodes(); i++)
+    int indx;
+
+    if(m_path_choice == 1) // Fuzzy AI path choice, dynamically fill m_all_look_aheads
     {
-        std::vector<int> l;
-        int current = i;
-        for(unsigned int j=0; j<look_ahead; j++)
+        int current = m_track_node;
+        for(unsigned int i=0; i<m_look_ahead; i++)
         {
-            assert(current < (int)m_next_node_index.size());
+            next.clear();
+            // Get all successors the AI is allowed to take.
+            QuadGraph::get()->getSuccessors(current, next, /*for_ai*/true);    
+            
+            if(next.size() > 1)
+            {
+                // The choice has already been made by FuzzyAIController
+                indx = m_fork_choices[fork_id];
+                fork_id++;
+            }
+            else
+                indx = 0;
+            
+            m_successor_index[current] = indx;
+            // assert(indx <(int)next.size() && indx>=0);
+            m_next_node_index[current] = next[indx];
+            current = next[indx];
+        }
+        
+        m_all_look_aheads.resize(QuadGraph::get()->getNumNodes());
+        std::vector<int> l;
+        current = m_track_node;
+        for(unsigned int j=0; j<m_look_ahead; j++)
+        {
+//            assert(current < (int)m_next_node_index.size());
             l.push_back(m_next_node_index[current]);
             current = m_next_node_index[current];
-        }   // for j<look_ahead
-        m_all_look_aheads[i] = l;
+        }   // for j<m_look_ahead
+        m_all_look_aheads[m_track_node] = l;
+    }
+    else // if(m_path_choice == 0) // RANDOM
+    {
+        for(unsigned int i=0; i<QuadGraph::get()->getNumNodes(); i++)
+        {
+            next.clear();
+            // Get all successors the AI is allowed to take.
+            QuadGraph::get()->getSuccessors(i, next, /*for_ai*/true);
+            // Pick one part on random, which is not adjusted during the 
+            // race. Long term statistics might be gathered to determine the
+            // best way, potentially depending on race position etc.
+            int r = rand();
+            indx = (int)( r / ((float)(RAND_MAX)+1.0f) * next.size() );
+            // In case of rounding errors0
+            if(indx>=(int)next.size()) indx--;
+    
+            m_successor_index[i] = indx;
+            assert(indx <(int)next.size() && indx>=0);
+            m_next_node_index[i] = next[indx];
+        }
+        
+        // Now compute for each node in the graph the list of the next 'look_ahead'
+        // graph nodes. This is the list of node that is tested in checkCrashes.
+        // If the look_ahead is too big, the AI can skip loops (see 
+        // QuadGraph::findRoadSector for details), if it's too short the AI won't
+        // find too good a driveline. Note that in general this list should
+        // be computed recursively, but since the AI for now is using only 
+        // (randomly picked) path this is fine
+        m_all_look_aheads.resize(QuadGraph::get()->getNumNodes());
+        for(unsigned int i=0; i<QuadGraph::get()->getNumNodes(); i++)
+        {
+            std::vector<int> l;
+            int current = i;
+            for(unsigned int j=0; j<m_look_ahead; j++)
+            {
+                assert(current < (int)m_next_node_index.size());
+                l.push_back(m_next_node_index[current]);
+                current = m_next_node_index[current];
+            }   // for j<m_look_ahead
+            m_all_look_aheads[i] = l;
+        }
     }
 }   // computePath
 //-----------------------------------------------------------------------------
@@ -122,6 +175,7 @@ void AIBaseController::update(float dt)
     {
         // Update the current node:
         int old_node = m_track_node;
+        m_last_seen_track_node = old_node; // update last seen track node
         if(m_track_node!=QuadGraph::UNKNOWN_SECTOR)
         {
             QuadGraph::get()->findRoadSector(m_kart->getXYZ(), &m_track_node, 

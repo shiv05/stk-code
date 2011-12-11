@@ -38,7 +38,7 @@ using namespace std;
  *  calls the buildTree function to create the tree architecture, and then the
  *  setPathData function to fill in the path data.
  */
-FuzzyAiPathTree::FuzzyAiPathTree(unsigned int rootNodeId = 0)
+FuzzyAIPathTree::FuzzyAIPathTree(unsigned int rootNodeId = 0)
 {
     assert(QuadGraph::get()); // Cannot build tree if QuadGraph does not exist
 
@@ -78,7 +78,7 @@ FuzzyAiPathTree::FuzzyAiPathTree(unsigned int rootNodeId = 0)
  *          |    |         |P1,P0.0 End |              /    \
  *     Fork 1   Fork2    Path0.1 End    |    Path0.0 End    Path0.1 End
  */
-TreeNode* FuzzyAiPathTree::buildTree(unsigned int startNodeId)
+TreeNode* FuzzyAIPathTree::buildTree(unsigned int startNodeId)
 {
 //    cout << "Building tree... begin : " << startNodeId << endl;
     unsigned int         curNodeId = startNodeId;
@@ -154,7 +154,7 @@ TreeNode* FuzzyAiPathTree::buildTree(unsigned int startNodeId)
  *                             o: box   |   o=1,x=2   o=1,x=1   o=2,x=0
  *                          x: banana   |   len=17    len=15    len=17
  */
-TreeNode* FuzzyAiPathTree::setPathData(TreeNode* rootNode, PathData* rootData)
+TreeNode* FuzzyAIPathTree::setPathData(TreeNode* rootNode, PathData* rootData)
 {
     unsigned int rootNodeId = rootNode->nodeId;
     if(!m_treeBottom)
@@ -224,7 +224,7 @@ TreeNode* FuzzyAiPathTree::setPathData(TreeNode* rootNode, PathData* rootData)
  *  This function must be used on a tree from the buildTree function, and is
  *  called by the setPathData function.
  */
-unsigned int FuzzyAiPathTree::getFarthestNode(const TreeNode* rootNode) const
+unsigned int FuzzyAIPathTree::getFarthestNode(const TreeNode* rootNode) const
 {
     vector<unsigned int> branchLastNodes = vector<unsigned int>();
 
@@ -290,7 +290,7 @@ unsigned int FuzzyAiPathTree::getFarthestNode(const TreeNode* rootNode) const
  *  The AI will then be able to compare these 3 paths with the only PathData*
  *  stored in the 2nd sub-vector (path 1), to take the decision (right or left)
  */
-vector<vector<PathData*>*> *FuzzyAiPathTree::computeComparableData
+vector<vector<PathData*>*> *FuzzyAIPathTree::computeComparableData
                                                     (const TreeNode* node) const
 {
     vector<vector<PathData*>*> *data = new vector<vector<PathData*>*>();
@@ -377,7 +377,7 @@ vector<vector<PathData*>*> *FuzzyAiPathTree::computeComparableData
 /** Destructor
  *  Releases the allocated memory for the whole tree and the m_compareData
  *  sub-vectors. */
-FuzzyAiPathTree::~FuzzyAiPathTree()
+FuzzyAIPathTree::~FuzzyAIPathTree()
 {
     int i = m_compareData->size()-1; // int because with unsigned ints, 0-1 > 0
     for( ; i >= 0 ; i--)
@@ -390,10 +390,10 @@ FuzzyAiPathTree::~FuzzyAiPathTree()
     delete m_compareData;
     
     deleteTree(m_treeRoot);
-} // ~FuzzyAiPathTree
+} // ~FuzzyAIPathTree
 
 // -- Recursive delete function called by the destructor --
-void FuzzyAiPathTree::deleteTree(TreeNode* rootNode)
+void FuzzyAIPathTree::deleteTree(TreeNode* rootNode)
 {
     if(rootNode->children)
     {
@@ -416,7 +416,7 @@ void FuzzyAiPathTree::deleteTree(TreeNode* rootNode)
 /** TODO Comment
  *  recursivity init
  */
-const TreeNode* FuzzyAiPathTree::getTreeNode(unsigned int nodeId) const
+const TreeNode* FuzzyAIPathTree::getTreeNode(unsigned int nodeId) const
 {
     if(nodeId == m_treeRoot->nodeId)
         return m_treeRoot;
@@ -425,7 +425,7 @@ const TreeNode* FuzzyAiPathTree::getTreeNode(unsigned int nodeId) const
 } // getTreeNode
 
 // -- Recursive function --
-const TreeNode* FuzzyAiPathTree::getTreeNode(unsigned int nodeId,
+const TreeNode* FuzzyAIPathTree::getTreeNode(unsigned int nodeId,
                                              TreeNode* curNode) const
 {
     if(curNode->children)
@@ -450,7 +450,7 @@ const TreeNode* FuzzyAiPathTree::getTreeNode(unsigned int nodeId,
 //------------------------------------------------------------------------------
 /** TODO Comment
  */
-const vector<vector<PathData*>*>* FuzzyAiPathTree::getComparableData(
+const vector<vector<PathData*>*>* FuzzyAIPathTree::getComparableData(
                                                   unsigned int forkNodeId) const
 {
     const TreeNode* forkNode = getTreeNode(forkNodeId);
@@ -464,7 +464,7 @@ const vector<vector<PathData*>*>* FuzzyAiPathTree::getComparableData(
 /** Returns the list of all fork nodes Id (quadGraph node Id) present in the
  *  tree, so that the FuzzyDataManager is able to know which pathTree call for
  *  a given fork node Id. */
-void FuzzyAiPathTree::getForkNodes(const TreeNode       *node,
+void FuzzyAIPathTree::getForkNodes(const TreeNode       *node,
                                    vector<unsigned int> &result) const
 {
     if(node->children)
@@ -476,7 +476,7 @@ void FuzzyAiPathTree::getForkNodes(const TreeNode       *node,
 }
 
 // Initialisation
-void FuzzyAiPathTree::getForkNodes(vector<unsigned int> &result) const
+void FuzzyAIPathTree::getForkNodes(vector<unsigned int> &result) const
 {
     getForkNodes(m_treeRoot, result);
 }
@@ -485,7 +485,7 @@ void FuzzyAiPathTree::getForkNodes(vector<unsigned int> &result) const
 //------------------------------------------------------------------------------
 /** Sums the data1 and data2 attributes to the result parameter.
  */
-//void FuzzyAiPathTree::sumPathData(const PathData* data1,const PathData* data2,
+//void FuzzyAIPathTree::sumPathData(const PathData* data1,const PathData* data2,
 //                                         PathData* result )
 //{
 //    result->bonusCount = data1->bonusCount + data2->bonusCount;
@@ -499,7 +499,7 @@ void FuzzyAiPathTree::getForkNodes(vector<unsigned int> &result) const
 //------------------------------------------------------------------------------
 /** Print tree
  */
-void FuzzyAiPathTree::printNode(const TreeNode* rootNode) const
+void FuzzyAIPathTree::printNode(const TreeNode* rootNode) const
 {
     if(rootNode)
     {
@@ -521,7 +521,7 @@ void FuzzyAiPathTree::printNode(const TreeNode* rootNode) const
 
 /** -- Print tree initialisation --
  */
-void FuzzyAiPathTree::print() const
+void FuzzyAIPathTree::print() const
 {
     printNode(m_treeRoot);
     cout << endl;
@@ -533,16 +533,16 @@ void FuzzyAiPathTree::print() const
  */
 #ifdef AI_DEBUG // This debug code does not build the path 100% correctly,
                 // & does not execute well on windows
-struct FuzzyAiPath
+struct FuzzyAIPath
 {
     vector<unsigned int>    *node_indexes;
     bool                    discovered;
     unsigned int            bonus_count;
     unsigned int            malus_count;
-//        std::vector<FuzzyAiSubPath> subpaths;
+//        std::vector<FuzzyAISubPath> subpaths;
     // TODO turn count, zipper_count ?
     
-    FuzzyAiPath(std::vector<unsigned int> *n_indexes,
+    FuzzyAIPath(std::vector<unsigned int> *n_indexes,
                     bool has_been_discovered, unsigned int bonus_count,
                     unsigned int malus_count) :
             node_indexes(n_indexes),
@@ -552,20 +552,20 @@ struct FuzzyAiPath
         {}
 };
 
-void FuzzyAiPathTree::printPossiblePaths()
+void FuzzyAIPathTree::printPossiblePaths()
 {
    /** This structure extends the quadgraph to store data about paths (eg.
      *  bonus count). This data is used by the fuzzy ai controller to choose
      *  which path to take. */
 
-    vector<FuzzyAiPath *> possiblePaths = vector<FuzzyAiPath*>();
+    vector<FuzzyAIPath *> possiblePaths = vector<FuzzyAIPath*>();
     
     vector<unsigned int> next;
     
     // Init main path
     vector<unsigned int> mainPathNodes = vector<unsigned int>();
     mainPathNodes.push_back(0); // begins with the 0 indexed node
-    FuzzyAiPath newPath(&mainPathNodes, false, 0, 0);
+    FuzzyAIPath newPath(&mainPathNodes, false, 0, 0);
     possiblePaths.push_back(&newPath);
     
     // Discover the paths in the path list (the main path first, alt.paths then)
@@ -604,7 +604,7 @@ void FuzzyAiPathTree::printPossiblePaths()
                     vector<unsigned int> newPathNodes = vector<unsigned int>();
                     newPathNodes.push_back(last_node_index); // 1st node (fork)
                     newPathNodes.push_back(next[k]);         // 2nd node
-                    FuzzyAiPath newPath(&newPathNodes, false, 0, 0);
+                    FuzzyAIPath newPath(&newPathNodes, false, 0, 0);
                     possiblePaths.push_back(&newPath);
                 } // Add the newly detected path(s) to the path list
             } // If the current node is a path fork
@@ -622,7 +622,7 @@ void FuzzyAiPathTree::printPossiblePaths()
     // Set item count
     for(unsigned int i=0 ; i<possiblePaths.size() ; i++)
     {
-        FuzzyAiPath *currentPath = possiblePaths.at(i);
+        FuzzyAIPath *currentPath = possiblePaths.at(i);
         for(unsigned int j=0 ; j<currentPath->node_indexes->size() ; j++)
         {
             const Quad& q=QuadGraph::get()->getQuadOfNode(

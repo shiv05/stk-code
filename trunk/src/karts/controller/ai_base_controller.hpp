@@ -40,6 +40,7 @@ private:
      *  different AI levels.
      */
     float    m_skidding_threshold;
+    
 protected:
     /** Length of the kart, storing it here saves many function calls. */
     float m_kart_length;
@@ -59,6 +60,19 @@ protected:
      *  chosen by the AI). */
     int   m_track_node;
 
+    // --- Attributes used by Fuzzy AI ---
+    /** Last seen track node to detect node changes. Used by FuzzyAIController*/
+    int   m_last_seen_track_node;
+    /** The path choice method : 0 = RANDOM, 1 = FUZZY_PATH_CHOICE
+     *  TODO set constants */
+    unsigned int m_path_choice;
+    /** The choices that the Fuzzy AI made for the next forks. A fork choice is
+     *  set when the kart is located on the 11th node before the fork */
+    std::vector<unsigned int> m_fork_choices;
+    
+    unsigned int m_look_ahead;
+    // ------
+    
     /** Which of the successors of a node was selected by the AI. */
     std::vector<int> m_successor_index;
     /** For each node in the graph this list contains the chosen next node.
@@ -70,6 +84,7 @@ protected:
     /** For each graph node this list contains a list of the next X
      *  graph nodes. */
     std::vector<std::vector<int> > m_all_look_aheads;
+
 
     virtual void update      (float delta) ;
     virtual unsigned int getNextSector(unsigned int index);
@@ -83,7 +98,8 @@ protected:
 
 public:
              AIBaseController(Kart *kart,
-                              StateManager::ActivePlayer *player=NULL);
+                              StateManager::ActivePlayer *player=NULL,
+                              int pathChoiceMethod = 0 /* RANDOM by default */);
     virtual ~AIBaseController() {};
 };
 

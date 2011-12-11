@@ -41,7 +41,7 @@ FuzzyDataManager::FuzzyDataManager()
     m_player_crash_count  = -1;
     m_player_average_rank = -1;
     
-    m_pathTrees = vector<FuzzyAiPathTree*>();
+    m_pathTrees = vector<FuzzyAIPathTree*>();
 } // Constructor 
 
 
@@ -55,7 +55,7 @@ FuzzyDataManager::~FuzzyDataManager()
 }
 
 //------------------------------------------------------------------------------
-/** Creates a FuzzyAiPath tree for each main path fork.
+/** Creates a FuzzyAIPath tree for each main path fork.
  *  TODO better comment
  */
 void FuzzyDataManager::createPathTrees()
@@ -74,7 +74,7 @@ void FuzzyDataManager::createPathTrees()
 
         if(nextNodes.size() > 1) // If there is a path fork, create a path tree
         {
-            m_pathTrees.push_back(new FuzzyAiPathTree(curNode));
+            m_pathTrees.push_back(new FuzzyAIPathTree(curNode));
         }
         curNode ++;
     } // while
@@ -95,7 +95,7 @@ void FuzzyDataManager::createPathTrees()
 } // createPathTrees
 
 //------------------------------------------------------------------------------
-/** Returns the pathData vectors from the FuzzyAiPathTree which root has the
+/** Returns the pathData vectors from the FuzzyAIPathTree which root has the
  *  given quadGraph node Id. TODO better comment
  *  Returns NULL if no such tree is found.
  */

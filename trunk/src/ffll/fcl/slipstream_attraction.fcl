@@ -1,4 +1,4 @@
-(* FCL File Created From FFLL Model. Used to know the attraction value of taking slipstream. We the speed difference, the difficulty to reach it, the competitiveness*)
+(* FCL File Created From FFLL Model. Used to know the attraction value of taking slipstream. We use the speed difference, the difficulty to reach it, the competitiveness*)
 FUNCTION_BLOCK
 
 VAR_INPUT

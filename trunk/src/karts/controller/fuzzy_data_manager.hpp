@@ -45,7 +45,7 @@ class FuzzyDataManager
 {
 private :
     // -- Player data --
-    int         m_player_crash_count;   // TODO correct value : not true in game
+    int         m_player_crash_count;
     float       m_player_average_rank;
     // TODO : traveled distance
     // TODO : store player data for multiple players
@@ -60,6 +60,10 @@ public :
 
     FuzzyDataManager();
     ~FuzzyDataManager(); // TODO clean everything (Fuzzy AI Path)
+    
+    // Reset (race restart)
+    void        reset();
+    
     // -- Setters --
     // Set the number of crashes (called by PlayerController)
     void        setPlayerCrashCount(int c)    { m_player_crash_count = c; }

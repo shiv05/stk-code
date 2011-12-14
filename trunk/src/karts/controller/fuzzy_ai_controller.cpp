@@ -27,10 +27,6 @@
 //#undef AI_DEBUG
 #define AI_DEBUG
 
-// Fuzzy variable designation TODO put them in a specific constants file
-#define PLAYER_RANK	0 //  1st variable
-#define PLAYER_CRASHES	1 //  2nd variable
-
 #include <math.h>
 
 #include <vector2d.h>

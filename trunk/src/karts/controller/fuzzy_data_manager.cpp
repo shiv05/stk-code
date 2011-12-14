@@ -38,8 +38,8 @@ FuzzyDataManager::FuzzyDataManager()
 {
     // These variables are set to -1 until the manager is updated by the
     // PlayerController
-    m_player_crash_count  = -1;
-    m_player_average_rank = -1;
+    m_player_crash_count  = 0;
+    m_player_average_rank = 0;
     
     m_pathTrees = vector<FuzzyAIPathTree*>();
 } // Constructor 
@@ -53,6 +53,16 @@ FuzzyDataManager::~FuzzyDataManager()
     for(unsigned int i=0 ; i<m_pathTrees.size() ; i++)
         delete m_pathTrees[i];
 }
+
+//------------------------------------------------------------------------------
+/** Reset (race restart)
+ */
+void FuzzyDataManager::reset()
+{
+    m_player_crash_count = 0;
+    m_player_average_rank = 0;
+}
+
 
 //------------------------------------------------------------------------------
 /** Creates a FuzzyAIPath tree for each main path fork.

@@ -912,6 +912,9 @@ void World::restartRace()
 
     projectile_manager->cleanup();
     race_manager->reset();
+    
+    if(fuzzy_data_manager)
+        fuzzy_data_manager->reset();
 }   // restartRace
 
 //-----------------------------------------------------------------------------

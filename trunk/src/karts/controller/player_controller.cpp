@@ -101,6 +101,8 @@ void PlayerController::reset()
     m_prev_brake   = 0;
     m_prev_accel   = 0;
     m_penalty_time = 0;
+    m_crash_count  = 0;
+    m_average_rank = 0;
     Controller::reset();
 }   // reset
 
@@ -396,7 +398,10 @@ void PlayerController::update(float dt)
 //        cout << "player (" << m_kart->getIdent() << ") average rank = " << m_average_rank << endl;
 //#endif
         if(m_crash_count > 0)
-            m_crash_count -= 0.05;    // Decrement (last 20 seconds) crash count
+        {
+            m_crash_count -= 0.1f * (floor(m_crash_count)); // Decrement (last 10 seconds) crash count
+            fuzzy_data_manager->setPlayerCrashCount(floor(m_crash_count));
+        }    
     }
 
     //------------------------------------------------------
@@ -404,8 +409,8 @@ void PlayerController::update(float dt)
     //  less of 10mps is considered as a crash
     if(m_kart->getSpeed() < 10.0f && m_old_speed > 10.0f)
     {
-        m_crash_count++;
-        fuzzy_data_manager->setPlayerCrashCount((int) m_crash_count);
+        m_crash_count += 1.0f;
+        fuzzy_data_manager->setPlayerCrashCount(floor(m_crash_count));
 //#ifdef AI_DEBUG
 //        cout << "player (" << m_kart->getIdent() << ") just crashed !" << endl;
 //        cout << "player (" << m_kart->getIdent() << ") crash number = " << m_crash_number << endl;

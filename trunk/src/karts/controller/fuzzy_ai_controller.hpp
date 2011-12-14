@@ -51,16 +51,6 @@ struct TaggedItem
     {};
 };
 
-struct DebugText
-{
-    const Item* item;
-    irr::scene::IBillboardTextSceneNode* text;
-    
-    DebugText(const Item* i, irr::scene::IBillboardTextSceneNode* t) : item(i),
-                                                                       text(t)
-    {};
-};
-
 /**
   * \ingroup controller
   */
@@ -89,16 +79,17 @@ private:
 
     //==========================================================================
     // Fuzzy AI variables
-    
+    static  unsigned int instanceCount; // used to determine which instance has to debug (the first one only)
     float          m_timer;
     int            m_compet; // Competitiveness of the agent TODO Constant
     /* Collision tagger */
     // Vector<int> m_speed_diff;
     
-    std::vector<DebugText*> *m_texts;
     // End of Fuzzy AI variables
     int                      m_target_x;
     int                      m_target_z;
+    bool                     debug; // if this agent must print debug output
+    
     //==========================================================================
     
     /*Difficulty handling variables*/
@@ -211,10 +202,6 @@ private:
 
     float   computeWeaponInterest (int          competitiveness,
                                    float        hit_estimation );
-
-    float   computeNitroAttraction (float   difficulty,
-                                    float available_nitro,
-                                    int competitiveness );
     
     // -- Detection methods --
     void  getCloseKarts           (std::vector<const Kart*>& closeKarts,
@@ -228,7 +215,7 @@ private:
     std::vector<unsigned int>& computeForkChoices(std::vector<unsigned int>& output);
     
     // -- Debug method --
-    void setDebugText(const Item* item, const std::string* text);
+//    void setDebugText(const Item* item, const std::string* text);
     //void  printFuzzyData();
     //--------------------------------------------------------------------------
 

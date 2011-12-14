@@ -29,6 +29,7 @@ using namespace irr;
 #include "btBulletDynamicsCommon.h"
 
 #include "physics/kart_motion_state.hpp"
+#include "karts/controller/fuzzy_ai_taggable.hpp"
 #include "physics/user_pointer.hpp"
 #include "utils/no_copy.hpp"
 #include "utils/vec3.hpp"
@@ -40,7 +41,7 @@ const int MAX_NITRO = 16;
 /**
   * \ingroup karts
   */
-class Moveable: public NoCopy
+class Moveable: public NoCopy, public FuzzyAITaggable
 {
 private:
     btVector3              m_velocityLC;      /**<Velocity in kart coordinates. */

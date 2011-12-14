@@ -73,10 +73,8 @@ public :
     
     const std::vector<std::vector<PathData*>*>* getPathData(
                                                     unsigned int nodeId ) const;
-    
-    // Test
-    void        createPathTrees();
-    
+    // Todo comment
+    void        createPathTrees();    
 };
 
 extern FuzzyDataManager *fuzzy_data_manager;

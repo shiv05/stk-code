@@ -18,6 +18,8 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+#define AI_DEBUG
+
 #include <iostream>
 
 #include "karts/controller/player_controller.hpp"
@@ -375,8 +377,9 @@ void PlayerController::update(float dt)
     //------------------------------------------------------
     // Rank estimation for fuzzy ai controllers
     m_timer += dt;
-    if(m_timer >= 5.0f)        // every 5 seconds, compute average rank
+    if(m_timer >= 1.0f)        // every seconds, compute average rank
     {
+        m_timer -= 1.0f;
         // TODO change formula so that the average rank takes more in account
         // the current rank (so the player evaluation can change in race)
         //m_average_rank = ((m_average_rank * m_times_average_rank_was_computed) +
@@ -393,17 +396,16 @@ void PlayerController::update(float dt)
 //        cout << "player (" << m_kart->getIdent() << ") average rank = " << m_average_rank << endl;
 //#endif
         if(m_crash_count > 0)
-            m_crash_count--;    // Decrement (last 20 seconds) crash count
-        m_timer -= 5.0f;
+            m_crash_count -= 0.05;    // Decrement (last 20 seconds) crash count
     }
 
     //------------------------------------------------------
-    // Crash number for fuzzy ai controllers
+    // Crash count for fuzzy ai controllers
     //  less of 10mps is considered as a crash
     if(m_kart->getSpeed() < 10.0f && m_old_speed > 10.0f)
     {
         m_crash_count++;
-        fuzzy_data_manager->setPlayerCrashCount(m_crash_count);
+        fuzzy_data_manager->setPlayerCrashCount((int) m_crash_count);
 //#ifdef AI_DEBUG
 //        cout << "player (" << m_kart->getIdent() << ") just crashed !" << endl;
 //        cout << "player (" << m_kart->getIdent() << ") crash number = " << m_crash_number << endl;
@@ -411,6 +413,12 @@ void PlayerController::update(float dt)
     }
     m_old_speed = m_kart->getSpeed();
 
+#ifdef AI_DEBUG
+//    std::stringstream * t = new std::stringstream();
+//    (*t) << "Crash " << ((int) m_crash_count) << " | AvRank" << m_average_rank;
+//    ((FuzzyAITaggable*) m_kart)->setDebugText(t->str());
+//    ((FuzzyAITaggable*) m_kart)->updatePosition();
+#endif
 
     Controller::update(dt);
 }   // update

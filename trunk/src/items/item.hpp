@@ -32,6 +32,7 @@ namespace irr
 using namespace irr;
 
 #include "karts/kart.hpp"
+#include "karts/controller/fuzzy_ai_taggable.hpp"
 #include "utils/no_copy.hpp"
 
 class LODNode;
@@ -41,7 +42,7 @@ class LODNode;
 /**
   * \ingroup items
   */
-class Item : public NoCopy
+class Item : public NoCopy, public FuzzyAITaggable
 {
 public:
     /**
@@ -153,7 +154,9 @@ public:
     // ------------------------------------------------------------------------
     /** Returns true if this item can be used up, and therefore needs to
      *  be removed when the game is reset. */
-    Vec3          getXYZ()       const {return m_xyz; }
+    Vec3          getXYZ()             {return m_xyz; }
+    const Vec3&   getXYZ()       const {return (Vec3&) m_xyz; }
+
     // ------------------------------------------------------------------------
     /** Sets how long an item should be disabled. While item itself sets
      *  a default, this time is too short in case that a kart that has a bomb

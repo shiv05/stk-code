@@ -53,7 +53,7 @@ private:
     //unsigned int   m_times_average_rank_was_computed; // Used only by exact average formula
     float          m_timer;
     
-    unsigned int   m_crash_count; // times the player crashed within the 20 last sec.
+    float          m_crash_count; // times the player crashed within the 20 last sec.
     float          m_old_speed;
     //  -- End of fuzzy AI variables --
 

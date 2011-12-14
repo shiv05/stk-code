@@ -236,7 +236,7 @@ Controller* World::loadAIController(Kart *kart)
     // static int turn=1;
     // turn=1-turn;
 
-    // For now disable the new AI.
+    // Use Fuzzy AI
     int turn=2;
     switch(turn)
     {

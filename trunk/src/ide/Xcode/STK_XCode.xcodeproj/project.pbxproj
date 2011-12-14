@@ -36,6 +36,7 @@
 		56887DE014759AFD00800478 /* readme.txt in Resources */ = {isa = PBXBuildFile; fileRef = 56887DBF14759AFC00800478 /* readme.txt */; };
 		56887DE114759AFD00800478 /* RuleArray.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DC014759AFC00800478 /* RuleArray.cpp */; };
 		56CCECCC1481827E00AEF420 /* fuzzy_ai_path_tree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56CCECCB1481827E00AEF420 /* fuzzy_ai_path_tree.cpp */; };
+		56E4F5AC1498BD430030AB50 /* fuzzy_ai_taggable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56E4F5AB1498BD430030AB50 /* fuzzy_ai_taggable.cpp */; };
 		95017B41124698C400C90D56 /* help_screen_4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95017B3F124698C400C90D56 /* help_screen_4.cpp */; };
 		9507E9B70FC1CCE900BD2B92 /* stk.icns in Resources */ = {isa = PBXBuildFile; fileRef = 9507E9B60FC1CCE900BD2B92 /* stk.icns */; };
 		9507E9D10FC1CDCE00BD2B92 /* Ogg.framework in Copy frameworks */ = {isa = PBXBuildFile; fileRef = 9551C7F90FC1B63C00DB481B /* Ogg.framework */; };
@@ -470,6 +471,8 @@
 		56887E2414759BE800800478 /* COGDefuzz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = COGDefuzz.h; sourceTree = "<group>"; };
 		56CCECC91481826400AEF420 /* fuzzy_ai_path_tree.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fuzzy_ai_path_tree.hpp; sourceTree = "<group>"; };
 		56CCECCB1481827E00AEF420 /* fuzzy_ai_path_tree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fuzzy_ai_path_tree.cpp; sourceTree = "<group>"; };
+		56E4F5AB1498BD430030AB50 /* fuzzy_ai_taggable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fuzzy_ai_taggable.cpp; sourceTree = "<group>"; };
+		56E4F5AD1498BD4E0030AB50 /* fuzzy_ai_taggable.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fuzzy_ai_taggable.hpp; sourceTree = "<group>"; };
 		95017B3F124698C400C90D56 /* help_screen_4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = help_screen_4.cpp; path = ../../states_screens/help_screen_4.cpp; sourceTree = SOURCE_ROOT; };
 		95017B40124698C400C90D56 /* help_screen_4.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = help_screen_4.hpp; path = ../../states_screens/help_screen_4.hpp; sourceTree = SOURCE_ROOT; };
 		9505570E0F6963790056E88C /* file_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = file_manager.cpp; path = ../../io/file_manager.cpp; sourceTree = SOURCE_ROOT; };
@@ -1677,6 +1680,8 @@
 				566E370B147D071400A75C28 /* fuzzy_data_manager.hpp */,
 				5610F3541471868600DAD96F /* fuzzy_ai_controller.cpp */,
 				5610F3551471868600DAD96F /* fuzzy_ai_controller.hpp */,
+				56E4F5AB1498BD430030AB50 /* fuzzy_ai_taggable.cpp */,
+				56E4F5AD1498BD4E0030AB50 /* fuzzy_ai_taggable.hpp */,
 				957ED47E1163FF18002AB42C /* ai_base_controller.cpp */,
 				957ED47F1163FF18002AB42C /* ai_base_controller.hpp */,
 				956C6EC81128D3FB004336C8 /* controller.cpp */,
@@ -3350,6 +3355,7 @@
 				56887DE114759AFD00800478 /* RuleArray.cpp in Sources */,
 				566E370C147D071400A75C28 /* fuzzy_data_manager.cpp in Sources */,
 				56CCECCC1481827E00AEF420 /* fuzzy_ai_path_tree.cpp in Sources */,
+				56E4F5AC1498BD430030AB50 /* fuzzy_ai_taggable.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

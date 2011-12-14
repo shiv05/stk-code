@@ -72,6 +72,8 @@ using namespace std;
 using namespace irr;
 using namespace core;
 
+unsigned int FuzzyAIController::instanceCount = 0;
+
 FuzzyAIController::FuzzyAIController(Kart *kart) :
                                                  AIBaseController(kart, NULL, 1)
 {
@@ -127,7 +129,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
     // -- Fuzzy controller attributes --
     // Player evaluation
     m_timer                   = 0.0f;
-    m_texts                   = new vector<DebugText*>();
+//    m_texts                   = new vector<DebugText*>();
 
     m_compet                  = 1; // TODO Constants
     
@@ -136,6 +138,13 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
 #ifdef AI_DEBUG
     m_debug_sphere = irr_driver->getSceneManager()->addSphereSceneNode(1);
 #endif
+    
+    if(FuzzyAIController::instanceCount == 0)
+        debug = true;
+    else
+        debug = false;
+
+    FuzzyAIController::instanceCount ++;
 }   // FuzzyAIController
 
 //-----------------------------------------------------------------------------
@@ -144,7 +153,6 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
  */
 FuzzyAIController::~FuzzyAIController()
 {
-    cout << "FAIC : DESTRUCTOR" << endl;
 //    delete[] m_texts;
 #ifdef AI_DEBUG
     irr_driver->removeNode(m_debug_sphere);
@@ -355,7 +363,6 @@ void FuzzyAIController::update(float dt)
         float av_rank = fuzzy_data_manager->getPlayerAverageRank();
         int   crash_c = fuzzy_data_manager->getPlayerCrashCount();
 
-
         //Get total number of karts for normalization
 		World *world = World::getWorld();
 
@@ -386,37 +393,22 @@ void FuzzyAIController::update(float dt)
         float hit_estimation = 0;
         float weapon_interest = 0;
 
-       if(possessed_item != 0)
+        if(possessed_item != 0)
         {
-
-         //Get the hit estimation
-
-         hit_estimation = computeHitEstimation(possessed_item,m_distance_ahead);
-
-         //Now get the interest the possessed weapons.
-
-         weapon_interest = computeWeaponInterest(m_compet,hit_estimation);
-
-       }
-
-       //Object difficulty tagging. Value will be used to compute the attraction.
-
-       //TODO
-       float difficulty = 5;
-
-       //Nitro attraction
-
-       //Get the available nitro
-
-       float available_nitro = m_kart->getEnergy();
-
-       //Get the attraction value
-
-      float nitro_attraction = computeNitroAttraction(difficulty,available_nitro,m_compet);
+            //Get the hit estimation
+            
+            hit_estimation = computeHitEstimation(possessed_item,m_distance_ahead);
+            
+            //Now get the interest the possessed weapons.
+            
+            weapon_interest = computeWeaponInterest(m_compet,hit_estimation);        
+        }
 
 
   
 #ifdef AI_DEBUG
+        if(debug)
+        {
         cout << "----------------------------------------" << endl;
         // -- Player evaluation --
         cout << " -- PLAYER EVALUATION -- " << endl;
@@ -487,12 +479,7 @@ void FuzzyAIController::update(float dt)
         cout << m_kart->getIdent() << " : agent weapon hit difficulty = ";
         cout << hit_estimation << endl;
         cout << m_kart->getIdent() << " : agent interest to use the possessed weapon = ";
-        cout << weapon_interest << endl;
-
-        //-- Attraction values --
-        cout << " -- ATTRACTION VALUES-- " << endl;
-        cout << m_kart->getIdent() << " : nitro attraction value = ";
-       // cout << nitro_attraction << endl;
+        cout << weapon_interest << endl; 
 
         // -- Path choice --
 //        if(pathData)
@@ -502,7 +489,7 @@ void FuzzyAIController::update(float dt)
 //         cout << bestPath << endl;
 //        }
 
-        
+        }
 #endif
     }
 }   // update
@@ -736,28 +723,6 @@ float FuzzyAIController::computeWeaponInterest(int   competitiveness,
     return  computeFuzzyModel(file_name, interestParameters);
 } // computeWeaponInterest
 
-  //------------------------------------------------------------------------------
-/** Module to know the attraction of a nitro item. Simply call computeFuzzyModel with the
- *  right parameters.
- *  TODO : make this comment doxygen compliant
- *  Fuzzy model for each weapon?
- */
-
-
-float   FuzzyAIController::computeNitroAttraction (float   difficulty,
-                                    float available_nitro,
-                                    int competitiveness)
-{
-    const std::string& file_name = "nitro_attraction.fcl";
-
-    vector<float> nitroAttractionParameters;
-    nitroAttractionParameters.push_back(difficulty);
-    nitroAttractionParameters.push_back(available_nitro);
-    nitroAttractionParameters.push_back((float)competitiveness);
-
-    return  computeFuzzyModel(file_name, nitroAttractionParameters);
-}
-
 
 //------------------------------------------------------------------------------
 /** Generic method to interface with FFLL and compute an output using fuzzy
@@ -789,9 +754,9 @@ float FuzzyAIController::computeFuzzyModel(const std::string&  file_name,
 	int child = ffll_new_child(model);
 
     // Set parameters value.
-	for (int i=0; i < parameters.size(); i++)
+	for (size_t i=0, size=parameters.size(); i < size; i++)
 	{
-		ffll_set_value(model, child, i, parameters.at(i)); 
+		ffll_set_value(model, child, i, parameters[i]); 
 	}
 
     // Compute and return output
@@ -1594,9 +1559,6 @@ void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
 vector<TaggedItem*>& FuzzyAIController::tagItems( const vector<Item*>& items,
                                                   vector<TaggedItem*>& output )
 {
-    if(!m_texts)
-        m_texts = new vector<DebugText*>();
-
     vector2d<float> kartToItem, kartToNextNode, kartVel;
     int          tag;
     float        dist, x, z, vel, angle;
@@ -1639,36 +1601,9 @@ vector<TaggedItem*>& FuzzyAIController::tagItems( const vector<Item*>& items,
         
         std::stringstream * t = new std::stringstream();
         (*t) << "D=" << (floorf(dist * 100 + 0.5)/100) << " A=" << floorf(angle * 100 + 0.5)/100 << " D=" << floorf(direction * 100 + 0.5)/100 << " T=" << tag;
-        setDebugText(items[i], &(t->str()));
-//        cout << "ITEM TAG DEBUG : " << t->str() << endl;
+        if(debug)
+            ((FuzzyAITaggable*) items[i])->setDebugText(t->str());
     }
-}
-
-/**-----------------------------------------------------------------------------
- *  TODO Comment
- */
-void FuzzyAIController::setDebugText(const Item* item, const std::string* text)
-{
-    float h;
-    for(unsigned int j=0; j<m_texts->size() ; j++)
-    {
-        if(item == m_texts->at(j)->item)
-        {
-            if(!m_texts->at(j)->text)
-            {
-                h = 1 + rand()%4;
-                vector3d<float> pos = vector3d<float>(item->getXYZ().getX(), item->getXYZ().getY() + h, item->getXYZ().getZ());
-                m_texts->at(j)->text = irr_driver->getSceneManager()->addBillboardTextSceneNode(0, 0, 0, core::dimension2d< f32 >(6.f, 1.f), pos);
-            }
-            std::wstring textw = std::wstring(text->begin(), text->end());
-            const wchar_t* textwc = textw.c_str();
-            m_texts->at(j)->text->setText(textwc);
-            return;
-        }
-    }
-    // If the item does not have a DebugText yet, create it and re-launch the function 
-    m_texts->push_back(new DebugText(item, NULL));
-    setDebugText(item, text);
 }
 
 /**-----------------------------------------------------------------------------
@@ -1696,7 +1631,6 @@ vector<unsigned int>& FuzzyAIController::computeForkChoices(
 #ifdef AI_DEBUG
             assert(pathData);
 #endif
- 
             unsigned int pathChoice = choosePath(pathData, m_compet);
             output.push_back(pathChoice);
             nextId = pathChoice;

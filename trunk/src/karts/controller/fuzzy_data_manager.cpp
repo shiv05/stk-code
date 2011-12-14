@@ -115,6 +115,7 @@ const vector<vector<PathData*>*>* FuzzyDataManager::getPathData(
     return NULL;
 } // getPathData
 
+
 //------------------------------------------------------------------------------
 /** Returns the world player kart ID. -1 if no player is found.
  *   Currently considers there is only one player.

@@ -399,6 +399,21 @@ void FuzzyAIController::update(float dt)
 
        }
 
+       //Object difficulty tagging. Value will be used to compute the attraction.
+
+       //TODO
+       float difficulty = 5;
+
+       //Nitro attraction
+
+       //Get the available nitro
+
+       float available_nitro = m_kart->getEnergy();
+
+       //Get the attraction value
+
+      float nitro_attraction = computeNitroAttraction(difficulty,available_nitro,m_compet);
+
 
   
 #ifdef AI_DEBUG
@@ -472,7 +487,12 @@ void FuzzyAIController::update(float dt)
         cout << m_kart->getIdent() << " : agent weapon hit difficulty = ";
         cout << hit_estimation << endl;
         cout << m_kart->getIdent() << " : agent interest to use the possessed weapon = ";
-        cout << weapon_interest << endl; 
+        cout << weapon_interest << endl;
+
+        //-- Attraction values --
+        cout << " -- ATTRACTION VALUES-- " << endl;
+        cout << m_kart->getIdent() << " : nitro attraction value = ";
+       // cout << nitro_attraction << endl;
 
         // -- Path choice --
 //        if(pathData)
@@ -716,6 +736,28 @@ float FuzzyAIController::computeWeaponInterest(int   competitiveness,
     return  computeFuzzyModel(file_name, interestParameters);
 } // computeWeaponInterest
 
+  //------------------------------------------------------------------------------
+/** Module to know the attraction of a nitro item. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliant
+ *  Fuzzy model for each weapon?
+ */
+
+
+float   FuzzyAIController::computeNitroAttraction (float   difficulty,
+                                    float available_nitro,
+                                    int competitiveness)
+{
+    const std::string& file_name = "nitro_attraction.fcl";
+
+    vector<float> nitroAttractionParameters;
+    nitroAttractionParameters.push_back(difficulty);
+    nitroAttractionParameters.push_back(available_nitro);
+    nitroAttractionParameters.push_back((float)competitiveness);
+
+    return  computeFuzzyModel(file_name, nitroAttractionParameters);
+}
+
 
 //------------------------------------------------------------------------------
 /** Generic method to interface with FFLL and compute an output using fuzzy
@@ -747,9 +789,9 @@ float FuzzyAIController::computeFuzzyModel(const std::string&  file_name,
 	int child = ffll_new_child(model);
 
     // Set parameters value.
-	for (size_t i=0, size=parameters.size(); i < size; i++)
+	for (int i=0; i < parameters.size(); i++)
 	{
-		ffll_set_value(model, child, i, parameters[i]); 
+		ffll_set_value(model, child, i, parameters.at(i)); 
 	}
 
     // Compute and return output

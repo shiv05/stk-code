@@ -211,6 +211,10 @@ private:
 
     float   computeWeaponInterest (int          competitiveness,
                                    float        hit_estimation );
+
+    float   computeNitroAttraction (float   difficulty,
+                                    float available_nitro,
+                                    int competitiveness );
     
     // -- Detection methods --
     void  getCloseKarts           (std::vector<const Kart*>& closeKarts,

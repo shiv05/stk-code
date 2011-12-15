@@ -102,7 +102,7 @@ void PlayerController::reset()
     m_prev_accel   = 0;
     m_penalty_time = 0;
     m_crash_count  = 0;
-    m_average_rank = 0;
+    m_average_rank = m_kart->getPosition();
     Controller::reset();
 }   // reset
 
@@ -390,7 +390,8 @@ void PlayerController::update(float dt)
         // m_times_average_rank_was_computed++;
 
         // This formula takes around 15sec to converge towards a new rank
-        m_average_rank = (m_average_rank + m_kart->getPosition())/2;
+        m_average_rank = (m_average_rank*4 + m_kart->getPosition())/5;
+        cout << "PLAYYYYYYYYYYYYYYYYYYYYER : (" << m_average_rank << "*4" << " + " << m_kart->getPosition() << ")/5 = "<< m_average_rank << endl;
         fuzzy_data_manager->setPlayerAverageRank(m_average_rank);
 
 //#ifdef AI_DEBUG

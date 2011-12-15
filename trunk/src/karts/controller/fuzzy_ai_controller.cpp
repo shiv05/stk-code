@@ -360,10 +360,7 @@ void FuzzyAIController::update(float dt)
         int   crash_c = fuzzy_data_manager->getPlayerCrashCount();
 
         //Get total number of karts for normalization
-		World *world = World::getWorld();
-
-		int number_of_karts = world->getNumKarts();
-
+		int number_of_karts = World::getWorld()->getNumKarts();
 
         int eval = (int)computePlayerEvaluation(number_of_karts, av_rank, crash_c);
 
@@ -465,7 +462,7 @@ void FuzzyAIController::update(float dt)
             case (3): cout << "Careful" << endl; break;
             default : cout << "unexpected value : " << eval << endl;
         } // end switch
-
+        
         // -- Hit estimation --
         cout << " -- HIT ESTIMATION -- " << endl;
         cout << m_kart->getIdent() << " : agent current powerup type = ";
@@ -476,7 +473,7 @@ void FuzzyAIController::update(float dt)
         cout << hit_estimation << endl;
         cout << m_kart->getIdent() << " : agent interest to use the possessed weapon = ";
         cout << weapon_interest << endl; 
-
+        
         // -- Path choice --
 //        if(pathData)
 //        {
@@ -496,19 +493,17 @@ void FuzzyAIController::update(float dt)
  *  TODO : make this comment doxygen compliant
  */
 
-int FuzzyAIController::computePlayerEvaluation( unsigned int  numberOfPlayers,
+int FuzzyAIController::computePlayerEvaluation( unsigned int  kartCount,
                                                 unsigned int  playerAverageRank,
                                                 unsigned int  playerCrashCount)
 {
     const std::string &fileName = "player_evaluation.fcl";
-	// The rank of the player need to be normalized before computing
 
+	// The rank of the player need to be normalized before computing
     float normalized_player_average_rank;
 
-	if(numberOfPlayers > 0)
-	{
-      normalized_player_average_rank = (playerAverageRank*10)/numberOfPlayers;
-	}
+	if(kartCount > 0)
+        normalized_player_average_rank = (playerAverageRank*10)/kartCount;
 
     vector<float> evaluationParameters;
     evaluationParameters.push_back(normalized_player_average_rank);
@@ -751,9 +746,7 @@ float FuzzyAIController::computeFuzzyModel(const std::string&  file_name,
 
     // Set parameters value.
 	for (size_t i=0, size=parameters.size(); i < size; i++)
-	{
 		ffll_set_value(model, child, i, parameters[i]); 
-	}
 
     // Compute and return output
 	return (float) ffll_get_output_value(model, child);

@@ -1,0 +1,49 @@
+(* FCL File Created From FFLL Model. Generic module to know the difficulty to reach an object. The output of this module is used to tag the interest of objects*)
+FUNCTION_BLOCK
+
+VAR_INPUT
+	Distance	REAL; (* RANGE(0 .. 100) *) 
+	Angle	REAL; (* RANGE(0 .. 180) *) 
+END_VAR
+
+VAR_OUTPUT
+	Difficulty	REAL; (* RANGE(0 .. 10) *) 
+END_VAR
+
+FUZZIFY Distance
+	TERM Close := (0, 0) (0, 1) (40, 0) ;
+	TERM Middle:= (30, 0) (50, 1) (70, 0) ;
+	TERM Far := (60, 0) (100, 1) (100, 0) ;
+END_FUZZIFY
+
+FUZZIFY Angle
+	TERM Small := (0, 0) (0, 1) (45, 0) ;
+	TERM Medium:= (35, 0) (60, 1) (85, 0) ;
+	TERM Large := (90, 0) (180, 1) (180, 0) ;
+END_FUZZIFY
+
+FUZZIFY Difficulty
+	TERM Easy := (0, 0) (0, 1) (3, 0) ;
+	TERM Normal:= (2, 0) (5, 1) (8, 0) ;
+	TERM Difficult := (7, 0) (10, 1) (10, 0) ;
+END_FUZZIFY
+
+DEFUZZIFY valve
+	METHOD: CoG;
+END_DEFUZZIFY
+
+RULEBLOCK first
+	AND:MIN;
+	ACCUM:MAX;
+	RULE 0: IF Close AND Small THEN Easy;
+	RULE 1: IF Close AND Medium THEN Easy;
+	RULE 2: IF Close AND Large  THEN Difficult;
+	RULE 3: IF Middle AND Small  THEN Easy;
+	RULE 4: IF Middle AND Medium  THEN Normal;
+	RULE 5: IF Middle AND Large  THEN Difficult;
+	RULE 6: IF Far AND Small  THEN Easy;
+	RULE 7: IF Far AND Medium  THEN Normal;
+	RULE 8: IF Far AND Large  THEN Normal;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

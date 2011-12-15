@@ -1,0 +1,59 @@
+(* FCL File Created From FFLL Model. Used to evaluate the competitiveness of the agent regarding the player level *)
+
+FUNCTION_BLOCK
+
+VAR_INPUT
+	Player_level	REAL; (* RANGE(0 .. 4) *) 
+	Current_ranking	REAL; (* RANGE(0 .. 10) *) 
+END_VAR
+
+VAR_OUTPUT
+	Competitiveness	REAL; (* RANGE(0 .. 4) *) 
+END_VAR
+
+FUZZIFY Player_level
+	TERM Good := 1 ;
+	TERM Average:= 2 ;
+	TERM Bad := 3 ; 
+END_FUZZIFY
+
+FUZZIFY Current_ranking
+	TERM High := (0, 0) (0, 1) (3, 0) ;
+	TERM Medium:= (2, 0) (5, 1) (8, 0) ;
+	TERM Low := (7, 0) (10, 1) (10, 0) ;
+END_FUZZIFY
+
+FUZZIFY Competitiveness
+	TERM Competitive := 1 ;
+	TERM Noncompetitive := 2 ;
+END_FUZZIFY
+
+DEFUZZIFY valve
+	METHOD: MoM;
+END_DEFUZZIFY
+
+RULEBLOCK first
+	AND:MIN;
+	ACCUM:MAX;
+	RULE 0: IF Good AND Low THEN Competitive;
+	RULE 1: IF Good AND Medium THEN Competitive;
+	RULE 2: IF Good AND High THEN Competitive;
+	RULE 3: IF Average AND Low THEN Competitive;
+	RULE 4: IF Average AND Medium THEN Competitive;
+	RULE 5: IF Average AND High THEN Competitive;
+	RULE 6: IF Bad AND Low THEN Noncompetitive;
+	RULE 7: IF Bad AND Medium THEN Noncompetitive;
+	RULE 8: IF Bad AND High THEN Noncompetitive;
+	RULE 9: IF Good AND Low THEN Competitive;
+	RULE 10: IF Good AND Medium THEN Competitive;
+	RULE 11: IF Good AND High THEN Competitive;
+	RULE 12: IF Average AND Low THEN Competitive;
+	RULE 13: IF Average AND Medium THEN Competitive;
+	RULE 14: IF Average AND High THEN Competitive;
+	RULE 15: IF Bad AND Low THEN Noncompetitive;
+	RULE 16: IF Bad AND Medium THEN Noncompetitive;
+	RULE 17: IF Bad AND High THEN Noncompetitive;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
+

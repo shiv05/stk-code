@@ -370,9 +370,9 @@ void FuzzyAIController::update(float dt)
         int current_ranking = m_kart->getPosition();
 
 
-        //TODO: Kart classes (heavy..) are not implemented. We use a test value.
-
-        int kart_class = 1;
+        // TODO: Kart classes (heavy, medium, light) are not implemented.
+        // For now we use a medium value for every kart.
+        int kart_class = 2;
 
         m_compet = computeCompetitiveness(number_of_karts,eval,current_ranking);
         int agressiveness = computeAgressiveness(number_of_karts,kart_class,current_ranking);
@@ -396,7 +396,6 @@ void FuzzyAIController::update(float dt)
             
             weapon_interest = computeWeaponInterest(m_compet,hit_estimation);        
         }
-
 
   
 #ifdef AI_DEBUG
@@ -494,8 +493,8 @@ void FuzzyAIController::update(float dt)
  */
 
 int FuzzyAIController::computePlayerEvaluation( unsigned int  kartCount,
-                                                unsigned int  playerAverageRank,
-                                                unsigned int  playerCrashCount)
+                                                float         playerAverageRank,
+                                                float         playerCrashCount)
 {
     const std::string &fileName = "player_evaluation.fcl";
 
@@ -504,7 +503,8 @@ int FuzzyAIController::computePlayerEvaluation( unsigned int  kartCount,
 
 	if(kartCount > 0)
         normalized_player_average_rank = (playerAverageRank*10)/kartCount;
-
+    
+    //cout << "Kartn = " << kartCount << ", Av" << playerAverageRank << ", NAvRk = " << normalized_player_average_rank << ", CC = " << playerCrashCount << endl;
     vector<float> evaluationParameters;
     evaluationParameters.push_back(normalized_player_average_rank);
     evaluationParameters.push_back(playerCrashCount);

@@ -391,7 +391,6 @@ void PlayerController::update(float dt)
 
         // This formula takes around 15sec to converge towards a new rank
         m_average_rank = (m_average_rank*4 + m_kart->getPosition())/5;
-        cout << "PLAYYYYYYYYYYYYYYYYYYYYER : (" << m_average_rank << "*4" << " + " << m_kart->getPosition() << ")/5 = "<< m_average_rank << endl;
         fuzzy_data_manager->setPlayerAverageRank(m_average_rank);
 
 //#ifdef AI_DEBUG
@@ -400,8 +399,8 @@ void PlayerController::update(float dt)
 //#endif
         if(m_crash_count > 0)
         {
-            m_crash_count -= 0.1f * (floor(m_crash_count)); // Decrement (last 10 seconds) crash count
-            fuzzy_data_manager->setPlayerCrashCount(floor(m_crash_count));
+            m_crash_count -= 0.1f * (floor(m_crash_count + 0.5)); // Decrement (last 10 seconds) crash count
+            fuzzy_data_manager->setPlayerCrashCount(floor(m_crash_count + 0.5));
         }    
     }
 
@@ -411,7 +410,7 @@ void PlayerController::update(float dt)
     if(m_kart->getSpeed() < 10.0f && m_old_speed > 10.0f)
     {
         m_crash_count += 1.0f;
-        fuzzy_data_manager->setPlayerCrashCount(floor(m_crash_count));
+        fuzzy_data_manager->setPlayerCrashCount(floor(m_crash_count + 0.5));
 //#ifdef AI_DEBUG
 //        cout << "player (" << m_kart->getIdent() << ") just crashed !" << endl;
 //        cout << "player (" << m_kart->getIdent() << ") crash number = " << m_crash_number << endl;

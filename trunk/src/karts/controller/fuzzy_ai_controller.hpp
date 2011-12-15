@@ -179,8 +179,8 @@ private:
                                   std::vector<float> parameters );
 
     int   computePlayerEvaluation (unsigned int number_of_players,
-                                   unsigned int player_average_rank,
-                                   unsigned int player_crash_count );
+                                   float        player_average_rank,
+                                   float        player_crash_count );
 
     int   computeCompetitiveness  (unsigned int number_of_players,
                                    int          player_level,

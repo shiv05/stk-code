@@ -41,6 +41,8 @@ END_DEFUZZIFY
 RULEBLOCK first
 	AND:MIN;
 	ACCUM:MAX;
+	    (*      |Difficulty      |Nitro        |Competitiveness    |Output         *)
+    (* -------|----------------|-------------|-------------------|-------------- *)
 	RULE 0: IF Easy AND Small AND Competitive THEN High;
 	RULE 1: IF Easy AND Medium AND Competitive THEN High;
 	RULE 2: IF Easy AND Large AND Competitive  THEN Normal;

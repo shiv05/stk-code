@@ -34,6 +34,8 @@ END_DEFUZZIFY
 RULEBLOCK first
 	AND:MIN;
 	ACCUM:MAX;
+		    (*  |Item_type   |Position |Output         *)
+    (* -------|---------------|-------------|-------------- *)
 	RULE 0: IF Type1 AND Near THEN Easy;
 	RULE 1: IF Type1 AND Normal THEN Easy;
 	RULE 2: IF Type1 AND Far THEN Easy;

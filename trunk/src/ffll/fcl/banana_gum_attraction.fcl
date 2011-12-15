@@ -35,6 +35,8 @@ END_DEFUZZIFY
 RULEBLOCK first
 	AND:MIN;
 	ACCUM:MAX;
+	(*          |Difficulty   |Speed       |Output         *)
+    (* -------|-------------|-------------|-------------- *)
 	RULE 0: IF Easy AND Slow THEN Dangerous;
 	RULE 1: IF Easy AND Normal THEN Very_Dangerous;
 	RULE 2: IF Easy AND Fast  THEN Very_Dangerous;

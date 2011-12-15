@@ -4,6 +4,7 @@ FUNCTION_BLOCK
 VAR_INPUT
 	Difficulty	REAL; (* RANGE(0 .. 10) *) 
 	Speed	REAL; (* RANGE(0 .. 40) *) 
+	Competitiveness	REAL; (* RANGE(0 .. 4)*)
 END_VAR
 
 VAR_OUTPUT
@@ -22,6 +23,11 @@ FUZZIFY Speed
 	TERM Fast := (25, 0) (40, 1) (40, 0) ;
 END_FUZZIFY
 
+FUZZIFY Competitiveness
+    TERM Competitive    := 1 ;
+    TERM NotCompetitive := 2 ;
+END_FUZZIFY
+
 FUZZIFY Attraction_value
 	TERM Low := (0, 0) (0, 1) (3, 0) ;
 	TERM Normal:= (2, 0) (5, 1) (8, 0) ;
@@ -35,15 +41,26 @@ END_DEFUZZIFY
 RULEBLOCK first
 	AND:MIN;
 	ACCUM:MAX;
-	RULE 0: IF Easy AND Slow THEN High;
-	RULE 1: IF Easy AND Normal THEN High;
-	RULE 2: IF Easy AND Fast  THEN Normal;
-	RULE 3: IF Normal AND Slow  THEN High;
-	RULE 4: IF Normal AND Normal  THEN Normal;
-	RULE 5: IF Normal AND Fast  THEN Low;
-	RULE 6: IF Difficult AND Slow  THEN Normal;
-	RULE 7: IF Difficult AND Normal  THEN Low;
-	RULE 8: IF Difficult AND Fast  THEN Low;
+		    (*      |Difficulty   |Speed       |Competitiveness |Output         *)
+    (* -------|----------------|-------------|-----------------------|-------------- *)
+	RULE 0: IF Easy AND Slow AND Competitive THEN High;
+	RULE 1: IF Easy AND Normal AND Competitive THEN High;
+	RULE 2: IF Easy AND Fast  AND Competitive THEN Normal;
+	RULE 3: IF Normal AND Slow AND Competitive  THEN High;
+	RULE 4: IF Normal AND Normal AND Competitive  THEN Normal;
+	RULE 5: IF Normal AND Fast AND Competitive  THEN Low;
+	RULE 6: IF Difficult AND Slow AND Competitive  THEN Normal;
+	RULE 7: IF Difficult AND Normal AND Competitive  THEN Low;
+	RULE 8: IF Difficult AND Fast AND Competitive  THEN Low;
+	RULE 9: IF Easy AND Slow AND NotCompetitive THEN Low;;
+	RULE 10: IF Easy AND Normal AND NotCompetitive THEN Low;;
+	RULE 11: IF Easy AND Fast AND NotCompetitive  THEN Low;;
+	RULE 12: IF Normal AND Slow AND NotCompetitive  THEN Low;;
+	RULE 13: IF Normal AND Normal AND NotCompetitive  THEN Low;;
+	RULE 14: IF Normal AND Fast  AND NotCompetitive THEN Low;;
+	RULE 15: IF Difficult AND Slow AND NotCompetitive  THEN Low;;
+	RULE 16: IF Difficult AND Normal AND NotCompetitive  THEN Low;;
+	RULE 17: IF Difficult AND Fast AND NotCompetitive  THEN Low;;
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

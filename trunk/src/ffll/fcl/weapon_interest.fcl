@@ -34,6 +34,8 @@ END_DEFUZZIFY
 RULEBLOCK first
 	AND:MIN;
 	ACCUM:MAX;
+	(*          |Competitiveness|Difficulty    |Output         *)
+    (* -------|---------------------|-------------|-------------- *)
 	RULE 0: IF Competitive AND Easy THEN Profitable;
 	RULE 1: IF Competitive AND Normal THEN Neutral ;
 	RULE 2: IF Competitive AND Hard THEN Unnecessary;

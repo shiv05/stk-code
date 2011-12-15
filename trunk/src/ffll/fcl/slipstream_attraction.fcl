@@ -35,6 +35,8 @@ END_DEFUZZIFY
 RULEBLOCK first
 	AND:MIN;
 	ACCUM:MAX;
+	    (*      |Difficulty     |Speed_difference|Output         *)
+    (* -------|---------------|----------------------|-------------- *)
 	RULE 0: IF Easy AND Slower THEN Low;
 	RULE 1: IF Easy AND Equal THEN High;
 	RULE 2: IF Easy AND Faster  THEN High;

@@ -34,6 +34,8 @@ END_DEFUZZIFY
 RULEBLOCK first
 	AND:MIN;
 	ACCUM:MAX;
+	(*          |Difficulty  |Has_object   |Output         *)
+    (* -------|-------------|---------------|-------------- *)
 	RULE 0: IF Easy AND True THEN Normal;
 	RULE 1: IF Easy AND False THEN High;
 	RULE 3: IF Normal AND True  THEN Low;

@@ -202,6 +202,14 @@ private:
 
     float   computeWeaponInterest (int          competitiveness,
                                    float        hit_estimation );
+
+    float   FuzzyAIController::computeNitroAttraction (float   difficulty,
+                                    float available_nitro,
+                                    int competitiveness);
+
+    float   computeZipperAttraction (float   difficulty,
+                                    float Speed,
+                                    int competitiveness );
     
     // -- Detection methods --
     void  getCloseKarts           (std::vector<const Kart*>& closeKarts,

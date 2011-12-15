@@ -397,6 +397,32 @@ void FuzzyAIController::update(float dt)
             weapon_interest = computeWeaponInterest(m_compet,hit_estimation);        
         }
 
+
+         //Get the hit estimation
+
+         hit_estimation = computeHitEstimation(possessed_item,m_distance_ahead);
+
+         //Now get the interest the possessed weapons.
+
+         weapon_interest = computeWeaponInterest(m_compet,hit_estimation);
+
+       
+
+       //Object difficulty tagging. Value will be used to compute the attraction.
+
+       //TODO
+       float difficulty = 5;
+
+       //TODO : FIX THE EXCEPTION ERROR ON VECTOR FOR NITRO AND ZIPPER ATTRACTION !!!
+
+       //Nitro attraction
+
+       //float nitro_attraction = computeNitroAttraction(difficulty,m_kart->getEnergy(),m_compet);
+
+       //Zipper attraction
+
+       //float zipper_attraction =computeZipperAttraction(difficulty,m_kart->getSpeed(),m_compet);
+
   
 #ifdef AI_DEBUG
         if(debug)
@@ -471,8 +497,13 @@ void FuzzyAIController::update(float dt)
         cout << m_kart->getIdent() << " : agent weapon hit difficulty = ";
         cout << hit_estimation << endl;
         cout << m_kart->getIdent() << " : agent interest to use the possessed weapon = ";
-        cout << weapon_interest << endl; 
-        
+        cout << weapon_interest << endl;
+
+        //-- Attraction values --
+       /* cout << " -- ATTRACTION VALUES-- " << endl;
+        cout << m_kart->getIdent() << " : nitro attraction value = ";*/
+       // cout << nitro_attraction << endl;
+
         // -- Path choice --
 //        if(pathData)
 //        {
@@ -699,7 +730,6 @@ float FuzzyAIController::computeDifficultyTag(float        distance,
 /** Module to know if it is interesting to use the possessed weapon. Simply call computeFuzzyModel with the
  *  right parameters.
  *  TODO : make this comment doxygen compliant
- *  Fuzzy model for each weapon?
  */
 
 float FuzzyAIController::computeWeaponInterest(int   competitiveness,
@@ -714,6 +744,49 @@ float FuzzyAIController::computeWeaponInterest(int   competitiveness,
     return  computeFuzzyModel(file_name, interestParameters);
 } // computeWeaponInterest
 
+
+  //------------------------------------------------------------------------------
+/** Module to know the attraction of a nitro item. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliant
+ */
+
+
+float   FuzzyAIController::computeNitroAttraction (float   difficulty,
+                                    float available_nitro,
+                                    int competitiveness)
+{
+    const std::string& file_name = "nitro_attraction.fcl";
+
+    vector<float> nitroAttractionParameters;
+    nitroAttractionParameters.push_back(difficulty);
+    nitroAttractionParameters.push_back(available_nitro);
+    nitroAttractionParameters.push_back((float)competitiveness);
+
+    return  computeFuzzyModel(file_name, nitroAttractionParameters);
+}
+
+  //------------------------------------------------------------------------------
+/** Module to know the attraction of a zipper. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliant
+ *  Fuzzy model for each weapon?
+ */
+
+
+    float   FuzzyAIController::computeZipperAttraction (float   difficulty,
+                                    float Speed,
+                                    int competitiveness )
+    {
+        const std::string file_name = "zipper_attraction.fcl";
+
+        vector<float> zipperAttractionParameters;
+        zipperAttractionParameters.push_back(difficulty);
+        zipperAttractionParameters.push_back(Speed);
+        zipperAttractionParameters.push_back(competitiveness);
+
+        return computeFuzzyModel(file_name, zipperAttractionParameters);
+    }
 
 //------------------------------------------------------------------------------
 /** Generic method to interface with FFLL and compute an output using fuzzy

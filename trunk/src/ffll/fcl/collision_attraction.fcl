@@ -35,6 +35,8 @@ END_DEFUZZIFY
 RULEBLOCK first
 	AND:MIN;
 	ACCUM:MAX;
+	(*          |Difficulty  |Agressiveness  |Output         *)
+    (* -------|-------------|------------------|-------------- *)
 	RULE 0: IF Easy AND Agressive THEN Low;
 	RULE 1: IF Easy AND Neutral THEN High;
 	RULE 2: IF Easy AND Careful  THEN High;

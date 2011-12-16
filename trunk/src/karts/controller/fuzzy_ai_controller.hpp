@@ -89,7 +89,7 @@ private:
     int                      m_target_x;
     int                      m_target_z;
     bool                     debug; // if this agent must print debug output
-    
+    unsigned int             instanceID; // for random
     //==========================================================================
     
     /*Difficulty handling variables*/
@@ -193,23 +193,15 @@ private:
     int   choosePath      (const std::vector<std::vector<PathData*>*>* pathData,
                                    float        competitiveness);
 
-    float computeDifficultyTag    (float        distance,
-                                   float        angle,
-                                   unsigned int direction );
+    float computeDifficultyTag    (float        angle,
+                                   int          direction,
+                                   float        distance );
 
     float   computeHitEstimation  (int          possessed_item_type,
                                    float        next_kart_distance );
 
     float   computeWeaponInterest (int          competitiveness,
                                    float        hit_estimation );
-
-    float   FuzzyAIController::computeNitroAttraction (float   difficulty,
-                                    float available_nitro,
-                                    int competitiveness);
-
-    float   computeZipperAttraction (float   difficulty,
-                                    float Speed,
-                                    int competitiveness );
     
     // -- Detection methods --
     void  getCloseKarts           (std::vector<const Kart*>& closeKarts,

@@ -38,7 +38,7 @@ RULEBLOCK first
     AND:MIN;
     ACCUM:MAX;
     (*        |Av.Rank   |CrashCount |Output        *)
-    (*        |          |           |              *)
+    (*--------|----------|-----------|--------------*)
     RULE 0: IF High   AND Low    THEN Good;
     RULE 1: IF High   AND Medium THEN Good;
     RULE 2: IF High   AND High   THEN Average;

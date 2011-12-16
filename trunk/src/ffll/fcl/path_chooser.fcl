@@ -36,6 +36,8 @@ FUZZIFY Interest
     TERM Profitable    := (7, 0) (10, 1) (10, 0) ;
 END_FUZZIFY
 
+(* The center of gravity method will give a float output so that paths can be *)
+(* compared *)
 DEFUZZIFY valve
     METHOD: CoG;
 END_DEFUZZIFY
@@ -43,26 +45,26 @@ END_DEFUZZIFY
 RULEBLOCK first
     AND:MIN;
     ACCUM:MAX;
-    (*        |Length    |ItemCount |Competitiveness    |Output         *)
-    (* -------|----------|----------|-------------------|-------------- *)
-    RULE 0: IF Short  AND High   AND Competitive    THEN Profitable;
-    RULE 1: IF Short  AND Medium AND Competitive    THEN Profitable;
-    RULE 2: IF Short  AND Low    AND Competitive    THEN Neutral;
-    RULE 3: IF Medium AND High   AND Competitive    THEN Profitable;
-    RULE 4: IF Medium AND Medium AND Competitive    THEN Neutral;
-    RULE 5: IF Medium AND Low    AND Competitive    THEN NotProfitable;
-    RULE 6: IF Long   AND High   AND Competitive    THEN Neutral;
-    RULE 7: IF Long   AND Medium AND Competitive    THEN NotProfitable;
-    RULE 8: IF Long   AND Low    AND Competitive    THEN NotProfitable;
-    RULE 9: IF Short  AND High   AND NotCompetitive THEN NotProfitable;
+    (*         |Length    |ItemCount |Competitiveness    |Output         *)
+    (* --------|----------|----------|-------------------|-------------- *)
+    RULE 0 : IF Short  AND High   AND Competitive    THEN Profitable;
+    RULE 1 : IF Short  AND Medium AND Competitive    THEN Profitable;
+    RULE 2 : IF Short  AND Low    AND Competitive    THEN Neutral;
+    RULE 3 : IF Medium AND High   AND Competitive    THEN Profitable;
+    RULE 4 : IF Medium AND Medium AND Competitive    THEN Neutral;
+    RULE 5 : IF Medium AND Low    AND Competitive    THEN NotProfitable;
+    RULE 6 : IF Long   AND High   AND Competitive    THEN Neutral;
+    RULE 7 : IF Long   AND Medium AND Competitive    THEN NotProfitable;
+    RULE 8 : IF Long   AND Low    AND Competitive    THEN NotProfitable;
+    RULE 9 : IF Short  AND High   AND NotCompetitive THEN NotProfitable;
     RULE 10: IF Short  AND Medium AND NotCompetitive THEN NotProfitable;
-    RULE 11: IF Short  AND Low    AND NotCompetitive THEN NotProfitable;
+    RULE 11: IF Short  AND Low    AND NotCompetitive THEN Neutral;
     RULE 12: IF Medium AND High   AND NotCompetitive THEN NotProfitable;
-    RULE 13: IF Medium AND Medium AND NotCompetitive THEN NotProfitable;
-    RULE 14: IF Medium AND Low    AND NotCompetitive THEN NotProfitable;
-    RULE 15: IF Long   AND High   AND NotCompetitive THEN NotProfitable;
-    RULE 16: IF Long   AND Medium AND NotCompetitive THEN NotProfitable;
-    RULE 17: IF Long   AND Low    AND NotCompetitive THEN NotProfitable;
+    RULE 13: IF Medium AND Medium AND NotCompetitive THEN Neutral;
+    RULE 14: IF Medium AND Low    AND NotCompetitive THEN Profitable;
+    RULE 15: IF Long   AND High   AND NotCompetitive THEN Neutral;
+    RULE 16: IF Long   AND Medium AND NotCompetitive THEN Profitable;
+    RULE 17: IF Long   AND Low    AND NotCompetitive THEN Profitable;
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

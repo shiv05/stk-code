@@ -37,7 +37,7 @@ RULEBLOCK first
     AND:MIN;
     ACCUM:MAX;
     (*         |PlayerLvl  |Ranking    |Output          *)
-    (*         |           |           |                *)
+    (*---------|-----------|-----------|----------------*)
     RULE 0 : IF Good    AND Low    THEN Competitive;
     RULE 1 : IF Good    AND Medium THEN Competitive;
     RULE 2 : IF Good    AND High   THEN Competitive;

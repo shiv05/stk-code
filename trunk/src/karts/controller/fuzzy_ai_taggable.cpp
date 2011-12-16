@@ -54,7 +54,7 @@ void FuzzyAITaggable::init()
     float z  = getXYZ().getZ();
     vector3d<float> pos = vector3d<float>(x, y, z);
     debugText = irr_driver->getSceneManager()->addBillboardTextSceneNode( 0,0,0,
-                                       core::dimension2d< f32 >(6.f, 1.f), pos);
+                                       core::dimension2d< f32 >(1.f, 1.f), pos);
 }
 
 void FuzzyAITaggable::setDebugText(const std::string& newText)
@@ -62,10 +62,13 @@ void FuzzyAITaggable::setDebugText(const std::string& newText)
     if(debugText == NULL)
         init(); // TODO print warning?
 
+    float width = newText.size()/2;
     std::wstring newTextw = std::wstring(newText.begin(), newText.end());
     debugText->setText(newTextw.c_str());
-}
+    debugText->setSize(core::dimension2d< f32 >(width, 1.f));
+} // setDebugText
 
+// TODO : does not work with moveable (kart)...
 void FuzzyAITaggable::updatePosition()
 {
     float x = getXYZ().getX();

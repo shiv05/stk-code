@@ -1,4 +1,4 @@
-(* FCL File Created From FFLL Model. Used to know if it is interesting to take a box. We use the difficulty  to reach it and if the agent has an object*)
+(* FCL File Created From FFLL Model. Used to know if it is interesting to take a box. We use the difficulty to reach it and if the agent has an object*)
 FUNCTION_BLOCK
 
 VAR_INPUT

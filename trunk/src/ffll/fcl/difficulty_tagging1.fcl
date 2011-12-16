@@ -1,114 +1,113 @@
-(* FCL File Created From FFLL Model. Generic module to know the difficulty to reach an object. The output of this module is used to tag the interest of objects*)
+(* FCL File Created From FFLL Model. TODO License                           *)
+(* Generic module to know the difficulty to reach an object.                *)
+(* The output of this module is used to tag the interest of objects         *)
+
 FUNCTION_BLOCK
 
 VAR_INPUT
-	Angle REAL; (* RANGE(0 .. 180) (waypoint, object)angle*)
-	Direction REAL; (* RANGE(-100 .. 200) Agent direction relatively to the angle in %*)  
-	Distance	REAL; (* RANGE(0 .. 100) Distance between the agent and the object*)  
+    Angle     REAL; (* RANGE(0 .. 180)     (waypoint, object) angle           *)
+    Direction REAL; (* RANGE(-999 .. 999)  Agent direction in % of the angle  *)  
+    Distance  REAL; (* RANGE(0 .. 100)     Agent to object distance           *)  
 END_VAR
 
 VAR_OUTPUT
-	Difficulty	REAL; (* RANGE(0 .. 10) *) 
+    Difficulty REAL; (* RANGE(0 .. 10) *) 
 END_VAR
 
 FUZZIFY Angle
-	TERM Small := (0, 0) (0, 1) (45, 0) ;
-	TERM Medium:= (35, 0) (60, 1) (85, 0) ;
-	TERM Large := (90, 0) (180, 1) (180, 0) ;
+    TERM Small  := ( 0, 0) (  0, 1) ( 45, 0) ;
+    TERM Medium := (35, 0) ( 60, 1) ( 85, 0) ;
+    TERM Large  := (90, 0) (180, 1) (180, 0) ;
 END_FUZZIFY
 
 FUZZIFY Direction
-	TERM Target_side:= (-100, 0) (-100, 1) (10, 0) ;
-	TERM Towards_target := (-10, 0) (0, 1) (40, 0) ;
-	TERM Between_the_two := (30 0) (50, 1) (70, 0) ;
-	TERM Towards_item:= (60, 0) (100, 1) (110, 0) ;
-	TERM Item_side := (90, 0) (200, 1) (200, 0) ;
+    TERM TargetSide    := (-999, 0) (-999, 1) (-100, 1) ( 10, 0) ;
+    TERM TowardsTarget := ( -10, 0) (   0, 1) (  40, 0) ;
+    TERM InBetween     := (  30, 0) (  50, 1) (  70, 0) ;
+    TERM TowardsItem   := (  60, 0) ( 100, 1) ( 110, 0) ;
+    TERM ItemSide      := (  90, 0) ( 200, 1) ( 999, 1) (999, 0) ;
 END_FUZZIFY
 
 FUZZIFY Distance
-	TERM Short := (0, 0) (0, 1) (40, 0) ;
-	TERM Medium:= (30, 0) (50, 1) (70, 0) ;
-	TERM Long := (60, 0) (100, 1) (100, 0) ;
+    TERM Short  := ( 0, 0) (  0, 1) ( 40, 0) ;
+    TERM Medium := (30, 0) ( 50, 1) ( 70, 0) ;
+    TERM Long   := (60, 0) (100, 1) (100, 0) ;
 END_FUZZIFY
 
-
 FUZZIFY Difficulty
-	TERM Very_easy := (0, 0) (0, 1) (2, 0) ;
-	TERM Easy := (1, 0) (2.5, 1) (4, 0) ;
-	TERM Normal:= (3, 0) (5, 1) (7, 0) ;
-	TERM Difficult := (6, 0) (7.5, 1) (10, 0) ;
-	TERM Very_difficult := (8, 0) (10, 1) (10, 0) ;
+    TERM VeryEasy      := (0, 0) ( 0  , 1) ( 2, 0) ;
+    TERM Easy          := (1, 0) ( 2.5, 1) ( 4, 0) ;
+    TERM Normal        := (3, 0) ( 5  , 1) ( 7, 0) ;
+    TERM Difficult     := (6, 0) ( 7.5, 1) (10, 0) ;
+    TERM VeryDifficult := (8, 0) (10  , 1) (10, 0) ;
 END_FUZZIFY
 
 DEFUZZIFY valve
-	METHOD: CoG;
+    METHOD: CoG;        (* float output *)
 END_DEFUZZIFY
 
 RULEBLOCK first
-	AND:MIN;
-	ACCUM:MAX;
-	  (*        |Angle    |Direction               |Distance    |Output         *)
-    (* -------|----------|----------------------|-------------|-------------- *)
-	RULE 0: IF Small AND Target_side AND Short THEN Very_easy;
-	RULE 1: IF Small AND Towards_target AND Short THEN Very_easy;
-	RULE 2: IF Small AND Between_the_two AND Short THEN Very_easy;
-	RULE 3: IF Small AND Towards_item AND Short THEN Very_easy;
-	RULE 4: IF Small AND Item_side AND Short THEN Very_easy;
-	
-	RULE 5: IF Small AND Target_side AND Medium THEN Very_easy;
-	RULE 6: IF Small AND Towards_target AND Medium THEN Very_easy;
-	RULE 7: IF Small AND Between_the_two AND Medium THENVery_easy;
-	RULE 8: IF Small AND Towards_item AND Medium THEN Very_easy;
-	RULE 9: IF Small AND Item_side AND Medium THEN Very_easy;
-	
-	RULE 10: IF Small AND Target_side AND Long THEN Very_easy;
-	RULE 11: IF Small AND Towards_target AND Long THEN Very_easy;
-	RULE 12: IF Small AND Between_the_two AND Long THEN Very_easy;
-	RULE 13: IF Small AND Towards_item AND Long THEN Very_easy;
-	RULE 14: IF Small AND Item_side AND Long THEN Very_easy;
-	
-	
-	RULE 15: IF Medium AND Target_side AND Short THEN Very_difficult;
-	RULE 16: IF Medium AND Target_side AND Medium THEN Very_difficult;
-	RULE 17: IF Medium AND Target_side AND Long THEN Difficult;
-	
-	RULE 18: IF Medium AND Towards_target AND Short THEN Difficult;
-	RULE 19: IF Medium AND Towards_target AND Medium THEN Difficult;
-	RULE 20: IF Medium AND Towards_target AND Long THEN Medium;
-	
-	RULE 21: IF Medium AND Between_the_two AND Short THEN Difficult;
-	RULE 22: IF Medium AND Between_the_two AND Medium THEN Medium;
-	RULE 23: IF Medium AND Between_the_two AND Long THEN Easy;
-	
-	RULE 24: IF Medium AND Towards_item AND Short THEN Very_easy;
-	RULE 25: IF Medium AND Towards_item AND Medium THEN Easy;
-	RULE 26: IF Medium AND Towards_item AND Long THEN Medium;
-	
-	RULE 27: IF Medium AND Item_side AND Short THEN Medium;
-	RULE 28: IF Medium AND Item_side AND Medium THEN Very_easy;
-	RULE 29: IF Medium AND Item_side AND Long THEN Very_easy;
-	
-	
-	RULE 30: IF Large AND Target_side AND Short THEN Very_difficult;
-	RULE 31: IF Large AND Target_side AND Medium THEN Very_difficult;
-	RULE 32: IF Large AND Target_side AND Long THEN Very_difficult;
-	
-	RULE 33: IF Large AND Towards_target AND Short THEN Very_difficult;
-	RULE 34: IF Large AND Towards_target AND Medium THEN Very_difficult;
-	RULE 35: IF Large AND Towards_target AND Long THEN Difficult;
-	
-	RULE 36: IF Large AND Between_the_two AND Short THEN Very_difficult;
-	RULE 37: IF Large AND Between_the_two AND Medium THEN Difficult;
-	RULE 38: IF Large AND Between_the_two AND Long THEN Medium;
-	
-	RULE 39: IF Large AND Towards_item AND Short THEN Easy;
-	RULE 40: IF Large AND Towards_item AND Medium THEN Difficult;
-	RULE 41: IF Large AND Towards_item AND Long THEN Very_difficult;
-	
-	RULE 42: IF Large AND Item_side AND Short THEN Medium;
-	RULE 43: IF Large AND Item_side AND Medium THEN Difficult;
-	RULE 44: IF Large AND Item_side AND Long THEN Very_difficult;
-	
+    AND:MIN;
+    ACCUM:MAX;
+    (*         |Angle     |Direction        |Distance   |Output         *)
+    (* --------|----------|-----------------|-----------|-------------- *)
+    RULE 0 : IF Small  AND TargetSide    AND Short  THEN VeryEasy;
+    RULE 1 : IF Small  AND TowardsTarget AND Short  THEN VeryEasy;
+    RULE 2 : IF Small  AND InBetween     AND Short  THEN VeryEasy;
+    RULE 3 : IF Small  AND TowardsItem   AND Short  THEN VeryEasy;
+    RULE 4 : IF Small  AND ItemSide      AND Short  THEN VeryEasy;
+    
+    RULE 5 : IF Small  AND TargetSide    AND Medium THEN VeryEasy;
+    RULE 6 : IF Small  AND TowardsTarget AND Medium THEN VeryEasy;
+    RULE 7 : IF Small  AND InBetween     AND Medium THEN VeryEasy;
+    RULE 8 : IF Small  AND TowardsItem   AND Medium THEN VeryEasy;
+    RULE 9 : IF Small  AND ItemSide      AND Medium THEN VeryEasy;
+     
+    RULE 10: IF Small  AND TargetSide    AND Long   THEN VeryEasy;
+    RULE 11: IF Small  AND TowardsTarget AND Long   THEN VeryEasy;
+    RULE 12: IF Small  AND InBetween     AND Long   THEN VeryEasy;
+    RULE 13: IF Small  AND TowardsItem   AND Long   THEN VeryEasy;
+    RULE 14: IF Small  AND ItemSide      AND Long   THEN VeryEasy;
+    
+    RULE 15: IF Medium AND TargetSide    AND Short  THEN VeryDifficult;
+    RULE 16: IF Medium AND TargetSide    AND Medium THEN VeryDifficult;
+    RULE 17: IF Medium AND TargetSide    AND Long   THEN Difficult;
+    
+    RULE 18: IF Medium AND TowardsTarget AND Short  THEN Difficult;
+    RULE 19: IF Medium AND TowardsTarget AND Medium THEN Difficult;
+    RULE 20: IF Medium AND TowardsTarget AND Long   THEN Medium;
+    
+    RULE 21: IF Medium AND InBetween     AND Short  THEN Difficult;
+    RULE 22: IF Medium AND InBetween     AND Medium THEN Medium;
+    RULE 23: IF Medium AND InBetween     AND Long   THEN Easy;
+    
+    RULE 24: IF Medium AND TowardsItem   AND Short  THEN VeryEasy;
+    RULE 25: IF Medium AND TowardsItem   AND Medium THEN Easy;
+    RULE 26: IF Medium AND TowardsItem   AND Long   THEN Medium;
+    
+    RULE 27: IF Medium AND ItemSide      AND Short  THEN Medium;
+    RULE 28: IF Medium AND ItemSide      AND Medium THEN VeryEasy;
+    RULE 29: IF Medium AND ItemSide      AND Long   THEN VeryEasy;
+    
+    RULE 30: IF Large  AND TargetSide    AND Short  THEN VeryDifficult;
+    RULE 31: IF Large  AND TargetSide    AND Medium THEN VeryDifficult;
+    RULE 32: IF Large  AND TargetSide    AND Long   THEN VeryDifficult;
+    
+    RULE 33: IF Large  AND TowardsTarget AND Short  THEN VeryDifficult;
+    RULE 34: IF Large  AND TowardsTarget AND Medium THEN VeryDifficult;
+    RULE 35: IF Large  AND TowardsTarget AND Long   THEN Difficult;
+    
+    RULE 36: IF Large  AND InBetween     AND Short  THEN VeryDifficult;
+    RULE 37: IF Large  AND InBetween     AND Medium THEN Difficult;
+    RULE 38: IF Large  AND InBetween     AND Long   THEN Medium;
+    
+    RULE 39: IF Large  AND TowardsItem   AND Short  THEN Easy;
+    RULE 40: IF Large  AND TowardsItem   AND Medium THEN Difficult;
+    RULE 41: IF Large  AND TowardsItem   AND Long   THEN VeryDifficult;
+    
+    RULE 42: IF Large  AND ItemSide      AND Short  THEN Medium;
+    RULE 43: IF Large  AND ItemSide      AND Medium THEN Difficult;
+    RULE 44: IF Large  AND ItemSide      AND Long   THEN VeryDifficult;
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

@@ -1,47 +1,49 @@
-(* FCL File Created From FFLL Model. Used to know if it is difficult to use the possessed weapon to hit someone*)
+(* FCL File Created From FFLL Model. *)
+(* Used to know if it is difficult to use the possessed weapon to hit someone *)
+
 FUNCTION_BLOCK
 
 VAR_INPUT
-	Possessed_item_type	REAL; (* RANGE(0 .. 3) *) 
-	Other_kart_postions	REAL; (* RANGE(0 .. 30) *) 
+    Possessed_item_type    REAL; (* RANGE(0 .. 3) *) 
+    Other_kart_postions    REAL; (* RANGE(0 .. 30) *) 
 END_VAR
 
 VAR_OUTPUT
-	Difficulty	REAL; (* RANGE(0 .. 10) *) 
+    Difficulty             REAL; (* RANGE(0 .. 10) *) 
 END_VAR
 
 FUZZIFY Possessed_item_type
-	TERM Type1 := 1 ;
-	TERM Type2 := 2 ;
+    TERM FarRanged      := 1 ;
+    TERM CloseRanged    := 2 ;
 END_FUZZIFY
 
 FUZZIFY Other_kart_postions
-	TERM Near := (0, 0) (0, 3) (9, 0) ;
-	TERM Normal:= (6, 0) (15, 1) (24, 0) ;
-	TERM Far := (21, 0) (30, 1) (30, 0) ;
+    TERM Close  := ( 0, 0) ( 0, 3) ( 9, 0) ;
+    TERM Medium := ( 6, 0) (15, 1) (24, 0) ;
+    TERM Far    := (21, 0) (30, 1) (30, 0) ;
 END_FUZZIFY
 
 FUZZIFY Difficulty
-	TERM Easy := (0, 0) (0, 1) (3, 0) ;
-	TERM Normal:= (2, 0) (5, 1) (8, 0) ;
-	TERM Hard := (7, 0) (10, 1) (10, 0) ;
+    TERM Easy   := (0, 0) ( 0, 1) ( 3, 0) ;
+    TERM Normal := (2, 0) ( 5, 1) ( 8, 0) ;
+    TERM Hard   := (7, 0) (10, 1) (10, 0) ;
 END_FUZZIFY
 
 DEFUZZIFY valve
-	METHOD:CoG;
+    METHOD:CoG; (* float output *)
 END_DEFUZZIFY
 
 RULEBLOCK first
-	AND:MIN;
-	ACCUM:MAX;
-		    (*  |Item_type   |Position |Output         *)
-    (* -------|---------------|-------------|-------------- *)
-	RULE 0: IF Type1 AND Near THEN Easy;
-	RULE 1: IF Type1 AND Normal THEN Easy;
-	RULE 2: IF Type1 AND Far THEN Easy;
-	RULE 3: IF Type2 AND Near THEN  Easy;
-	RULE 4: IF Type2 AND Normal THEN  Normal;
-	RULE 5: IF Type2 AND Far THEN Hard;
+    AND:MIN;
+    ACCUM:MAX;
+    (*        |Item type      |Position   |Output    *)
+    (*--------|---------------|-----------|----------*)
+    RULE 0: IF FarRanged   AND Close  THEN Easy;
+    RULE 1: IF FarRanged   AND Medium THEN Easy;
+    RULE 2: IF FarRanged   AND Far    THEN Easy;
+    RULE 3: IF CloseRanged AND Close  THEN Easy;
+    RULE 4: IF CloseRanged AND Medium THEN Normal;
+    RULE 5: IF CloseRanged AND Far    THEN Hard;
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

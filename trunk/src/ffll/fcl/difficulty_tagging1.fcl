@@ -5,9 +5,9 @@
 FUNCTION_BLOCK
 
 VAR_INPUT
-    Angle     REAL; (* RANGE(0 .. 180)     (waypoint, object) angle           *)
+    Angle     REAL; (* RANGE(   0 .. 180)  (waypoint, object) angle           *)
     Direction REAL; (* RANGE(-999 .. 999)  Agent direction in % of the angle  *)  
-    Distance  REAL; (* RANGE(0 .. 100)     Agent to object distance           *)  
+    Distance  REAL; (* RANGE(   0 .. 100)  Agent to object distance           *)  
 END_VAR
 
 VAR_OUTPUT
@@ -15,9 +15,9 @@ VAR_OUTPUT
 END_VAR
 
 FUZZIFY Angle
-    TERM Small  := ( 0, 0) (  0, 1) ( 45, 0) ;
-    TERM Medium := (35, 0) ( 60, 1) ( 85, 0) ;
-    TERM Large  := (90, 0) (180, 1) (180, 0) ;
+    TERM Small  := ( 0, 0) ( 0, 1) (25, 0) ;
+    TERM Medium := (20, 0) (45, 1) (60, 0) ;
+    TERM Large  := (55, 0) (90, 1) (180, 1) (180, 0) ;
 END_FUZZIFY
 
 FUZZIFY Direction

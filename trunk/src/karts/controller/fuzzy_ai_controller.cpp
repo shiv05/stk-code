@@ -1574,6 +1574,7 @@ vector<TaggedItem*>& FuzzyAIController::tagItems( const vector<Item*>& items,
 //        cout << "Kart To Targetted point vector : X = " << x << ", Z = " << z << endl;
 
         angle = /*(float)*/ kartToNextNode.getAngleTrig() - kartToItem.getAngleTrig();
+        angle = (angle > 180)? 360 - angle : angle;
 //        cout << "Angle (kart2Item, kart2Target)= " << angle << endl;
         
         x = m_kart->getVelocity().getX();
@@ -1584,6 +1585,7 @@ vector<TaggedItem*>& FuzzyAIController::tagItems( const vector<Item*>& items,
 //        cout << "Angle (Velocity, kart2Target)= " << vel << endl;
         direction = 100 * vel / angle;
 //        cout << "relative direction " << direction << endl;
+        angle = (angle < 0) ? -angle : angle;
         tag = computeDifficultyTag(angle, direction, dist);
         
         std::stringstream * t = new std::stringstream();

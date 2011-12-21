@@ -22,13 +22,13 @@
 
 //The AI debugging works best with just 1 AI kart, so set the number of karts
 //to 2 in main.cpp with quickstart and run supertuxkart with the arg -N.
-#undef AI_DEBUG
+#define AI_DEBUG
 
 #include "karts/controller/end_controller.hpp"
 
 #ifdef AI_DEBUG
-#  include "irrlicht.h"
-   using namespace irr;
+#include "irrlicht.h"
+    using namespace irr;
 #endif
 
 #include <cstdlib>

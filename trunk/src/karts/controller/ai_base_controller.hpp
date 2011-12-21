@@ -66,8 +66,8 @@ protected:
     /** The path choice method : 0 = RANDOM, 1 = FUZZY_PATH_CHOICE
      *  TODO set constants */
     unsigned int m_path_choice;
-    /** The choices that the Fuzzy AI made for the next forks. A fork choice is
-     *  set when the kart is located on the 11th node before the fork */
+    /** The choices that the Fuzzy AI made for the next forks. A new fork choice
+     *  is set when a fork is detected in the look_ahead nodes of the kart */
     std::vector<unsigned int> m_fork_choices;
     
     unsigned int m_look_ahead;

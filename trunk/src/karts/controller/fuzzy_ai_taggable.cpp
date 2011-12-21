@@ -27,40 +27,67 @@
 #include "karts/controller/fuzzy_ai_taggable.hpp"
 #include "graphics/irr_driver.hpp"
 
-
 using namespace std;
 using namespace irr;
 using namespace core;
 using namespace scene;
 
-unsigned int FuzzyAITaggable::instanceCount = 0;
 
+// -- Debug class variable --
+#ifdef AI_DEBUG
+    unsigned int FuzzyAITaggable::instanceCount = 0;
+#endif
+
+/**-----------------------------------------------------------------------------
+ * Constructor & destructor
+ */
 FuzzyAITaggable::FuzzyAITaggable()
 {
+    m_intTag     = -1;
+    m_diffTag    = -1;
+    m_attraction = -1;
+    
+// -- Debug stuff --
+#ifdef AI_DEBUG
     debugText = NULL;
+    m_dbgTxtY = 0.f;
     FuzzyAITaggable::instanceCount ++;
-    m_height = 0.f;
+#endif
 }
 
 FuzzyAITaggable::~FuzzyAITaggable()
 {}
 
+//==============================================================================
+// Debug functions
 
-void FuzzyAITaggable::init()
+#ifdef AI_DEBUG
+/**-----------------------------------------------------------------------------
+ * Debug initialization function : adds a billboardTextSceneNode in the Irrlicht
+ * scene, above the object. The final Y coord of the text depends on the
+ * instance count to avoid close object debug texts to overlap.
+
+ * TODO : make this comment Doxygen compliant
+ */
+void FuzzyAITaggable::initDebug()
 {
-    m_height = 1 + (FuzzyAITaggable::instanceCount + rand())%3;
+    m_dbgTxtY = 1 + (FuzzyAITaggable::instanceCount + rand())%3;
     float x  = getXYZ().getX();
-    float y  = getXYZ().getY() + m_height;
+    float y  = getXYZ().getY() + m_dbgTxtY;
     float z  = getXYZ().getZ();
     vector3d<float> pos = vector3d<float>(x, y, z);
     debugText = irr_driver->getSceneManager()->addBillboardTextSceneNode( 0,0,0,
                                        core::dimension2d< f32 >(1.f, 1.f), pos);
-}
+} // initDebug
 
+/**-----------------------------------------------------------------------------
+ * Debug text setter, simply replaces the current displayed text by the one
+ * given in parameter.
+ */
 void FuzzyAITaggable::setDebugText(const std::string& newText)
 {
     if(debugText == NULL)
-        init(); // TODO print warning?
+        initDebug(); // TODO print warning?
 
     float width = newText.size()/2;
     std::wstring newTextw = std::wstring(newText.begin(), newText.end());
@@ -68,12 +95,15 @@ void FuzzyAITaggable::setDebugText(const std::string& newText)
     debugText->setSize(core::dimension2d< f32 >(width, 1.f));
 } // setDebugText
 
+/**-----------------------------------------------------------------------------
+ */
 // TODO : does not work with moveable (kart)...
 void FuzzyAITaggable::updatePosition()
 {
     float x = getXYZ().getX();
-    float y = getXYZ().getY() + m_height;
+    float y = getXYZ().getY() + m_dbgTxtY;
     float z = getXYZ().getZ();
     debugText->setPosition(vector3df(x, y, z));
-}
+} // updatePosition
 
+#endif // ifdef AI_DEBUG (end of debug functions definition)

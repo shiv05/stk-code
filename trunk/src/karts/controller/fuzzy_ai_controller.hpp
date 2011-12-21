@@ -29,6 +29,7 @@ struct PathData;
 class  Track;
 class  LinearWorld;
 class  QuadGraph;
+class  FuzzyAITaggable;
 
 namespace irr
 {
@@ -38,18 +39,6 @@ namespace irr
         class IBillboardTextSceneNode;
     }
 }
-
-struct TaggedItem
-{
-    Item* item;
-    int   interestTag;
-    int   difficultyTag;
-    
-    TaggedItem(Item* i, int interest, int difficulty):item(i),
-                                                      interestTag(interest),
-                                                      difficultyTag(difficulty)
-    {};
-};
 
 /**
   * \ingroup controller
@@ -88,7 +77,7 @@ private:
     // End of Fuzzy AI variables
     int                      m_target_x;
     int                      m_target_z;
-    bool                     debug; // if this agent must print debug output
+    bool                     debug;     // if this agent must print debug output
     unsigned int             instanceID; // for random
     //==========================================================================
     
@@ -190,9 +179,6 @@ private:
                                    unsigned int kart_class,
                                    unsigned int current_ranking );
 
-    int   choosePath      (const std::vector<std::vector<PathData*>*>* pathData,
-                                   float        competitiveness);
-
     float computeDifficultyTag    (float        angle,
                                    int          direction,
                                    float        distance );
@@ -209,13 +195,15 @@ private:
     // -- Detection methods --
     void  getCloseKarts           (std::vector<const Kart*>& closeKarts,
                                    float max_dist = 40.f);
-    
     // -- Items tagging method --
-    std::vector<TaggedItem*>& tagItems(const std::vector<Item*>& items,
-                                       std::vector<TaggedItem*>& output);
-
-    // -- Path Choosing method --
-    std::vector<unsigned int>& computeForkChoices(std::vector<unsigned int>& output);
+    void  tagItems                (const std::vector<Item*>& items,
+                                       std::vector<FuzzyAITaggable*>& output);
+    // -- Path Choosing methods --
+    // Fork detection in the look_ahead nodes
+    void  computeForkChoices      (std::vector<unsigned int>& output);
+    // Fuzzy path chooser for a given fork
+    int   choosePath      (const std::vector<std::vector<PathData*>*>* pathData,
+                                   float        competitiveness);
     
     // -- Debug method --
 //    void setDebugText(const Item* item, const std::string* text);

@@ -35,6 +35,7 @@
 #include "io/file_manager.hpp"
 #include "karts/controller/fuzzy_ai_controller.hpp"
 #include "karts/controller/fuzzy_data_manager.hpp"
+#include "karts/controller/fuzzy_ai_taggable.hpp"
 #include "tracks/fuzzy_ai_path_tree.hpp"
 
 #ifdef AI_DEBUG
@@ -129,7 +130,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
 
     m_compet                  = 1; // TODO Constants
     
-    m_fork_choices = computeForkChoices(m_fork_choices);
+    computeForkChoices(m_fork_choices);
     computePath();
 #ifdef AI_DEBUG
     m_debug_sphere = irr_driver->getSceneManager()->addSphereSceneNode(1);
@@ -313,7 +314,7 @@ void FuzzyAIController::update(float dt)
     // -- Fuzzy controller code --
     if(m_last_seen_track_node != m_track_node)
     {
-        m_fork_choices = computeForkChoices(m_fork_choices);
+        computeForkChoices(m_fork_choices);
         
         vector<unsigned int> next = vector<unsigned int>();
         QuadGraph::get()->getSuccessors(m_track_node, next, true);
@@ -353,8 +354,8 @@ void FuzzyAIController::update(float dt)
 
         if(allItems.size()>0)
         {
-            vector<TaggedItem*> tItems = vector<TaggedItem*>();
-            tItems = tagItems((const vector<Item*>)allItems, tItems);
+            vector<FuzzyAITaggable*> tItems = vector<FuzzyAITaggable*>();
+            tagItems((const vector<Item*>)allItems, tItems);
         }
         // Player evaluation
         // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last), and can also be evaluated as bad...
@@ -375,7 +376,7 @@ void FuzzyAIController::update(float dt)
 
 
         // TODO: Kart classes (heavy, medium, light) are not implemented.
-        // For now we use a medium value for every kart.
+        // For now we use "medium" for every kart.
         int kart_class = 2;
 
         m_compet = computeCompetitiveness(number_of_karts,eval,current_ranking);
@@ -560,27 +561,25 @@ int FuzzyAIController::computeAgressiveness(unsigned int  number_of_players,
 }
 
 //------------------------------------------------------------------------------
-/** Path choice computation method, useful when there are multiple paths.
+/** Path choice computation method, used when there are multiple paths.
  *  This methode evaluates each one of the given paths, and returns the best
- *  path. The evaluation is based on data about the paths, computed by the
- *  FuzzyAIPathTree class.
- *  TODO : make this comment doxygen compliant
- *         improvement for later : Use the number of turns and the kart class.
- */
+ *  path depending on the situation. The evaluation is based on data about the
+ *  paths, computed by the FuzzyAIPathTree class.
 
+ *  TODO : Make this comment Doxygen compliant
+ *         Improvement for later : Use the number of turns and the kart class.
+ */
 int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
                                   float competitiveness)
 {
     const std::string& file_name = "path_chooser.fcl";  // Fcl file
     vector<float> pathParameters;
-    float bonusCount;
-    float length;
-    float interest;
-    float bestInterest = 0;
-    unsigned int   bestChoice;
-    unsigned int   random;
+    float         bonusCount, length, interest;
+    float         bestInterest = 0;
+    unsigned int  bestChoice;
+    unsigned int  random1, random2;
        
-    // Evaluate each path.
+    // Evaluate each path
     for (unsigned int i=0; i < pathData->size(); i++)
 	{
         for (unsigned int j=0; j < pathData->at(i)->size(); j++)
@@ -607,9 +606,11 @@ int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
         } // for each path in the current choice
 	} // for each possible choice
 	
-	// Randomization (so some karts take another path than the best one)
-	random = (instanceID*rand())%pathData->size();
-    return (random < pathData->size()/2.1)? bestChoice : random;
+	// Randomization to avoid every agent from choosing the best path
+	// TODO new random does not work well
+	random1 = (instanceID * rand()) % pathData->size();
+	random2 = (random1 * 123) % pathData->size();
+    return (random1 < pathData->size()/2.1)? bestChoice : random2;
 } // choosePath
 
 //------------------------------------------------------------------------------
@@ -1556,79 +1557,95 @@ void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
 }   // getCloseKarts
 
 //------------------------------------------------------------------------------
-/** Get 
+/** Computes an attraction value for every item in the parameter vector. The
+ *  estimation of the difficulty to reach the item is first computed, then this
+ *  value is used to compute the output attraction value. Note that this is a
+ *  simplified model of attraction value computation, which should also compute
+ *  and take in account an interest value for the item (see Fuzzy AI specs).
  *  TODO make this comment doxygen compliant
  */
-vector<TaggedItem*>& FuzzyAIController::tagItems( const vector<Item*>& items,
-                                                  vector<TaggedItem*>& output )
+void FuzzyAIController::tagItems( const vector<Item*>& items,
+                                  vector<FuzzyAITaggable*>& output )
 {
+    vector<std::string*> texts;
     vector2d<float> kartToItem, kartToNextNode, kartVel;
-    float        dist, x, z, vel, angle, diffTag, attraction;
-    float        kartX = m_kart->getXYZ().getX();
-    float        kartZ = m_kart->getXYZ().getZ();
-    int          direction;
-    bool         hasPowerup;
-    vector<std::string*> texts = vector<std::string*>();
+    int             direction;
+    bool            hasPowerup;
+    float           dist, x, z, vel, angle, diffTag, attraction;
+    float           kartX = m_kart->getXYZ().getX();
+    float           kartZ = m_kart->getXYZ().getZ();
 
     for(unsigned int i=0 ; i < items.size() ; i++)
     {
+        // -- Compute difficulty estimation arguments --
+        // Get distance between item and kart
         dist = (m_kart->getXYZ() - items[i]->getXYZ()).length();
         
-//        cout << "Item" << i << " : X = " << items[i]->getXYZ().getX() << ", Z = " << items[i]->getXYZ().getZ() << endl;
-//        cout << "Kart : X = " << kartX << ", Z = " << kartZ << endl; 
+        // Kart to item vector
         x = items[i]->getXYZ().getX() - kartX;
         z = items[i]->getXYZ().getZ() - kartZ;
         kartToItem = vector2d<float>(x, z);
         
-//        cout << "Kart To Item vector : X = " << x << ", Z = " << z << endl;
-        
+        // Kart to next node vector
         x = m_target_x - kartX; 
         z = m_target_z - kartZ;
         kartToNextNode = vector2d<float>(x, z);
         
-//        cout << "Targetted point : X = " << m_target_x << ", Z = " << m_target_z << endl;
-//        cout << "Kart To Targetted point vector : X = " << x << ", Z = " << z << endl;
-
-        angle = /*(float)*/ kartToNextNode.getAngleTrig() - kartToItem.getAngleTrig();
+        // (KartToNextNode, KartToItem) angle
+        angle = kartToNextNode.getAngleTrig() - kartToItem.getAngleTrig();
         angle = (angle > 180)? 360 - angle : angle;
-//        cout << "Angle (kart2Item, kart2Target)= " << angle << endl;
-        
+
+        // Kart direction (in % of the above angle)        
         x = m_kart->getVelocity().getX();
         z = m_kart->getVelocity().getZ();
-//        cout << "Velocity vector : X = " << x << ", Z = " << z << endl;
         kartVel = vector2d<float>(x, z);
         vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig();
-//        cout << "Angle (Velocity, kart2Target)= " << vel << endl;
         direction = 100 * vel / angle;
-//        cout << "relative direction " << direction << endl;
-        angle = (angle < 0) ? -angle : angle; // no need to know the direction, just the magnitude is required
-        diffTag = computeDifficultyTag(angle, direction, dist);
-        diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100; // round
+
+        // Once the relative direction is known, only keep the angle's magnitude
+        angle = (angle < 0) ? -angle : angle;
         
+        // Estimate the difficulty to reach the item
+        diffTag = computeDifficultyTag(angle, direction, dist);
+        diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100;
+        
+        // -- Compute item attraction value --
+        // Get powerup (y/n)
         hasPowerup = (m_kart->getPowerup()->getType() !=
                                                PowerupManager::POWERUP_NOTHING);
-        
+
+        // Compute item attraction (for now, use generic boxAttraction model)
         attraction = computeBoxAttraction(diffTag, hasPowerup);
         attraction = (attraction*100 + (attraction<0? -0.5 : 0.5))/100; // round
+
+        // Set taggable data
+        ((FuzzyAITaggable*) items[i])->setDifficulty(diffTag);
+        ((FuzzyAITaggable*) items[i])->setAttraction(attraction);
+        
+        // Debug output
         if(debug)
         {
             std::stringstream * t = new std::stringstream();
-            (*t) << /*"A = " << angle << ", D = " << direction << "%, D = " << dist << " //*/ " Tag = " << diffTag << ", A = " << attraction << endl;
+            (*t) << " Tag = " << diffTag << ", A = " << attraction << endl;
             ((FuzzyAITaggable*) items[i])->setDebugText(t->str());
             cout << t->str();
-        }
-    }
-}
+        } // if debug
+    } // for every detected item
+} // tagItems
 
 /**-----------------------------------------------------------------------------
- *  TODO Comment
+ * Detects forks in the look_ahead nodes, and launches a path choice computation
+ * when needed.
+ * Important note : the m_fork_choices vector contains the choices for the
+ * encountered forks in the look_ahead nodes. Its first element MUST be removed
+ * each time the kart passes a fork node, so it only holds the upcoming forks.
+ 
+ * TODO Doxygen compliant comment
  */
-vector<unsigned int>& FuzzyAIController::computeForkChoices(
-                                                   vector<unsigned int>& output)
+void FuzzyAIController::computeForkChoices(vector<unsigned int>& output)
 {
     vector<unsigned int> nextNodes;
     unsigned int curNode = m_track_node;
-    ///////     // TODO remove 1st fork choice when current node is a fork
     unsigned int forkId = 0;
     unsigned int nextId = 0;
     for(unsigned int i=0 ; i < m_look_ahead ; i++)
@@ -1638,27 +1655,26 @@ vector<unsigned int>& FuzzyAIController::computeForkChoices(
 
         if(nextNodes.size() > 1)
         {
-            if(forkId + 1 > m_fork_choices.size()) // if the fork choices vector does not contain a choice for this fork
+            if(forkId+1 > m_fork_choices.size())
             {
-            const vector<vector<PathData*>*>* pathData = NULL;
-            pathData = fuzzy_data_manager->getPathData(curNode);
-#ifdef AI_DEBUG
-            assert(pathData);
+                const vector<vector<PathData*>*>* pathData = NULL;
+                pathData = fuzzy_data_manager->getPathData(curNode);
+#ifdef AI_DEBUG // If the FuzzyAIPathTree is OK, data should exist for this fork
+                assert(pathData);
 #endif
-            unsigned int pathChoice = choosePath(pathData, m_compet);
-            output.push_back(pathChoice);
-            nextId = pathChoice;
-            forkId++;
+                unsigned int pathChoice = choosePath(pathData, m_compet);
+                output.push_back(pathChoice);
+                nextId = pathChoice;
+                forkId++;
 #ifdef AI_DEBUG
-            //cout << "path fork detected ! choice = " << pathChoice << endl;
+                //cout << "path fork detected ! choice = " << pathChoice << endl;
 #endif
-            }
-        } // if there is a fork
+            } // if this fork's choice is not already in the fork choices vector
+        } // if there is a fork in the look_ahead nodes
         else
             nextId = 0;
+        
         curNode = nextNodes[nextId];
     } // for the next look ahead nodes
-    
-    return output;
 } // computeForkChoices
 

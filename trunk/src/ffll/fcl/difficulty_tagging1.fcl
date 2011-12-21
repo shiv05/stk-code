@@ -37,7 +37,7 @@ END_FUZZIFY
 FUZZIFY Difficulty
     TERM VeryEasy      := (0, 0) ( 0  , 1) ( 2, 0) ;
     TERM Easy          := (1, 0) ( 2.5, 1) ( 4, 0) ;
-    TERM Normal        := (3, 0) ( 5  , 1) ( 7, 0) ;
+    TERM Medium        := (3, 0) ( 5  , 1) ( 7, 0) ;
     TERM Difficult     := (6, 0) ( 7.5, 1) (10, 0) ;
     TERM VeryDifficult := (8, 0) (10  , 1) (10, 0) ;
 END_FUZZIFY

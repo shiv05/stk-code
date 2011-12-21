@@ -639,6 +639,22 @@ float FuzzyAIController::computeDifficultyTag(float        angle,
     return computeFuzzyModel(file_name, objectParameters);
 }
 
+/**-----------------------------------------------------------------------------
+ *  TODO Comment
+ */
+
+float FuzzyAIController::computeBoxAttraction(float difficultyTag,
+                                              bool  hasWeapon)
+{
+    const std::string file_name = "box_attraction.fcl";
+    
+    vector<float> params;
+    params.push_back(difficultyTag);
+    params.push_back(hasWeapon);
+    
+    return computeFuzzyModel(file_name, params);
+}
+
 //------------------------------------------------------------------------------
 /** Module to compute a difficulty prediction to hit an opponent with a weapon.
  *  Simply call computeFuzzyModel with the right parameters.
@@ -712,13 +728,13 @@ float FuzzyAIController::computeWeaponInterest(int   competitiveness,
     return  computeFuzzyModel(file_name, interestParameters);
 } // computeWeaponInterest
 
-
 //------------------------------------------------------------------------------
 /** Generic method to interface with FFLL and compute an output using fuzzy
  *  logic. The first given parameter is the .fcl file that FFLL has to use for
  *  the computation.
  *  The next parameters are the values that correspond to the parameters
  *  declared in the .fcl file (in the same order !).
+ *  TODO : better handling of fcl file opening errors (see FuzzyModelBase->load_from_fcl_file())
  *  TODO : make this comment doxygen compliant
  */
 
@@ -1547,11 +1563,11 @@ vector<TaggedItem*>& FuzzyAIController::tagItems( const vector<Item*>& items,
                                                   vector<TaggedItem*>& output )
 {
     vector2d<float> kartToItem, kartToNextNode, kartVel;
-    int          tag;
-    float        dist, x, z, vel, angle;
+    float        dist, x, z, vel, angle, diffTag, attraction;
     float        kartX = m_kart->getXYZ().getX();
     float        kartZ = m_kart->getXYZ().getZ();
     int          direction;
+    bool         hasPowerup;
     vector<std::string*> texts = vector<std::string*>();
 
     for(unsigned int i=0 ; i < items.size() ; i++)
@@ -1585,14 +1601,19 @@ vector<TaggedItem*>& FuzzyAIController::tagItems( const vector<Item*>& items,
 //        cout << "Angle (Velocity, kart2Target)= " << vel << endl;
         direction = 100 * vel / angle;
 //        cout << "relative direction " << direction << endl;
-        angle = (angle < 0) ? -angle : angle;
-        tag = computeDifficultyTag(angle, direction, dist);
+        angle = (angle < 0) ? -angle : angle; // no need to know the direction, just the magnitude is required
+        diffTag = computeDifficultyTag(angle, direction, dist);
+        diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100; // round
         
-        std::stringstream * t = new std::stringstream();
+        hasPowerup = (m_kart->getPowerup()->getType() !=
+                                               PowerupManager::POWERUP_NOTHING);
         
-        (*t) << "A = " << angle << ", D = " << direction << "%, D = " << dist << " // Tag = " << tag << endl;//"D=" << (floorf(dist * 100 + 0.5)/100) << " A=" << floorf(angle * 100 + 0.5)/100 << " D=" << floorf(direction * 100 + 0.5)/100 << " T=" << tag;
+        attraction = computeBoxAttraction(diffTag, hasPowerup);
+        attraction = (attraction*100 + (attraction<0? -0.5 : 0.5))/100; // round
         if(debug)
         {
+            std::stringstream * t = new std::stringstream();
+            (*t) << /*"A = " << angle << ", D = " << direction << "%, D = " << dist << " //*/ " Tag = " << diffTag << ", A = " << attraction << endl;
             ((FuzzyAITaggable*) items[i])->setDebugText(t->str());
             cout << t->str();
         }
@@ -1629,7 +1650,7 @@ vector<unsigned int>& FuzzyAIController::computeForkChoices(
             nextId = pathChoice;
             forkId++;
 #ifdef AI_DEBUG
-            //cout << "path fooooooooooooooooooooooooooooooooork detected ! choice = " << pathChoice << endl;
+            //cout << "path fork detected ! choice = " << pathChoice << endl;
 #endif
             }
         } // if there is a fork

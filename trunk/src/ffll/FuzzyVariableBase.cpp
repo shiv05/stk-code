@@ -991,7 +991,7 @@ int FuzzyVariableBase::load_sets_from_fcl_file(std::ifstream& file_contents)
 
 				token = strtok(NULL, seps);
  
-				if (token[0] == ';') 
+				if (token[0] == ';') // TODO : Segfault here if ";" forgotten in FUZZIFY var block
 					{
 					if (num_of_points != 0)
 						{

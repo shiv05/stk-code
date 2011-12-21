@@ -1,47 +1,58 @@
-(* FCL File Created From FFLL Model. Used to know if it is interesting to take a box. We use the difficulty to reach it and if the agent has an object*)
+(* FCL File Created From FFLL Model.                                          *)
+(* Used to know if it is interesting or not to take a box.                    *)
+(* We use the estimated difficulty to reach it and if the agent has an object.*)
+
 FUNCTION_BLOCK
 
 VAR_INPUT
-	Difficulty	REAL; (* RANGE(0 .. 10) *) 
-	Has_object	REAL; (* RANGE(0 .. 3) *) 
+    Difficulty    REAL; (* RANGE(0 .. 10) *) 
+    HasPowerup    REAL; (* RANGE(0 .. 3)  *) 
 END_VAR
 
 VAR_OUTPUT
-	Attraction_value	REAL; (* RANGE(0 .. 10) *) 
+    AttractionValue  REAL; (* RANGE(0 .. 10) *) 
 END_VAR
 
 FUZZIFY Difficulty
-	TERM Easy := (0, 0) (0, 1) (3, 0) ;
-	TERM Normal:= (2, 0) (5, 1) (8, 0) ;
-	TERM Difficult := (7, 0) (10, 1) (10, 0) ;
+    TERM VeryEasy      := (0, 0) ( 0  , 1) ( 2, 0) ;
+    TERM Easy          := (1, 0) ( 2.5, 1) ( 4, 0) ;
+    TERM Medium        := (3, 0) ( 5  , 1) ( 7, 0) ;
+    TERM Difficult     := (6, 0) ( 7.5, 1) (10, 0) ;
+    TERM VeryDifficult := (8, 0) (10  , 1) (10, 0) ;
 END_FUZZIFY
 
-FUZZIFY Has_weapon
-	TERM True := 1
-	TERM False:= 2
+FUZZIFY HasPowerup
+    TERM True  := 1 ;
+    TERM False := 0 ;
 END_FUZZIFY
 
-FUZZIFY Attraction_value
-	TERM Low := (0, 0) (0, 1) (3, 0) ;
-	TERM Normal:= (2, 0) (5, 1) (8, 0) ;
-	TERM High := (7, 0) (10, 1) (10, 0) ;
+FUZZIFY AttractionValue
+    TERM VeryLow       := (0, 0) ( 0  , 1) ( 2, 0) ;
+    TERM Low           := (1, 0) ( 2.5, 1) ( 4, 0) ;
+    TERM Medium        := (3, 0) ( 5  , 1) ( 7, 0) ;
+    TERM High          := (6, 0) ( 7.5, 1) (10, 0) ;
+    TERM VeryHigh      := (8, 0) (10  , 1) (10, 0) ;
 END_FUZZIFY
 
 DEFUZZIFY valve
-	METHOD: CoG;
+    METHOD: CoG;
 END_DEFUZZIFY
 
 RULEBLOCK first
-	AND:MIN;
-	ACCUM:MAX;
-	(*          |Difficulty  |Has_object   |Output         *)
-    (* -------|-------------|---------------|-------------- *)
-	RULE 0: IF Easy AND True THEN Normal;
-	RULE 1: IF Easy AND False THEN High;
-	RULE 3: IF Normal AND True  THEN Low;
-	RULE 4: IF Normal AND False  THEN High;
-	RULE 6: IF Difficult AND True  THEN Low;
-	RULE 7: IF Difficult AND False  THEN Low;
+    AND:MIN;
+    ACCUM:MAX;
+    (*        |Difficulty       |HasPowerup |Output     *)
+    (* -------|-----------------|-----------|---------- *)
+    RULE 0: IF VeryEasy      AND True   THEN Medium;
+    RULE 1: IF VeryEasy      AND False  THEN VeryHigh;
+    RULE 2: IF Easy          AND True   THEN Medium;
+    RULE 3: IF Easy          AND False  THEN High;
+    RULE 4: IF Medium        AND True   THEN Medium;
+    RULE 5: IF Medium        AND False  THEN Medium;
+    RULE 6: IF Difficult     AND True   THEN Low;
+    RULE 7: IF Difficult     AND False  THEN Medium;
+    RULE 8: IF VeryDifficult AND True   THEN VeryLow;
+    RULE 9: IF VeryDifficult AND False  THEN Low;
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

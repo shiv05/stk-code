@@ -197,6 +197,9 @@ private:
                                    int          direction,
                                    float        distance );
 
+    float computeBoxAttraction    (float        difficultyTag,
+                                   bool         hasPowerup);
+
     float   computeHitEstimation  (int          possessed_item_type,
                                    float        next_kart_distance );
 

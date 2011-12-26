@@ -124,7 +124,7 @@ void AIBaseController::computePath()
         }   // for j<m_look_ahead
         m_all_look_aheads[m_track_node] = l;
     }
-    else // if(m_path_choice == 0) // RANDOM
+    else // if(m_path_choice == 0) // RANDOM, used by default AI
     {
         for(unsigned int i=0; i<QuadGraph::get()->getNumNodes(); i++)
         {

@@ -40,6 +40,24 @@ namespace irr
     }
 }
 
+
+/**-----------------------------------------------------------------------------
+ *
+ */
+struct AttrPoint
+{
+    float            x;
+    float            z;          // Irrlicht-like Z-axis coordinate
+    float            interest;
+    float            difficulty; // difficulty to reach the point
+    float            attraction;
+    
+    AttrPoint(float x = 0.0f, float z = 0.0f) : x(x), z(z),
+                                                interest(0.f),
+                                                difficulty(0.f),
+                                                attraction(0.f)    {}
+};
+
 /**
   * \ingroup controller
   */
@@ -65,20 +83,21 @@ private:
         CrashTypes() : m_road(false), m_kart(-1) {};
         void clear() {m_road = false; m_kart = -1;}
     } m_crashes;
-
+    
     //==========================================================================
     // Fuzzy AI variables
-    static  unsigned int instanceCount; // used to determine which instance has to debug (the first one only)
-    float          m_timer;
-    int            m_compet; // Competitiveness of the agent TODO Constant
+    static unsigned int     instanceCount; // used to determine which instance has to debug (the first one only)
+    float                   m_timer;
+    int                     m_compet; // Competitiveness of the agent TODO Constant
     /* Collision tagger */
     // Vector<int> m_speed_diff;
-    
+    std::vector<AttrPoint*> m_attrPts;  // Attraction points
+    AttrPoint               m_mainAPt;  // Main Attraction Point (next node)
+    int                     m_target_x; // Target point coords got by handleSteering()
+    int                     m_target_z;
+    bool                    debug;      // if this agent must print debug output
+    unsigned int            instanceID; // for random
     // End of Fuzzy AI variables
-    int                      m_target_x;
-    int                      m_target_z;
-    bool                     debug;     // if this agent must print debug output
-    unsigned int             instanceID; // for random
     //==========================================================================
     
     /*Difficulty handling variables*/
@@ -197,7 +216,7 @@ private:
                                    float max_dist = 40.f);
     // -- Items tagging method --
     void  tagItems                (const std::vector<Item*>& items,
-                                       std::vector<FuzzyAITaggable*>& output);
+                                         std::vector<AttrPoint*>& output);
     // -- Path Choosing methods --
     // Fork detection in the look_ahead nodes
     void  computeForkChoices      (std::vector<unsigned int>& output);
@@ -205,6 +224,8 @@ private:
     int   choosePath      (const std::vector<std::vector<PathData*>*>* pathData,
                                    float        competitiveness);
     
+    AttrPoint* chooseDirection(std::vector<AttrPoint*> & attrPts);
+
     // -- Debug method --
 //    void setDebugText(const Item* item, const std::string* text);
     //void  printFuzzyData();

@@ -43,9 +43,9 @@ using namespace scene;
  */
 FuzzyAITaggable::FuzzyAITaggable()
 {
-    m_intTag     = -1;
-    m_diffTag    = -1;
-    m_attraction = -1;
+//    m_intTag     = -1;
+//    m_diffTag    = -1;
+//    m_attraction = -1;
     
 // -- Debug stuff --
 #ifdef AI_DEBUG

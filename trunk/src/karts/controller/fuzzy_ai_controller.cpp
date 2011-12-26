@@ -119,19 +119,27 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
         m_nitro_level             = NITRO_ALL;
         m_handle_bomb             = true;
         setSkiddingFraction(2.0f);
- 
+        
         break;
     }
-
-    // -- Fuzzy controller attributes --
-    // Player evaluation
-    m_timer                   = 0.0f;
-//    m_texts                   = new vector<DebugText*>();
-
-    m_compet                  = 1; // TODO Constants
     
+    // -- Fuzzy controller code --
+    // Player evaluation
+    m_timer                 = 0.0f;
+    m_compet                = 1; // TODO Constants
+    m_attrPts               = vector<AttrPoint*>();
+
     computeForkChoices(m_fork_choices);
     computePath();
+    
+    const Vec3 v=QuadGraph::get()->getQuadOfNode(m_next_node_index[m_track_node]).getCenter();
+    m_mainAPt.x = v.getX();
+    m_mainAPt.z = v.getZ();
+    m_mainAPt.attraction = 5.9f;//5.9 is an "upper medium" value (see fcl files)
+
+    m_attrPts.push_back(&m_mainAPt);
+    
+    // -- Debug stuff --
 #ifdef AI_DEBUG
     m_debug_sphere = irr_driver->getSceneManager()->addSphereSceneNode(1);
 #endif
@@ -140,7 +148,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
         debug = true;
     else
         debug = false;
-
+    
     FuzzyAIController::instanceCount ++;
     FuzzyAIController::instanceID = instanceCount;
 }   // FuzzyAIController
@@ -312,6 +320,11 @@ void FuzzyAIController::update(float dt)
     
     //==========================================================================
     // -- Fuzzy controller code --
+    m_attrPts.clear(); // TODO check if clear() deletes pointed items
+    m_mainAPt.x = m_target_x;
+    m_mainAPt.z = m_target_z;
+    m_attrPts.push_back(&m_mainAPt);
+   
     if(m_last_seen_track_node != m_track_node)
     {
         computeForkChoices(m_fork_choices);
@@ -320,8 +333,9 @@ void FuzzyAIController::update(float dt)
         QuadGraph::get()->getSuccessors(m_track_node, next, true);
         if(next.size() > 1)
             m_fork_choices.erase(m_fork_choices.begin());
+ 
+        computePath(); // TODO check if this line INSIDE "if" instead of OUTSIDE does not affect AI
     }
-    computePath();
 
     // -- Close karts detection --
     vector<const Kart*> closeKarts;
@@ -334,9 +348,10 @@ void FuzzyAIController::update(float dt)
     }
 
     m_timer += dt;
-    if(m_timer >= 0.5f)        // every 1/2 second, do
+    if(m_timer >= 0.5f)        // every ~1/2 second, do
     {
         m_timer -= 0.5f;
+        
         // Item position & type
         vector<Item*> nitro_b;
         vector<Item*> nitro_s;
@@ -344,21 +359,22 @@ void FuzzyAIController::update(float dt)
         vector<Item*> bubgums;
         vector<Item*> boxes;
         vector<Item*> allItems;
-        item_manager->getCloseItems(nitro_b, m_kart, 40, Item::ITEM_NITRO_BIG);
-        item_manager->getCloseItems(nitro_s, m_kart, 40, Item::ITEM_NITRO_SMALL);
-        item_manager->getCloseItems(maluses, m_kart, 40, Item::ITEM_BANANA);
-        item_manager->getCloseItems(bubgums, m_kart, 40, Item::ITEM_BUBBLEGUM);
+        item_manager->getCloseItems(nitro_b, m_kart, 20, Item::ITEM_NITRO_BIG);
+        item_manager->getCloseItems(nitro_s, m_kart, 20, Item::ITEM_NITRO_SMALL);
+        item_manager->getCloseItems(maluses, m_kart, 20, Item::ITEM_BANANA);
+        item_manager->getCloseItems(bubgums, m_kart, 20, Item::ITEM_BUBBLEGUM);
         maluses.insert(maluses.end(), bubgums.begin(), bubgums.end());
-        item_manager->getCloseItems(boxes, m_kart, 40, Item::ITEM_BONUS_BOX);
-        item_manager->getCloseItems(allItems, m_kart, 40, Item::ITEM_NONE);
+        item_manager->getCloseItems(boxes, m_kart, 20, Item::ITEM_BONUS_BOX);
+        item_manager->getCloseItems(allItems, m_kart, 20, Item::ITEM_NONE);
 
         if(allItems.size()>0)
-        {
-            vector<FuzzyAITaggable*> tItems = vector<FuzzyAITaggable*>();
-            tagItems((const vector<Item*>)allItems, tItems);
-        }
+            tagItems((const vector<Item*>)allItems, m_attrPts);
+
+        AttrPoint* chosenDir = chooseDirection(m_attrPts); // TODO KINSU : direction chooser, speedchooser
+        
         // Player evaluation
-        // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last), and can also be evaluated as bad...
+        // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last).
+        
         // see m_kart_info[kart_id].getSector()->getDistanceFromStart()
 
         float av_rank = fuzzy_data_manager->getPlayerAverageRank();
@@ -369,11 +385,9 @@ void FuzzyAIController::update(float dt)
 
         int eval = (int)computePlayerEvaluation(number_of_karts, av_rank, crash_c);
 
-        //Choose the driving style : competitiveness and agressiveness
-
+        // -- Choose the driving style : competitiveness and agressiveness --
         //Get the current ranking
         int current_ranking = m_kart->getPosition();
-
 
         // TODO: Kart classes (heavy, medium, light) are not implemented.
         // For now we use "medium" for every kart.
@@ -445,7 +459,7 @@ void FuzzyAIController::update(float dt)
         cout << m_kart->getIdent() << " : agent current ranking = ";
         cout << current_ranking << endl;
         cout << m_kart->getIdent() << " : agent competitiveness = ";
-         switch(m_compet)
+        switch(m_compet)
         {
             case (1): cout << "Competitive" << endl;   break;
             case (2): cout << "Not competitive" << endl; break;
@@ -478,7 +492,6 @@ void FuzzyAIController::update(float dt)
 //         cout << m_kart->getIdent() << " best path number = ";
 //         cout << bestPath << endl;
 //        }
-
         }
 #endif
     }
@@ -489,7 +502,6 @@ void FuzzyAIController::update(float dt)
  *  right parameters.
  *  TODO : make this comment doxygen compliant
  */
-
 int FuzzyAIController::computePlayerEvaluation( unsigned int  kartCount,
                                                 float         playerAverageRank,
                                                 float         playerCrashCount)
@@ -607,10 +619,9 @@ int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
 	} // for each possible choice
 	
 	// Randomization to avoid every agent from choosing the best path
-	// TODO new random does not work well
 	random1 = (instanceID * rand()) % pathData->size();
-	random2 = (random1 * 123) % pathData->size();
-    return (random1 < pathData->size()/2.1)? bestChoice : random2;
+	random2 = (instanceID * rand() * 3) % pathData->size();
+    return (random2 < pathData->size()/2.1)? bestChoice : random1;
 } // choosePath
 
 //------------------------------------------------------------------------------
@@ -1556,6 +1567,7 @@ void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
     } // for all karts
 }   // getCloseKarts
 
+
 //------------------------------------------------------------------------------
 /** Computes an attraction value for every item in the parameter vector. The
  *  estimation of the difficulty to reach the item is first computed, then this
@@ -1563,9 +1575,11 @@ void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
  *  simplified model of attraction value computation, which should also compute
  *  and take in account an interest value for the item (see Fuzzy AI specs).
  *  TODO make this comment doxygen compliant
+ *  TODO make this function generic, using FuzzyAITaggable instead of Item
+ *      (for that, getXYZ() of a kart should give the transformed coordinates)
  */
 void FuzzyAIController::tagItems( const vector<Item*>& items,
-                                  vector<FuzzyAITaggable*>& output )
+                                   vector<AttrPoint*>& output )
 {
     vector<std::string*> texts;
     vector2d<float> kartToItem, kartToNextNode, kartVel;
@@ -1594,14 +1608,14 @@ void FuzzyAIController::tagItems( const vector<Item*>& items,
         // (KartToNextNode, KartToItem) angle
         angle = kartToNextNode.getAngleTrig() - kartToItem.getAngleTrig();
         angle = (angle > 180)? 360 - angle : angle;
-
+        
         // Kart direction (in % of the above angle)        
         x = m_kart->getVelocity().getX();
         z = m_kart->getVelocity().getZ();
         kartVel = vector2d<float>(x, z);
         vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig();
         direction = 100 * vel / angle;
-
+        
         // Once the relative direction is known, only keep the angle's magnitude
         angle = (angle < 0) ? -angle : angle;
         
@@ -1619,8 +1633,15 @@ void FuzzyAIController::tagItems( const vector<Item*>& items,
         attraction = (attraction*100 + (attraction<0? -0.5 : 0.5))/100; // round
 
         // Set taggable data
-        ((FuzzyAITaggable*) items[i])->setDifficulty(diffTag);
-        ((FuzzyAITaggable*) items[i])->setAttraction(attraction);
+//        ((FuzzyAITaggable*) items[i])->setDifficulty(diffTag);
+//        ((FuzzyAITaggable*) items[i])->setAttraction(attraction);
+        
+        float x = items[i]->getXYZ().getX();
+        float z = items[i]->getXYZ().getZ();
+        AttrPoint* attrPt = new AttrPoint(x, z);
+        attrPt->difficulty = diffTag;
+        attrPt->attraction = attraction;
+        output.push_back(attrPt);
         
         // Debug output
         if(debug)
@@ -1678,3 +1699,18 @@ void FuzzyAIController::computeForkChoices(vector<unsigned int>& output)
     } // for the next look ahead nodes
 } // computeForkChoices
 
+AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
+{
+    unsigned int bestId = 0;
+    unsigned int bestVal = 0;
+    for(unsigned int i=0 ; i<attrPts.size() ; i++)
+    {
+        if(attrPts[i]->attraction > bestVal)
+        {
+            bestVal = attrPts[i]->attraction;
+            bestId = i;
+        }
+    }
+    
+    return attrPts[bestId];
+} // chooseDirection

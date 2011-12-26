@@ -46,9 +46,9 @@ namespace irr
 class FuzzyAITaggable
 {
 private :
-    float m_intTag;       // Interest tag
-    float m_diffTag;      // Difficulty tag (-> difficulty to reach the object)
-    float m_attraction;   // Attraction value of the object
+//    float m_intTag;       // Interest tag
+//    float m_diffTag;      // Difficulty tag (-> difficulty to reach the object)
+//    float m_attraction;   // Attraction value of the object
     
 public :
     FuzzyAITaggable();
@@ -58,14 +58,14 @@ public :
     virtual const Vec3& getXYZ() const = 0;
     
     // -- Getters --
-    float   getInterest()          const {return m_intTag;       }
-    float   getDifficulty()        const {return m_diffTag;      }
-    float   getAttraction()        const {return m_attraction;   }
-
-    // -- Setters --
-    void    setInterest  (float newInt ) {m_intTag = newInt;     }
-    void    setDifficulty(float newDiff) {m_diffTag = newDiff;   }
-    void    setAttraction(float newAttr) {m_attraction = newAttr;}
+//    float   getInterest()          const {return m_intTag;       }
+//    float   getDifficulty()        const {return m_diffTag;      }
+//    float   getAttraction()        const {return m_attraction;   }
+//
+//    // -- Setters --
+//    void    setInterest  (float newInt ) {m_intTag = newInt;     }
+//    void    setDifficulty(float newDiff) {m_diffTag = newDiff;   }
+//    void    setAttraction(float newAttr) {m_attraction = newAttr;}
 
 
 // -- Debug tools --
@@ -75,7 +75,8 @@ private :
     irr::scene::IBillboardTextSceneNode* debugText;
     // Debug text Y offset (relatively to the object)
     float m_dbgTxtY;
-    // Instance counter, used to make debug texts Y coord vary
+    // Instance counter, used to make debug texts Y coord vary from an instance
+    //  to another
     static unsigned int instanceCount;
 
 public :

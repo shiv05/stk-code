@@ -205,11 +205,19 @@ private:
     float computeBoxAttraction    (float        difficultyTag,
                                    bool         hasPowerup);
 
-    float   computeHitEstimation  (int          possessed_item_type,
+    float computeHitEstimation    (int          possessed_item_type,
                                    float        next_kart_distance );
 
-    float   computeWeaponInterest (int          competitiveness,
+    float computeWeaponInterest   (int          competitiveness,
                                    float        hit_estimation );
+    
+    float computeSpeedChoice      (float        difficulty,
+                                   float        currentSpeed,
+                                   int          competitiveness,
+                                   int          skid);
+    
+    // -- Wrapper function for computeDifficultyTag --
+    float estimateDifficultyToReach (const Vec3& point);
     
     // -- Detection methods --
     void  getCloseKarts           (std::vector<const Kart*>& closeKarts,
@@ -225,6 +233,8 @@ private:
                                    float        competitiveness);
     
     AttrPoint* chooseDirection(std::vector<AttrPoint*> & attrPts);
+
+    void handleAccelerationAndBrake();
 
     // -- Debug method --
 //    void setDebugText(const Item* item, const std::string* text);

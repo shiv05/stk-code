@@ -9,7 +9,7 @@ VAR_INPUT
 END_VAR
 
 VAR_OUTPUT
-    Competitiveness REAL; (* RANGE(0 .. 4) *) 
+    Competitiveness REAL; (* RANGE(0 .. 1) *) 
 END_VAR
 
 FUZZIFY Player_level
@@ -26,7 +26,7 @@ END_FUZZIFY
 
 FUZZIFY Competitiveness
     TERM Competitive    := 1 ;
-    TERM NonCompetitive := 2 ;
+    TERM NonCompetitive := 0 ;
 END_FUZZIFY
 
 DEFUZZIFY valve

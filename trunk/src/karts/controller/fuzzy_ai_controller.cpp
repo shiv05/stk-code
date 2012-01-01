@@ -359,13 +359,13 @@ void FuzzyAIController::update(float dt)
         vector<Item*> bubgums;
         vector<Item*> boxes;
         vector<Item*> allItems;
-        item_manager->getCloseItems(nitro_b, m_kart, 20, Item::ITEM_NITRO_BIG);
-        item_manager->getCloseItems(nitro_s, m_kart, 20, Item::ITEM_NITRO_SMALL);
-        item_manager->getCloseItems(maluses, m_kart, 20, Item::ITEM_BANANA);
-        item_manager->getCloseItems(bubgums, m_kart, 20, Item::ITEM_BUBBLEGUM);
+        item_manager->getCloseItems(nitro_b, m_kart, 40, Item::ITEM_NITRO_BIG);
+        item_manager->getCloseItems(nitro_s, m_kart, 40, Item::ITEM_NITRO_SMALL);
+        item_manager->getCloseItems(maluses, m_kart, 40, Item::ITEM_BANANA);
+        item_manager->getCloseItems(bubgums, m_kart, 40, Item::ITEM_BUBBLEGUM);
         maluses.insert(maluses.end(), bubgums.begin(), bubgums.end());
-        item_manager->getCloseItems(boxes, m_kart, 20, Item::ITEM_BONUS_BOX);
-        item_manager->getCloseItems(allItems, m_kart, 20, Item::ITEM_NONE);
+        item_manager->getCloseItems(boxes, m_kart, 40, Item::ITEM_BONUS_BOX);
+        item_manager->getCloseItems(allItems, m_kart, 40, Item::ITEM_NONE);
 
         if(allItems.size()>0)
             tagItems((const vector<Item*>)allItems, m_attrPts);
@@ -461,8 +461,8 @@ void FuzzyAIController::update(float dt)
         cout << m_kart->getIdent() << " : agent competitiveness = ";
         switch(m_compet)
         {
-            case (1): cout << "Competitive" << endl;   break;
-            case (2): cout << "Not competitive" << endl; break;
+            case (0): cout << "Competitive" << endl;   break;
+            case (1): cout << "Not competitive" << endl; break;
             default : cout << "unexpected value : " << eval << endl;
         } // end switch
         cout << m_kart->getIdent() << " : agent agressiveness = ";
@@ -651,8 +651,8 @@ float FuzzyAIController::computeDifficultyTag(float        angle,
     return computeFuzzyModel(file_name, objectParameters);
 }
 
-/**-----------------------------------------------------------------------------
- *  TODO Comment
+//------------------------------------------------------------------------------
+/** TODO Comment
  */
 
 float FuzzyAIController::computeBoxAttraction(float difficultyTag,
@@ -721,7 +721,7 @@ float  FuzzyAIController::computeHitEstimation(int     possessed_item_type,
     return computeFuzzyModel(file_name, HitEstimation);
 }
 
-  //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 /** Module to know if it is interesting to use the possessed weapon. Simply call computeFuzzyModel with the
  *  right parameters.
  *  TODO : make this comment doxygen compliant
@@ -740,6 +740,24 @@ float FuzzyAIController::computeWeaponInterest(int   competitiveness,
     return  computeFuzzyModel(file_name, interestParameters);
 } // computeWeaponInterest
 
+//------------------------------------------------------------------------------
+/** 
+ */
+float FuzzyAIController::computeSpeedChoice (float difficulty,
+                                             float currentSpeed,
+                                             int   competitiveness,
+                                             int   skid)
+{
+    const std::string& file_name = "speed_chooser.fcl";
+    vector<float> params;
+    params.push_back(difficulty);
+    params.push_back(currentSpeed);
+    params.push_back(competitiveness);
+    params.push_back(skid);
+    
+    return computeFuzzyModel(file_name, params);
+} // computeSpeedChoice
+                                   
 //------------------------------------------------------------------------------
 /** Generic method to interface with FFLL and compute an output using fuzzy
  *  logic. The first given parameter is the .fcl file that FFLL has to use for
@@ -1567,6 +1585,45 @@ void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
     } // for all karts
 }   // getCloseKarts
 
+//------------------------------------------------------------------------------
+/** Difficulty computation : computes the needed parameters and calls the fuzzy
+ *  logic model (computeDifficultyTag function) to estimate the difficulty to
+ *  reach the given point.
+ */
+float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
+{
+    vector2d<float> kartToPoint, kartToNextNode, kartVel;
+    int             direction;
+    float           dist, x, z, vel, angle;
+    float           kartX = m_kart->getXYZ().getX();
+    float           kartZ = m_kart->getXYZ().getZ();
+    
+    // Get the distance between the given point and the kart
+    dist = (m_kart->getXYZ() - point).length();
+    
+    // Kart to point vector
+    kartToPoint = vector2d<float>(point.getX()-kartX, point.getZ()-kartZ);
+    
+    // Kart to next node vector
+    kartToNextNode = vector2d<float>(m_target_x-kartX, m_target_z-kartZ);
+    
+    // (KartToNextNode, kartToPoint) angle
+    angle = kartToNextNode.getAngleTrig() - kartToPoint.getAngleTrig();
+    angle = (angle > 180)? 360 - angle : angle;
+    
+    // Kart direction (in % of the above angle)        
+    x = m_kart->getVelocity().getX();
+    z = m_kart->getVelocity().getZ();
+    kartVel = vector2d<float>(x, z);
+    vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig();
+    direction = 100 * vel / angle;
+    
+    // Once the relative direction is known, only keep the angle's magnitude
+    angle = (angle < 0) ? -angle : angle;
+    
+    // Finally, call the fuzzy model to estimate the difficulty 
+    return computeDifficultyTag(angle, direction, dist);
+}
 
 //------------------------------------------------------------------------------
 /** Computes an attraction value for every item in the parameter vector. The
@@ -1582,46 +1639,14 @@ void FuzzyAIController::tagItems( const vector<Item*>& items,
                                    vector<AttrPoint*>& output )
 {
     vector<std::string*> texts;
-    vector2d<float> kartToItem, kartToNextNode, kartVel;
-    int             direction;
-    bool            hasPowerup;
-    float           dist, x, z, vel, angle, diffTag, attraction;
-    float           kartX = m_kart->getXYZ().getX();
-    float           kartZ = m_kart->getXYZ().getZ();
+    bool                 hasPowerup;
+    float                diffTag, attraction;
 
     for(unsigned int i=0 ; i < items.size() ; i++)
     {
-        // -- Compute difficulty estimation arguments --
-        // Get distance between item and kart
-        dist = (m_kart->getXYZ() - items[i]->getXYZ()).length();
-        
-        // Kart to item vector
-        x = items[i]->getXYZ().getX() - kartX;
-        z = items[i]->getXYZ().getZ() - kartZ;
-        kartToItem = vector2d<float>(x, z);
-        
-        // Kart to next node vector
-        x = m_target_x - kartX; 
-        z = m_target_z - kartZ;
-        kartToNextNode = vector2d<float>(x, z);
-        
-        // (KartToNextNode, KartToItem) angle
-        angle = kartToNextNode.getAngleTrig() - kartToItem.getAngleTrig();
-        angle = (angle > 180)? 360 - angle : angle;
-        
-        // Kart direction (in % of the above angle)        
-        x = m_kart->getVelocity().getX();
-        z = m_kart->getVelocity().getZ();
-        kartVel = vector2d<float>(x, z);
-        vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig();
-        direction = 100 * vel / angle;
-        
-        // Once the relative direction is known, only keep the angle's magnitude
-        angle = (angle < 0) ? -angle : angle;
-        
-        // Estimate the difficulty to reach the item
-        diffTag = computeDifficultyTag(angle, direction, dist);
-        diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100;
+        // -- Compute item difficulty tag --
+        diffTag = estimateDifficultyToReach(items[i]->getXYZ());
+        diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100;  // round (for debug display)
         
         // -- Compute item attraction value --
         // Get powerup (y/n)
@@ -1654,12 +1679,12 @@ void FuzzyAIController::tagItems( const vector<Item*>& items,
     } // for every detected item
 } // tagItems
 
-/**-----------------------------------------------------------------------------
- * Detects forks in the look_ahead nodes, and launches a path choice computation
- * when needed.
- * Important note : the m_fork_choices vector contains the choices for the
- * encountered forks in the look_ahead nodes. Its first element MUST be removed
- * each time the kart passes a fork node, so it only holds the upcoming forks.
+//------------------------------------------------------------------------------
+/** Detects forks in the look_ahead nodes, and launches a path choice
+ *  computation when needed.
+ *  Important note : the m_fork_choices vector contains the choices for the
+ *  encountered forks in the look_ahead nodes. Its first element MUST be removed
+ *  each time the kart passes a fork node, so it only holds the upcoming forks.
  
  * TODO Doxygen compliant comment
  */
@@ -1699,6 +1724,9 @@ void FuzzyAIController::computeForkChoices(vector<unsigned int>& output)
     } // for the next look ahead nodes
 } // computeForkChoices
 
+//------------------------------------------------------------------------------
+/** Direction chooser
+ */
 AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
 {
     unsigned int bestId = 0;
@@ -1714,3 +1742,14 @@ AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
     
     return attrPts[bestId];
 } // chooseDirection
+
+//------------------------------------------------------------------------------
+/** Fuzzy acceleration and brake handling
+ */
+void FuzzyAIController::handleAccelerationAndBrake()
+{
+    float diff = estimateDifficultyToReach(Vec3(m_target_x, 0.f, m_target_z));
+    
+    // KINSU : TODO
+    
+}

@@ -347,6 +347,7 @@ void FuzzyAIController::update(float dt)
         //cout << m_kart->getIdent() << " : close kart detected ! " << closeKarts[i]->getIdent() << ", dist = " << dist << endl;
     }
 
+    handleAccelerationAndBrake();
     m_timer += dt;
     if(m_timer >= 0.5f)        // every ~1/2 second, do
     {
@@ -1748,8 +1749,11 @@ AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
  */
 void FuzzyAIController::handleAccelerationAndBrake()
 {
+    // Difficulty to reach the targetted point
     float diff = estimateDifficultyToReach(Vec3(m_target_x, 0.f, m_target_z));
-    
-    // KINSU : TODO
-    
+        
+    // Competitiveness & skid... for now, skid = 0 since the skid filter is not implemented yet
+    float control = computeSpeedChoice(diff, m_kart->getSpeed(), m_compet, 0);
+    //cout << "diff = " << diff << ", curSpeed = " << m_kart->getSpeed() << ", compet = " << m_compet << endl;
+    //cout << "CHOSEN speed = > = > = > " << speed << endl;
 }

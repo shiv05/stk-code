@@ -379,7 +379,7 @@ void PlayerController::update(float dt)
     //------------------------------------------------------
     // Rank estimation for fuzzy ai controllers
     m_timer += dt;
-    if(m_timer >= 1.0f)        // every seconds, compute average rank
+    if(m_timer >= 1.0f)        // every second, compute average rank
     {
         m_timer -= 1.0f;
         // TODO change formula so that the average rank takes more in account

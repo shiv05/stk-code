@@ -462,8 +462,8 @@ void FuzzyAIController::update(float dt)
         cout << m_kart->getIdent() << " : agent competitiveness = ";
         switch(m_compet)
         {
-            case (0): cout << "Competitive" << endl;   break;
-            case (1): cout << "Not competitive" << endl; break;
+            case (0): cout << "Not competitive" << endl;   break;
+            case (1): cout << "Competitive" << endl; break;
             default : cout << "unexpected value : " << eval << endl;
         } // end switch
         cout << m_kart->getIdent() << " : agent agressiveness = ";
@@ -744,12 +744,12 @@ float FuzzyAIController::computeWeaponInterest(int   competitiveness,
 //------------------------------------------------------------------------------
 /** 
  */
-float FuzzyAIController::computeSpeedChoice (float difficulty,
-                                             float currentSpeed,
-                                             int   competitiveness,
-                                             int   skid)
+float FuzzyAIController::computeSpeedHandling(float difficulty,
+                                              float currentSpeed,
+                                              int   competitiveness,
+                                              int   skid)
 {
-    const std::string& file_name = "speed_chooser.fcl";
+    const std::string& file_name = "speed_handler.fcl";
     vector<float> params;
     params.push_back(difficulty);
     params.push_back(currentSpeed);
@@ -757,7 +757,7 @@ float FuzzyAIController::computeSpeedChoice (float difficulty,
     params.push_back(skid);
     
     return computeFuzzyModel(file_name, params);
-} // computeSpeedChoice
+} // computeSpeedHandling
                                    
 //------------------------------------------------------------------------------
 /** Generic method to interface with FFLL and compute an output using fuzzy
@@ -1753,7 +1753,7 @@ void FuzzyAIController::handleAccelerationAndBrake()
     float diff = estimateDifficultyToReach(Vec3(m_target_x, 0.f, m_target_z));
         
     // Competitiveness & skid... for now, skid = 0 since the skid filter is not implemented yet
-    float control = computeSpeedChoice(diff, m_kart->getSpeed(), m_compet, 0);
+    float control = computeSpeedHandling(diff, m_kart->getSpeed(), m_compet, 0);
     //cout << "diff = " << diff << ", curSpeed = " << m_kart->getSpeed() << ", compet = " << m_compet << endl;
     //cout << "CHOSEN speed = > = > = > " << speed << endl;
 }

@@ -211,7 +211,7 @@ private:
     float computeWeaponInterest   (int          competitiveness,
                                    float        hit_estimation );
     
-    float computeSpeedChoice      (float        difficulty,
+    float computeSpeedHandling    (float        difficulty,
                                    float        currentSpeed,
                                    int          competitiveness,
                                    int          skid);

@@ -1,0 +1,187 @@
+(* FCL File Created From FFLL Model. TODO : license, author & stuff          *)
+(* Module to choose the speed an agent wants to reach   *)
+
+FUNCTION_BLOCK
+
+VAR_INPUT
+    Difficulty      REAL; (* RANGE(0 .. 10)   from difficulty tagging module *)
+    CurrentSpeed    REAL; (* RANGE(0 .. 100)  in % of the max speed ?        *)
+    Competitiveness	REAL; (* RANGE(0 .. 1)    Competitiveness of the agent   *)
+    Skid            REAL; (* RANGE(0 .. 1)    Skid or not decision           *)
+END_VAR
+
+VAR_OUTPUT
+    Control	        REAL; (* RANGE(0 .. 3)    Coded control output *)
+END_VAR
+
+FUZZIFY Difficulty
+    TERM VeryEasy      := (0, 0) ( 0  , 1) ( 2, 0) ;
+    TERM Easy          := (1, 0) ( 2.5, 1) ( 4, 0) ;
+    TERM Medium        := (3, 0) ( 5  , 1) ( 7, 0) ;
+    TERM Hard          := (6, 0) ( 7.5, 1) (10, 0) ;
+    TERM VeryHard      := (8, 0) (10  , 1) (10, 0) ;
+END_FUZZIFY
+
+FUZZIFY CurrentSpeed
+    TERM VeryLow       := ( 0, 0) ( 0, 1) ( 5, 0) ;
+    TERM Low           := ( 3, 0) ( 8, 1) (13, 0) ;
+    TERM Medium        := (11, 0) (16, 1) (21, 0) ;
+    TERM High          := (19, 0) (24, 1) (31, 0) ;
+    TERM VeryHigh      := (29, 0) (36, 1) (99, 1) (99, 0);
+END_FUZZIFY
+
+FUZZIFY Competitiveness
+    TERM High   := 1 ;
+    TERM Low    := 0 ;
+END_FUZZIFY
+
+FUZZIFY Skid
+    TERM Yes    := 1 ;
+    TERM No     := 0 ;
+END_FUZZIFY
+
+FUZZIFY Control
+    TERM None          := 0;
+    TERM Accelerate    := 1;
+    TERM AccelAndNitro := 2;
+    TERM Brake         := 3;
+END_FUZZIFY
+
+(* Mean of Median method gives a crisp output, as opposed to Center of Gravity*)
+DEFUZZIFY valve
+    METHOD: MoM;
+END_DEFUZZIFY
+
+RULEBLOCK first
+    AND:MIN;
+    ACCUM:MAX;
+    (*         |Difficulty  |CurrentSpd. |Compet. |Skid    |Output       *)
+    (* --------|------------|------------|--------|--------|------------ *)
+    RULE 0 : IF VeryEasy AND VeryLow  AND High AND No  THEN AccelAndNitro;
+    RULE 1 : IF VeryEasy AND Low      AND High AND No  THEN AccelAndNitro;
+    RULE 2 : IF VeryEasy AND Medium   AND High AND No  THEN AccelAndNitro;
+    RULE 3 : IF VeryEasy AND High     AND High AND No  THEN AccelAndNitro;
+    RULE 4 : IF VeryEasy AND VeryHigh AND High AND No  THEN Accelerate;
+    
+    RULE 5 : IF Easy     AND VeryLow  AND High AND No  THEN AccelAndNitro;
+    RULE 6 : IF Easy     AND Low      AND High AND No  THEN AccelAndNitro;
+    RULE 7 : IF Easy     AND Medium   AND High AND No  THEN AccelAndNitro;
+    RULE 8 : IF Easy     AND High     AND High AND No  THEN Accelerate;
+    RULE 9 : IF Easy     AND VeryHigh AND High AND No  THEN Accelerate;
+    
+    RULE 10: IF Medium   AND VeryLow  AND High AND No  THEN AccelAndNitro;
+    RULE 11: IF Medium   AND Low      AND High AND No  THEN AccelAndNitro;
+    RULE 12: IF Medium   AND Medium   AND High AND No  THEN Accelerate;
+    RULE 13: IF Medium   AND High     AND High AND No  THEN Accelerate;
+    RULE 14: IF Medium   AND VeryHigh AND High AND No  THEN None;
+    
+    RULE 15: IF Hard     AND VeryLow  AND High AND No  THEN AccelAndNitro;
+    RULE 16: IF Hard     AND Low      AND High AND No  THEN Accelerate;
+    RULE 17: IF Hard     AND Medium   AND High AND No  THEN None;
+    RULE 18: IF Hard     AND High     AND High AND No  THEN Brake;
+    RULE 19: IF Hard     AND VeryHigh AND High AND No  THEN Brake;
+    
+    RULE 20: IF VeryHard AND VeryLow  AND High AND No  THEN Accelerate;
+    RULE 21: IF VeryHard AND Low      AND High AND No  THEN None;
+    RULE 22: IF VeryHard AND Medium   AND High AND No  THEN Brake;
+    RULE 23: IF VeryHard AND High     AND High AND No  THEN Brake;
+    RULE 24: IF VeryHard AND VeryHigh AND High AND No  THEN Brake;
+    
+    (*         |Difficulty  |CurrentSpd. |Compet. |Skid    |Output       *)
+    (* --------|------------|------------|--------|--------|------------ *)
+    RULE 25: IF VeryEasy AND VeryLow  AND Low  AND No  THEN AccelAndNitro;
+    RULE 26: IF VeryEasy AND Low      AND Low  AND No  THEN AccelAndNitro;
+    RULE 27: IF VeryEasy AND Medium   AND Low  AND No  THEN Accelerate;
+    RULE 28: IF VeryEasy AND High     AND Low  AND No  THEN Accelerate;
+    RULE 29: IF VeryEasy AND VeryHigh AND Low  AND No  THEN Accelerate;
+    
+    RULE 30: IF Easy     AND VeryLow  AND Low  AND No  THEN AccelAndNitro;
+    RULE 31: IF Easy     AND Low      AND Low  AND No  THEN AccelAndNitro;
+    RULE 32: IF Easy     AND Medium   AND Low  AND No  THEN Accelerate;
+    RULE 33: IF Easy     AND High     AND Low  AND No  THEN Accelerate;
+    RULE 34: IF Easy     AND VeryHigh AND Low  AND No  THEN Accelerate;
+    
+    RULE 35: IF Medium   AND VeryLow  AND Low  AND No  THEN AccelAndNitro;
+    RULE 36: IF Medium   AND Low      AND Low  AND No  THEN Accelerate;
+    RULE 37: IF Medium   AND Medium   AND Low  AND No  THEN Accelerate;
+    RULE 38: IF Medium   AND High     AND Low  AND No  THEN None;
+    RULE 39: IF Medium   AND VeryHigh AND Low  AND No  THEN None;
+    
+    RULE 40: IF Hard     AND VeryLow  AND Low  AND No  THEN Accelerate;
+    RULE 41: IF Hard     AND Low      AND Low  AND No  THEN None;
+    RULE 42: IF Hard     AND Medium   AND Low  AND No  THEN Brake;
+    RULE 43: IF Hard     AND High     AND Low  AND No  THEN Brake;
+    RULE 44: IF Hard     AND VeryHigh AND Low  AND No  THEN Brake;
+    
+    RULE 45: IF VeryHard AND VeryLow  AND Low  AND No  THEN Accelerate;
+    RULE 46: IF VeryHard AND Low      AND Low  AND No  THEN None;
+    RULE 47: IF VeryHard AND Medium   AND Low  AND No  THEN Brake;
+    RULE 48: IF VeryHard AND High     AND Low  AND No  THEN Brake;
+    RULE 49: IF VeryHard AND VeryHigh AND Low  AND No  THEN Brake;
+
+    (*         |Difficulty  |CurrentSpd. |Compet. |Skid    |Output       *)
+    (* --------|------------|------------|--------|--------|------------ *)
+    RULE 50: IF VeryEasy AND VeryLow  AND High AND Yes THEN Accelerate;
+    RULE 51: IF VeryEasy AND Low      AND High AND Yes THEN Accelerate;
+    RULE 52: IF VeryEasy AND Medium   AND High AND Yes THEN Accelerate;
+    RULE 53: IF VeryEasy AND High     AND High AND Yes THEN Accelerate;
+    RULE 54: IF VeryEasy AND VeryHigh AND High AND Yes THEN Accelerate;
+    
+    RULE 55: IF Easy     AND VeryLow  AND High AND Yes THEN Accelerate;
+    RULE 56: IF Easy     AND Low      AND High AND Yes THEN Accelerate;
+    RULE 57: IF Easy     AND Medium   AND High AND Yes THEN Accelerate;
+    RULE 58: IF Easy     AND High     AND High AND Yes THEN Accelerate;
+    RULE 59: IF Easy     AND VeryHigh AND High AND Yes THEN Accelerate;
+    
+    RULE 60: IF Medium   AND VeryLow  AND High AND Yes THEN Accelerate;
+    RULE 61: IF Medium   AND Low      AND High AND Yes THEN Accelerate;
+    RULE 62: IF Medium   AND Medium   AND High AND Yes THEN Accelerate;
+    RULE 63: IF Medium   AND High     AND High AND Yes THEN Accelerate;
+    RULE 64: IF Medium   AND VeryHigh AND High AND Yes THEN Accelerate;
+    
+    RULE 65: IF Hard     AND VeryLow  AND High AND Yes THEN Accelerate;
+    RULE 66: IF Hard     AND Low      AND High AND Yes THEN Accelerate;
+    RULE 67: IF Hard     AND Medium   AND High AND Yes THEN Accelerate;
+    RULE 68: IF Hard     AND High     AND High AND Yes THEN Accelerate;
+    RULE 69: IF Hard     AND VeryHigh AND High AND Yes THEN Accelerate;
+    
+    RULE 70: IF VeryHard AND VeryLow  AND High AND Yes THEN Accelerate;
+    RULE 71: IF VeryHard AND Low      AND High AND Yes THEN Accelerate;
+    RULE 72: IF VeryHard AND Medium   AND High AND Yes THEN Accelerate;
+    RULE 73: IF VeryHard AND High     AND High AND Yes THEN Accelerate;
+    RULE 74: IF VeryHard AND VeryHigh AND High AND Yes THEN Accelerate;
+    
+    (*         |Difficulty  |CurrentSpd. |Compet. |Skid    |Output       *)
+    (* --------|------------|------------|--------|--------|------------ *)
+    RULE 75: IF VeryEasy AND VeryLow  AND Low  AND Yes THEN None;
+    RULE 76: IF VeryEasy AND Low      AND Low  AND Yes THEN None;
+    RULE 77: IF VeryEasy AND Medium   AND Low  AND Yes THEN None;
+    RULE 78: IF VeryEasy AND High     AND Low  AND Yes THEN None;
+    RULE 79: IF VeryEasy AND VeryHigh AND Low  AND Yes THEN None;
+    
+    RULE 80: IF Easy     AND VeryLow  AND Low  AND Yes THEN None;
+    RULE 81: IF Easy     AND Low      AND Low  AND Yes THEN None;
+    RULE 82: IF Easy     AND Medium   AND Low  AND Yes THEN None;
+    RULE 83: IF Easy     AND High     AND Low  AND Yes THEN None;
+    RULE 84: IF Easy     AND VeryHigh AND Low  AND Yes THEN None;
+    
+    RULE 85: IF Medium   AND VeryLow  AND Low  AND Yes THEN None;
+    RULE 86: IF Medium   AND Low      AND Low  AND Yes THEN None;
+    RULE 87: IF Medium   AND Medium   AND Low  AND Yes THEN None;
+    RULE 88: IF Medium   AND High     AND Low  AND Yes THEN None;
+    RULE 89: IF Medium   AND VeryHigh AND Low  AND Yes THEN None;
+    
+    RULE 90: IF Hard     AND VeryLow  AND Low  AND Yes THEN None;
+    RULE 91: IF Hard     AND Low      AND Low  AND Yes THEN None;
+    RULE 92: IF Hard     AND Medium   AND Low  AND Yes THEN None;
+    RULE 93: IF Hard     AND High     AND Low  AND Yes THEN None;
+    RULE 94: IF Hard     AND VeryHigh AND Low  AND Yes THEN None;
+    
+    RULE 95: IF VeryHard AND VeryLow  AND Low  AND Yes THEN None;
+    RULE 96: IF VeryHard AND Low      AND Low  AND Yes THEN None;
+    RULE 97: IF VeryHard AND Medium   AND Low  AND Yes THEN None;
+    RULE 98: IF VeryHard AND High     AND Low  AND Yes THEN None;
+    RULE 99: IF VeryHard AND VeryHigh AND Low  AND Yes THEN None;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

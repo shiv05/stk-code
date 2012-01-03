@@ -287,14 +287,15 @@ void FuzzyAIController::update(float dt)
     if(!commands_set)
     {
         /* Response handling functions */
-        handleAcceleration(dt);
+//        handleAcceleration(dt); Replaced by fuzzy function
+        handleAccelerationAndBrake(dt); // fuzzy function
         handleSteering(dt);
         handleItems(dt);
         handleRescue(dt);
-        handleBraking();
+//        handleBraking();  Replaced by fuzzy function
         // If a bomb is attached, nitro might already be set.
-        if(!m_controls->m_nitro)
-            handleNitroAndZipper();
+        //if(!m_controls->m_nitro)
+          //  handleNitroAndZipper(); Replaced by fuzzy function
     }
     // If we are supposed to use nitro, but have a zipper, 
     // use the zipper instead
@@ -347,7 +348,6 @@ void FuzzyAIController::update(float dt)
         //cout << m_kart->getIdent() << " : close kart detected ! " << closeKarts[i]->getIdent() << ", dist = " << dist << endl;
     }
 
-    handleAccelerationAndBrake();
     m_timer += dt;
     if(m_timer >= 0.5f)        // every ~1/2 second, do
     {
@@ -1293,6 +1293,7 @@ void FuzzyAIController::handleNitroAndZipper()
         m_kart->getAttachment()->getType()==Attachment::ATTACH_ANVIL;
     if(has_slowdown_attachment) return;
 
+/*  // Disabled because handled in fuzzy function handleAccelerationAndBrake()
     // If the kart is very slow (e.g. after rescue), use nitro
     if(m_kart->getSpeed()<5)
     {
@@ -1309,46 +1310,7 @@ void FuzzyAIController::handleNitroAndZipper()
         m_controls->m_nitro = true;
         return;
     }
-
-    // On the last track shortly before the finishing line, use nitro 
-    // anyway. Since the kart is faster with nitro, estimate a 50% time
-    // decrease (additionally some nitro will be saved when top speed
-    // is reached).
-    if(m_world->getLapForKart(m_kart->getWorldKartId())==race_manager->getNumLaps()-1 &&
-        m_nitro_level == NITRO_ALL)
-    {
-        float finish = m_world->getEstimatedFinishTime(m_kart->getWorldKartId());
-        if( 1.5f*m_kart->getEnergy() >= finish - m_world->getTime() )
-        {
-            m_controls->m_nitro = true;
-            return;
-        }
-    }
-
-    // A kart within this distance is considered to be overtaking (or to be
-    // overtaken).
-    const float overtake_distance = 10.0f;
-
-    // Try to overtake a kart that is close ahead, except 
-    // when we are already much faster than that kart
-    // --------------------------------------------------
-    if(m_kart_ahead                                       && 
-        m_distance_ahead < overtake_distance              &&
-        m_kart_ahead->getSpeed()+5.0f > m_kart->getSpeed()   )
-    {
-            m_controls->m_nitro = true;
-            return;
-    }
-
-    if(m_kart_behind                                   &&
-        m_distance_behind < overtake_distance          &&
-        m_kart_behind->getSpeed() > m_kart->getSpeed()    )
-    {
-        // Only prevent overtaking on highest level
-        m_controls->m_nitro = m_nitro_level==NITRO_ALL;
-        return;
-    }
-    
+*/
 }   // handleNitroAndZipper
 
 //-----------------------------------------------------------------------------
@@ -1747,13 +1709,128 @@ AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
 //------------------------------------------------------------------------------
 /** Fuzzy acceleration and brake handling
  */
-void FuzzyAIController::handleAccelerationAndBrake()
+void FuzzyAIController::handleAccelerationAndBrake(float dt)
 {
-    // Difficulty to reach the targetted point
+    // -- Special situations handling --
+    //Do not accelerate until we have delayed the start enough
+    if( m_start_delay > 0.0f )
+    {
+        m_start_delay -= dt;
+        m_controls->m_accel = 0.0f;
+        return;
+    }
+    
+    // Plunger limitations
+    if(m_kart->hasViewBlockedByPlunger())
+    {
+        if(!(m_kart->getSpeed() > m_kart->getCurrentMaxSpeed() / 2))
+            m_controls->m_accel = 0.05f;
+        else 
+            m_controls->m_accel = 0.0f;
+        return;
+    }
+    
+    // -- "Most of the time" handling --
+    // Estimated difficulty to reach the targetted point
     float diff = estimateDifficultyToReach(Vec3(m_target_x, 0.f, m_target_z));
         
     // Competitiveness & skid... for now, skid = 0 since the skid filter is not implemented yet
     float control = computeSpeedHandling(diff, m_kart->getSpeed(), m_compet, 0);
-    //cout << "diff = " << diff << ", curSpeed = " << m_kart->getSpeed() << ", compet = " << m_compet << endl;
-    //cout << "CHOSEN speed = > = > = > " << speed << endl;
+    
+    switch((int) (control + (control<0? -0.5 : 0.5)))
+    {
+        case 0 :        // NONE
+            m_controls->m_brake = false;
+            m_controls->m_accel = 0.0f;
+            if(!m_controls->m_nitro) // if a bomb is attached, nitro might already be set (see update())
+                m_controls->m_nitro = false;
+            break;
+        
+        case 1 :
+            m_controls->m_brake = false;
+            m_controls->m_accel = 1.0f;
+            if(!m_controls->m_nitro) // if a bomb is attached, nitro might already be set (see update())
+                m_controls->m_nitro = false;
+            break;
+        
+        case 2 :
+            m_controls->m_brake = false;
+            m_controls->m_accel = 1.0f;
+            m_controls->m_nitro = true;
+            break;
+
+        case 3 :
+            m_controls->m_brake = true;
+            m_controls->m_accel = 0.0f;
+            if(!m_controls->m_nitro) // if a bomb is attached, nitro might already be set (see update())
+                m_controls->m_nitro = false;
+            break;
+            
+        default :
+            cout << "Control error, unexpected value : " << control << endl;
+    }
+    
+    
+    // -- Nitro special situations --
+    // On the last track shortly before the finishing line, use nitro 
+    // anyway. Since the kart is faster with nitro, estimate a 50% time
+    // decrease (additionally some nitro will be saved when top speed
+    // is reached).
+    if(m_world->getLapForKart(m_kart->getWorldKartId())==race_manager->getNumLaps()-1 &&
+        m_nitro_level == NITRO_ALL)
+    {
+        float finish = m_world->getEstimatedFinishTime(m_kart->getWorldKartId());
+        if( 1.5f*m_kart->getEnergy() >= finish - m_world->getTime() )
+        {
+            m_controls->m_nitro = true;
+            return;
+        }
+    }
+
+    // A kart within this distance is considered to be overtaking (or to be
+    // overtaken).
+    const float overtake_distance = 10.0f;
+
+    // Try to overtake a kart that is close ahead, except 
+    // when we are already much faster than that kart
+    if(m_kart_ahead                                       && 
+        m_distance_ahead < overtake_distance              &&
+        m_kart_ahead->getSpeed()+5.0f > m_kart->getSpeed()   )
+    {
+            m_controls->m_nitro = true;
+            return;
+    }
+
+    if(m_kart_behind                                   &&
+        m_distance_behind < overtake_distance          &&
+        m_kart_behind->getSpeed() > m_kart->getSpeed()    )
+    {
+        // Only prevent overtaking on highest level
+        m_controls->m_nitro = m_nitro_level==NITRO_ALL;
+        return;
+    }
+    
+    // Don't use nitro when the AI has a plunger in the face!
+    if(m_kart->hasViewBlockedByPlunger())
+        { m_controls->m_nitro = false; return; }
+    
+    // Don't use nitro if the kart doesn't have any or is not on ground.
+    if(!m_kart->isOnGround() || m_kart->hasFinishedRace())
+        { m_controls->m_nitro = false; return; }
+    
+    // Don't compute nitro usage if we don't have nitro or are not supposed
+    // to use it, and we don't have a zipper or are not supposed to use
+    // it (calculated).
+    if( (m_kart->getEnergy()==0 || m_nitro_level==NITRO_NONE)  &&
+        (m_kart->getPowerup()->getType()!=PowerupManager::POWERUP_ZIPPER ||
+          m_item_tactic==IT_TEN_SECONDS                                    ) )
+        { m_controls->m_nitro = false; return; }
+
+    // If a parachute or anvil is attached, the nitro doesn't give much
+    // benefit. Better wait till later.
+    const bool has_slowdown_attachment = 
+        m_kart->getAttachment()->getType()==Attachment::ATTACH_PARACHUTE ||
+        m_kart->getAttachment()->getType()==Attachment::ATTACH_ANVIL;
+    if(has_slowdown_attachment)
+        { m_controls->m_nitro = false; return; }
 }

@@ -234,7 +234,7 @@ private:
     
     AttrPoint* chooseDirection(std::vector<AttrPoint*> & attrPts);
 
-    void handleAccelerationAndBrake();
+    void handleAccelerationAndBrake(float dt);
 
     // -- Debug method --
 //    void setDebugText(const Item* item, const std::string* text);

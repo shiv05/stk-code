@@ -95,6 +95,7 @@ private:
     AttrPoint               m_mainAPt;  // Main Attraction Point (next node)
     int                     m_target_x; // Target point coords got by handleSteering()
     int                     m_target_z;
+    AttrPoint *             m_chosenDir;
     bool                    debug;      // if this agent must print debug output
     unsigned int            instanceID; // for random
     // End of Fuzzy AI variables

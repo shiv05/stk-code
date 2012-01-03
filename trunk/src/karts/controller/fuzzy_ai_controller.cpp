@@ -284,40 +284,6 @@ void FuzzyAIController::update(float dt)
         }
         handleRescue(dt);
     }
-    if(!commands_set)
-    {
-        /* Response handling functions */
-//        handleAcceleration(dt); Replaced by fuzzy function
-        handleAccelerationAndBrake(dt); // fuzzy function
-        handleSteering(dt);
-        handleItems(dt);
-        handleRescue(dt);
-//        handleBraking();  Replaced by fuzzy function
-        // If a bomb is attached, nitro might already be set.
-        //if(!m_controls->m_nitro)
-          //  handleNitroAndZipper(); Replaced by fuzzy function
-    }
-    // If we are supposed to use nitro, but have a zipper, 
-    // use the zipper instead
-    if(m_controls->m_nitro && 
-        m_kart->getPowerup()->getType()==PowerupManager::POWERUP_ZIPPER && 
-        m_kart->getSpeed()>1.0f && 
-        m_kart->getSpeedIncreaseTimeLeft(MaxSpeed::MS_INCREASE_ZIPPER)<=0)
-    {
-        // Make sure that not all AI karts use the zipper at the same
-        // time in time trial at start up, so during the first 5 seconds
-        // this is done at random only.
-        if(race_manager->getMinorMode()!=RaceManager::MINOR_MODE_TIME_TRIAL ||
-            (m_world->getTime()<3.0f && rand()%50==1) )
-        {
-            m_controls->m_nitro = false;
-            m_controls->m_fire  = true;
-        }
-    }
-
-    /* And obviously general kart stuff */
-    AIBaseController::update(dt);
-    m_collided = false;
     
     //==========================================================================
     // -- Fuzzy controller code --
@@ -368,10 +334,13 @@ void FuzzyAIController::update(float dt)
         item_manager->getCloseItems(boxes, m_kart, 40, Item::ITEM_BONUS_BOX);
         item_manager->getCloseItems(allItems, m_kart, 40, Item::ITEM_NONE);
 
+        Vec3 straight_point;
+        findNonCrashingPoint(&straight_point);
+        m_target_x = straight_point.getX();
+        m_target_z = straight_point.getZ();
+        
         if(allItems.size()>0)
             tagItems((const vector<Item*>)allItems, m_attrPts);
-
-        AttrPoint* chosenDir = chooseDirection(m_attrPts); // TODO KINSU : direction chooser, speedchooser
         
         // Player evaluation
         // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last).
@@ -496,6 +465,42 @@ void FuzzyAIController::update(float dt)
         }
 #endif
     }
+    
+    if(!commands_set)
+    {
+        /* Response handling functions */
+//        handleAcceleration(dt); Replaced by fuzzy function
+        handleAccelerationAndBrake(dt); // fuzzy function
+        m_chosenDir = chooseDirection(m_attrPts);
+        handleSteering(dt);
+        handleItems(dt);
+        handleRescue(dt);
+//        handleBraking();  Replaced by fuzzy function
+        // If a bomb is attached, nitro might already be set.
+        //if(!m_controls->m_nitro)
+          //  handleNitroAndZipper(); Replaced by fuzzy function
+    }
+    // If we are supposed to use nitro, but have a zipper, 
+    // use the zipper instead
+    if(m_controls->m_nitro && 
+        m_kart->getPowerup()->getType()==PowerupManager::POWERUP_ZIPPER && 
+        m_kart->getSpeed()>1.0f && 
+        m_kart->getSpeedIncreaseTimeLeft(MaxSpeed::MS_INCREASE_ZIPPER)<=0)
+    {
+        // Make sure that not all AI karts use the zipper at the same
+        // time in time trial at start up, so during the first 5 seconds
+        // this is done at random only.
+        if(race_manager->getMinorMode()!=RaceManager::MINOR_MODE_TIME_TRIAL ||
+            (m_world->getTime()<3.0f && rand()%50==1) )
+        {
+            m_controls->m_nitro = false;
+            m_controls->m_fire  = true;
+        }
+    }
+
+    /* And obviously general kart stuff */
+    AIBaseController::update(dt);
+    m_collided = false;
 }   // update
 
 //------------------------------------------------------------------------------
@@ -940,13 +945,9 @@ void FuzzyAIController::handleSteering(float dt)
     else
     {
         m_start_kart_crash_direction = 0;
-        Vec3 straight_point;
-        findNonCrashingPoint(&straight_point);
+        Vec3 straight_point(m_chosenDir->x, 0.f, m_chosenDir->z);
 #ifdef AI_DEBUG
         m_debug_sphere->setPosition(straight_point.toIrrVector());
-        
-        m_target_x = straight_point.getX();
-        m_target_z = straight_point.getZ();
 #endif
         steer_angle = steerToPoint(straight_point);
     }
@@ -1693,7 +1694,7 @@ void FuzzyAIController::computeForkChoices(vector<unsigned int>& output)
 AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
 {
     unsigned int bestId = 0;
-    unsigned int bestVal = 0;
+    float bestVal = 0.f;
     for(unsigned int i=0 ; i<attrPts.size() ; i++)
     {
         if(attrPts[i]->attraction > bestVal)

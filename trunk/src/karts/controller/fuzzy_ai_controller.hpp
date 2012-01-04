@@ -88,11 +88,12 @@ private:
     // Fuzzy AI variables
     static unsigned int     instanceCount; // used to determine which instance has to debug (the first one only)
     float                   m_timer;
-    int                     m_compet; // Competitiveness of the agent TODO Constant
+    int                     m_compet; // Competitiveness of the agent TODO Constant values for this variable (LOW, HIGH, ...)
+    int                     m_aggress; // Aggressiveness
     /* Collision tagger */
     // Vector<int> m_speed_diff;
     std::vector<AttrPoint*> m_attrPts;  // Attraction points
-    AttrPoint               m_mainAPt;  // Main Attraction Point (next node)
+    AttrPoint               m_mainAPt;  // Main Attraction Point (straight point)
     int                     m_target_x; // Target point coords got by handleSteering()
     int                     m_target_z;
     AttrPoint *             m_chosenDir;
@@ -184,18 +185,11 @@ private:
     //--------------------------------------------------------------------------
     // Fuzzy AI methods
 
-    float computeFuzzyModel       (const std::string& file_name,
-                                  std::vector<float> parameters );
-
-    int   computePlayerEvaluation (unsigned int number_of_players,
-                                   float        player_average_rank,
-                                   float        player_crash_count );
-
     int   computeCompetitiveness  (unsigned int number_of_players,
                                    int          player_level,
                                    unsigned int current_ranking );
 
-    int   computeAgressiveness    (unsigned int number_of_players,
+    int   computeAggressiveness   (unsigned int number_of_players,
                                    unsigned int kart_class,
                                    unsigned int current_ranking );
 
@@ -206,6 +200,9 @@ private:
     float computeBoxAttraction    (float        difficultyTag,
                                    bool         hasPowerup);
 
+    float computeCollisionAttraction(float difficultyTag,
+                                     int   aggressiveness);
+    
     float computeHitEstimation    (int          possessed_item_type,
                                    float        next_kart_distance );
 
@@ -226,6 +223,9 @@ private:
     // -- Items tagging method --
     void  tagItems                (const std::vector<Item*>& items,
                                          std::vector<AttrPoint*>& output);
+    // -- Collisions tagging method --
+    void tagKartCollisions        (const std::vector<const Kart*>& karts,
+                                         std::vector<AttrPoint*>&  output);
     // -- Path Choosing methods --
     // Fork detection in the look_ahead nodes
     void  computeForkChoices      (std::vector<unsigned int>& output);

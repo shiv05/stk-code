@@ -72,9 +72,11 @@ PlayerController::PlayerController(Kart *kart, StateManager::ActivePlayer *playe
     
     // Player evaluation
     m_average_rank = m_kart->getPosition();
+    m_eval = computePlayerEvaluation(m_average_rank, m_crash_count);
+    
     fuzzy_data_manager->setPlayerAverageRank(m_average_rank); // Update race manager data
     fuzzy_data_manager->setPlayerCrashCount(m_crash_count);       
-
+    fuzzy_data_manager->setPlayerEvaluation(m_eval);
     reset();
 }   // PlayerController
 
@@ -521,3 +523,26 @@ void PlayerController::collectedItem(const Item &item, int add_info, float old_e
         }           
     }
 }   // collectedItem
+
+//------------------------------------------------------------------------------
+/** Player evaluation computation method. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliant
+ */
+int PlayerController::computePlayerEvaluation(float playerAverageRank,
+                                               float playerCrashCount)
+{
+    const std::string &fileName = "player_evaluation.fcl";
+
+	// The rank of the player need to be normalized before computing
+    float normalized_player_average_rank;
+    unsigned int kartCount = World::getWorld()->getNumKarts();
+    normalized_player_average_rank = (playerAverageRank*10)/kartCount;
+    
+    //cout << "Kartn = " << kartCount << ", Av" << playerAverageRank << ", NAvRk = " << normalized_player_average_rank << ", CC = " << playerCrashCount << endl;
+    vector<float> evaluationParameters;
+    evaluationParameters.push_back(normalized_player_average_rank);
+    evaluationParameters.push_back(playerCrashCount);
+
+    return  (int) computeFuzzyModel(fileName, evaluationParameters);
+}

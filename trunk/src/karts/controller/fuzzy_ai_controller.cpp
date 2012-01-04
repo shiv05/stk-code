@@ -124,9 +124,13 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
     }
     
     // -- Fuzzy controller code --
+    FuzzyAIController::instanceCount ++;
+    FuzzyAIController::instanceID = instanceCount;
+
     // Player evaluation
-    m_timer                 = 0.0f;
+    m_timer                 = (0.5/instanceCount)*instanceCount; // So that fuzzy computation is well distributed
     m_compet                = 1; // TODO Constants
+    m_aggress               = 1;
     m_attrPts               = vector<AttrPoint*>();
 
     computeForkChoices(m_fork_choices);
@@ -149,8 +153,6 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
     else
         debug = false;
     
-    FuzzyAIController::instanceCount ++;
-    FuzzyAIController::instanceID = instanceCount;
 }   // FuzzyAIController
 
 //-----------------------------------------------------------------------------
@@ -284,6 +286,39 @@ void FuzzyAIController::update(float dt)
         }
         handleRescue(dt);
     }
+    if(!commands_set)
+    {
+        /*Response handling functions*/
+        handleAcceleration(dt);
+        handleSteering(dt);
+        handleItems(dt);
+        handleRescue(dt);
+        handleBraking();
+        // If a bomb is attached, nitro might already be set.
+        if(!m_controls->m_nitro)
+            handleNitroAndZipper();
+    }
+    // If we are supposed to use nitro, but have a zipper, 
+    // use the zipper instead
+    if(m_controls->m_nitro && 
+        m_kart->getPowerup()->getType()==PowerupManager::POWERUP_ZIPPER && 
+        m_kart->getSpeed()>1.0f && 
+        m_kart->getSpeedIncreaseTimeLeft(MaxSpeed::MS_INCREASE_ZIPPER)<=0)
+    {
+        // Make sure that not all AI karts use the zipper at the same
+        // time in time trial at start up, so during the first 5 seconds
+        // this is done at random only.
+        if(race_manager->getMinorMode()!=RaceManager::MINOR_MODE_TIME_TRIAL ||
+            (m_world->getTime()<3.0f && rand()%50==1) )
+        {
+            m_controls->m_nitro = false;
+            m_controls->m_fire  = true;
+        }
+    }
+
+    /*And obviously general kart stuff*/
+    AIBaseController::update(dt);
+    m_collided = false;
     
     //==========================================================================
     // -- Fuzzy controller code --
@@ -304,16 +339,6 @@ void FuzzyAIController::update(float dt)
         computePath(); // TODO check if this line INSIDE "if" instead of OUTSIDE does not affect AI
     }
 
-    // -- Close karts detection --
-    vector<const Kart*> closeKarts;
-    getCloseKarts(closeKarts, 40.0f);
-    for(unsigned int i=0; i<closeKarts.size() ; i++)
-    {
-        float dist = (closeKarts[i]->getXYZ() - m_kart->getXYZ()).length();
-        // TODO : compute class (heavy, light) difference between kart and this
-        //cout << m_kart->getIdent() << " : close kart detected ! " << closeKarts[i]->getIdent() << ", dist = " << dist << endl;
-    }
-
     m_timer += dt;
     if(m_timer >= 0.5f)        // every ~1/2 second, do
     {
@@ -326,34 +351,28 @@ void FuzzyAIController::update(float dt)
         vector<Item*> bubgums;
         vector<Item*> boxes;
         vector<Item*> allItems;
-        item_manager->getCloseItems(nitro_b, m_kart, 40, Item::ITEM_NITRO_BIG);
-        item_manager->getCloseItems(nitro_s, m_kart, 40, Item::ITEM_NITRO_SMALL);
-        item_manager->getCloseItems(maluses, m_kart, 40, Item::ITEM_BANANA);
-        item_manager->getCloseItems(bubgums, m_kart, 40, Item::ITEM_BUBBLEGUM);
+        item_manager->getCloseItems(nitro_b, m_kart, 30, Item::ITEM_NITRO_BIG);
+        item_manager->getCloseItems(nitro_s, m_kart, 30, Item::ITEM_NITRO_SMALL);
+        item_manager->getCloseItems(maluses, m_kart, 30, Item::ITEM_BANANA);
+        item_manager->getCloseItems(bubgums, m_kart, 30, Item::ITEM_BUBBLEGUM);
         maluses.insert(maluses.end(), bubgums.begin(), bubgums.end());
-        item_manager->getCloseItems(boxes, m_kart, 40, Item::ITEM_BONUS_BOX);
-        item_manager->getCloseItems(allItems, m_kart, 40, Item::ITEM_NONE);
+        item_manager->getCloseItems(boxes, m_kart, 30, Item::ITEM_BONUS_BOX);
+        item_manager->getCloseItems(allItems, m_kart, 30, Item::ITEM_NONE);
 
         Vec3 straight_point;
         findNonCrashingPoint(&straight_point);
         m_target_x = straight_point.getX();
         m_target_z = straight_point.getZ();
         
-        if(allItems.size()>0)
-            tagItems((const vector<Item*>)allItems, m_attrPts);
+//        if(allItems.size()>0)
+            //tagItems((const vector<Item*>)allItems, m_attrPts);
         
         // Player evaluation
         // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last).
         
         // see m_kart_info[kart_id].getSector()->getDistanceFromStart()
 
-        float av_rank = fuzzy_data_manager->getPlayerAverageRank();
-        int   crash_c = fuzzy_data_manager->getPlayerCrashCount();
-
-        //Get total number of karts for normalization
-		int number_of_karts = World::getWorld()->getNumKarts();
-
-        int eval = (int)computePlayerEvaluation(number_of_karts, av_rank, crash_c);
+        int eval = fuzzy_data_manager->getPlayerEvaluation();
 
         // -- Choose the driving style : competitiveness and agressiveness --
         //Get the current ranking
@@ -363,8 +382,9 @@ void FuzzyAIController::update(float dt)
         // For now we use "medium" for every kart.
         int kart_class = 2;
 
-        m_compet = computeCompetitiveness(number_of_karts,eval,current_ranking);
-        int agressiveness = computeAgressiveness(number_of_karts,kart_class,current_ranking);
+        //m_compet  = computeCompetitiveness(number_of_karts,eval,current_ranking);
+        //m_aggress = computeAggressiveness(number_of_karts,kart_class,current_ranking);
+        
         
         //Decide if it is interesting or not to use the current possessed weapon
         //Get current powerup
@@ -383,7 +403,18 @@ void FuzzyAIController::update(float dt)
             //Now get the interest the possessed weapons.
             weapon_interest = computeWeaponInterest(m_compet, hit_estimation);        
         }
-  
+        
+        // -- Close karts detection --
+        vector<const Kart*> closeKarts;
+        getCloseKarts(closeKarts, 40.0f);
+        for(unsigned int i=0; i<closeKarts.size() ; i++)
+        {
+            float dist = (closeKarts[i]->getXYZ() - m_kart->getXYZ()).length();
+        
+            //tagKartCollisions(closeKarts, m_attrPts);
+            // TODO : compute class (heavy, light) difference between kart and this
+            //cout << m_kart->getIdent() << " : close kart detected ! " << closeKarts[i]->getIdent() << ", dist = " << dist << endl;
+        }
 #ifdef AI_DEBUG
         if(debug)
         {
@@ -436,7 +467,7 @@ void FuzzyAIController::update(float dt)
             default : cout << "unexpected value : " << eval << endl;
         } // end switch
         cout << m_kart->getIdent() << " : agent agressiveness = ";
-        switch(agressiveness)
+        switch(m_aggress)
         {
             case (1): cout << "Agressive" << endl;   break;
             case (2): cout << "Neutral" << endl; break;
@@ -466,67 +497,42 @@ void FuzzyAIController::update(float dt)
 #endif
     }
     
-    if(!commands_set)
-    {
-        /* Response handling functions */
-//        handleAcceleration(dt); Replaced by fuzzy function
-        handleAccelerationAndBrake(dt); // fuzzy function
-        m_chosenDir = chooseDirection(m_attrPts);
-        handleSteering(dt);
-        handleItems(dt);
-        handleRescue(dt);
-//        handleBraking();  Replaced by fuzzy function
-        // If a bomb is attached, nitro might already be set.
-        //if(!m_controls->m_nitro)
-          //  handleNitroAndZipper(); Replaced by fuzzy function
-    }
-    // If we are supposed to use nitro, but have a zipper, 
-    // use the zipper instead
-    if(m_controls->m_nitro && 
-        m_kart->getPowerup()->getType()==PowerupManager::POWERUP_ZIPPER && 
-        m_kart->getSpeed()>1.0f && 
-        m_kart->getSpeedIncreaseTimeLeft(MaxSpeed::MS_INCREASE_ZIPPER)<=0)
-    {
-        // Make sure that not all AI karts use the zipper at the same
-        // time in time trial at start up, so during the first 5 seconds
-        // this is done at random only.
-        if(race_manager->getMinorMode()!=RaceManager::MINOR_MODE_TIME_TRIAL ||
-            (m_world->getTime()<3.0f && rand()%50==1) )
-        {
-            m_controls->m_nitro = false;
-            m_controls->m_fire  = true;
-        }
-    }
-
-    /* And obviously general kart stuff */
-    AIBaseController::update(dt);
-    m_collided = false;
+//    if(!commands_set)
+//    {
+//        /* Response handling functions */
+////        handleAcceleration(dt); Replaced by fuzzy function
+//        handleAccelerationAndBrake(dt); // fuzzy function
+//        m_chosenDir = chooseDirection(m_attrPts);
+//        handleSteering(dt);
+//        handleItems(dt);
+//        handleRescue(dt);
+////        handleBraking();  Replaced by fuzzy function
+//        // If a bomb is attached, nitro might already be set.
+//        //if(!m_controls->m_nitro)
+//          //  handleNitroAndZipper(); Replaced by fuzzy function
+//    }
+//    // If we are supposed to use nitro, but have a zipper, 
+//    // use the zipper instead
+//    if(m_controls->m_nitro && 
+//        m_kart->getPowerup()->getType()==PowerupManager::POWERUP_ZIPPER && 
+//        m_kart->getSpeed()>1.0f && 
+//        m_kart->getSpeedIncreaseTimeLeft(MaxSpeed::MS_INCREASE_ZIPPER)<=0)
+//    {
+//        // Make sure that not all AI karts use the zipper at the same
+//        // time in time trial at start up, so during the first 5 seconds
+//        // this is done at random only.
+//        if(race_manager->getMinorMode()!=RaceManager::MINOR_MODE_TIME_TRIAL ||
+//            (m_world->getTime()<3.0f && rand()%50==1) )
+//        {
+//            m_controls->m_nitro = false;
+//            m_controls->m_fire  = true;
+//        }
+//    }
+//
+//    /* And obviously general kart stuff */
+//    AIBaseController::update(dt);
+//    m_collided = false;
 }   // update
-
-//------------------------------------------------------------------------------
-/** Player evaluation computation method. Simply call computeFuzzyModel with the
- *  right parameters.
- *  TODO : make this comment doxygen compliant
- */
-int FuzzyAIController::computePlayerEvaluation( unsigned int  kartCount,
-                                                float         playerAverageRank,
-                                                float         playerCrashCount)
-{
-    const std::string &fileName = "player_evaluation.fcl";
-
-	// The rank of the player need to be normalized before computing
-    float normalized_player_average_rank;
-
-	if(kartCount > 0)
-        normalized_player_average_rank = (playerAverageRank*10)/kartCount;
-    
-    //cout << "Kartn = " << kartCount << ", Av" << playerAverageRank << ", NAvRk = " << normalized_player_average_rank << ", CC = " << playerCrashCount << endl;
-    vector<float> evaluationParameters;
-    evaluationParameters.push_back(normalized_player_average_rank);
-    evaluationParameters.push_back(playerCrashCount);
-
-    return  (int) computeFuzzyModel(fileName, evaluationParameters);
-}
 
 //------------------------------------------------------------------------------
 /** Driving style computation methods for competitiveness and agressiveness.
@@ -556,14 +562,13 @@ int FuzzyAIController::computeCompetitiveness(unsigned int  number_of_players,
 }
 
 
-int FuzzyAIController::computeAgressiveness(unsigned int  number_of_players,
-                                            unsigned int  kart_class,
-                                            unsigned int  current_ranking)
+int FuzzyAIController::computeAggressiveness(unsigned int  number_of_players,
+                                             unsigned int  kart_class,
+                                             unsigned int  current_ranking)
 {
     const std::string& file_name = "driving_style_agressiveness.fcl";
     
 	//The rank need to be normalized before computing
-
     float normalized_current_ranking;
 
 	if(number_of_players > 0)
@@ -674,6 +679,22 @@ float FuzzyAIController::computeBoxAttraction(float difficultyTag,
 }
 
 //------------------------------------------------------------------------------
+/** TODO Comment
+ */
+
+float FuzzyAIController::computeCollisionAttraction(float difficultyTag,
+                                                    int   aggressiveness)
+{
+    const std::string file_name = "collision_attraction.fcl";
+    
+    vector<float> params;
+    params.push_back(difficultyTag);
+    params.push_back(aggressiveness);
+    
+    return computeFuzzyModel(file_name, params);
+}
+
+//------------------------------------------------------------------------------
 /** Module to compute a difficulty prediction to hit an opponent with a weapon.
  *  Simply call computeFuzzyModel with the right parameters.
  *  TODO : make this comment doxygen compliant
@@ -763,44 +784,6 @@ float FuzzyAIController::computeSpeedHandling(float difficulty,
     
     return computeFuzzyModel(file_name, params);
 } // computeSpeedHandling
-                                   
-//------------------------------------------------------------------------------
-/** Generic method to interface with FFLL and compute an output using fuzzy
- *  logic. The first given parameter is the .fcl file that FFLL has to use for
- *  the computation.
- *  The next parameters are the values that correspond to the parameters
- *  declared in the .fcl file (in the same order !).
- *  TODO : better handling of fcl file opening errors (see FuzzyModelBase->load_from_fcl_file())
- *  TODO : make this comment doxygen compliant
- */
-
-float FuzzyAIController::computeFuzzyModel(const std::string&  file_name,
-                                           vector<float>       parameters )
-{
-    // Create FFLL model. TODO : make this model a class static variable
-	int model = ffll_new_model();
-
-    std::string full_name = file_manager->getFclFile(file_name);
-    // Load .fcl file
-	int ret_val = (int) ffll_load_fcl_file(model, full_name.c_str());
-
-    // If ffll_load_fcl_file returns an error
-	if(ret_val < 0)
-	{
-		cout << "FFLL : Error opening .fcl file '" << file_name << "'" << endl; // TODO use fprintf(stderr, msg);
-		return ret_val;
-	}
-    
-    // Create a child FFLL model
-	int child = ffll_new_child(model);
-
-    // Set parameters value.
-	for (size_t i=0, size=parameters.size(); i < size; i++)
-		ffll_set_value(model, child, i, parameters[i]); 
-
-    // Compute and return output
-	return (float) ffll_get_output_value(model, child);
-}
 
 //-----------------------------------------------------------------------------
 void FuzzyAIController::handleBraking()
@@ -881,7 +864,6 @@ void FuzzyAIController::handleBraking()
     m_controls->m_brake = false;
 }   // handleBraking
 
-//-----------------------------------------------------------------------------
 void FuzzyAIController::handleSteering(float dt)
 {
     const int next = m_next_node_index[m_track_node];
@@ -902,7 +884,7 @@ void FuzzyAIController::handleSteering(float dt)
         m_debug_sphere->setPosition(QuadGraph::get()->getQuadOfNode(next)
                        .getCenter().toIrrVector());
         std::cout << "- Outside of road: steer to center point." <<
-        std::endl;
+            std::endl;
 #endif
     }
     //If we are going to crash against a kart, avoid it if it doesn't
@@ -945,7 +927,8 @@ void FuzzyAIController::handleSteering(float dt)
     else
     {
         m_start_kart_crash_direction = 0;
-        Vec3 straight_point(m_chosenDir->x, 0.f, m_chosenDir->z);
+        Vec3 straight_point;
+        findNonCrashingPoint(&straight_point);
 #ifdef AI_DEBUG
         m_debug_sphere->setPosition(straight_point.toIrrVector());
 #endif
@@ -954,6 +937,81 @@ void FuzzyAIController::handleSteering(float dt)
 
     setSteering(steer_angle, dt);
 }   // handleSteering
+
+//-----------------------------------------------------------------------------
+// Handle steering for fuzzy steering
+//void FuzzyAIController::handleSteering(float dt)
+//{
+//    const int next = m_next_node_index[m_track_node];
+//    
+//    float steer_angle = 0.0f;
+//
+//    /*The AI responds based on the information we just gathered, using a
+//     *finite state machine.
+//     */
+//    //Reaction to being outside of the road
+//    if( fabsf(m_world->getDistanceToCenterForKart( m_kart->getWorldKartId() ))  >
+//       0.5f* QuadGraph::get()->getNode(m_track_node).getPathWidth()+0.5f )
+//    {
+//        steer_angle = steerToPoint(QuadGraph::get()->getQuadOfNode(next)
+//                                                    .getCenter());
+//
+//#ifdef AI_DEBUG
+//        m_debug_sphere->setPosition(QuadGraph::get()->getQuadOfNode(next)
+//                       .getCenter().toIrrVector());
+//        std::cout << "- Outside of road: steer to center point." <<
+//        std::endl;
+//#endif
+//    }
+//    //If we are going to crash against a kart, avoid it if it doesn't
+//    //drives the kart out of the road
+//    else if( m_crashes.m_kart != -1 && !m_crashes.m_road )
+//    {
+//        //-1 = left, 1 = right, 0 = no crash.
+//        if( m_start_kart_crash_direction == 1 )
+//        {
+//            steer_angle = steerToAngle(next, -M_PI*0.5f );
+//            m_start_kart_crash_direction = 0;
+//        }
+//        else if(m_start_kart_crash_direction == -1)
+//        {
+//            steer_angle = steerToAngle(next, M_PI*0.5f);
+//            m_start_kart_crash_direction = 0;
+//        }
+//        else
+//        {
+//            if(m_world->getDistanceToCenterForKart( m_kart->getWorldKartId() ) >
+//               m_world->getDistanceToCenterForKart( m_crashes.m_kart ))
+//            {
+//                steer_angle = steerToAngle(next, -M_PI*0.5f );
+//                m_start_kart_crash_direction = 1;
+//            }
+//            else
+//            {
+//                steer_angle = steerToAngle(next, M_PI*0.5f );
+//                m_start_kart_crash_direction = -1;
+//            }
+//        }
+//
+//#ifdef AI_DEBUG
+//        std::cout << "- Velocity vector crashes with kart and doesn't " <<
+//            "crashes with road : steer 90 degrees away from kart." <<
+//            std::endl;
+//#endif
+//
+//    }
+//    else
+//    {
+//        m_start_kart_crash_direction = 0;
+//        Vec3 straight_point(m_chosenDir->x, 0.f, m_chosenDir->z);
+//#ifdef AI_DEBUG
+//        m_debug_sphere->setPosition(straight_point.toIrrVector());
+//#endif
+//        steer_angle = steerToPoint(straight_point);
+//    }
+//
+//    setSteering(steer_angle, dt);
+//}   // handleSteering
 
 //-----------------------------------------------------------------------------
 /** Handle all items depending on the chosen strategy: Either (low level AI)
@@ -1551,7 +1609,7 @@ void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
 
 //------------------------------------------------------------------------------
 /** Difficulty computation : computes the needed parameters and calls the fuzzy
- *  logic model (computeDifficultyTag function) to estimate the difficulty to
+ *  logic model (computeDifficultyTag() function) to estimate the difficulty to
  *  reach the given point.
  */
 float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
@@ -1590,6 +1648,51 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
 }
 
 //------------------------------------------------------------------------------
+/** Collision tagger & attraction setter
+ *
+ */
+void FuzzyAIController::tagKartCollisions(const vector<const Kart*>& karts,
+                                                vector<AttrPoint*>&  output)
+{
+    float        diffTag, attraction, dist;
+    float        minDist = 9999;
+    unsigned int i;
+    unsigned int minI = 9999;
+    // Get the closest kart (only compute once the collision)
+    for(i=0 ; i<karts.size() ; i++)
+    {
+        dist = (m_kart->getXYZ() - karts[i]->getXYZ()).length();
+        if(dist < minDist)
+        {
+            minDist = dist;
+            minI = i;
+        }
+    } // For every given kart (close kart)
+    
+    // -- Compute collision difficulty tag --
+    //diffTag = estimateDifficultyToReach(karts[minI]->getXYZ());
+    
+    // -- Compute attraction --
+    //attraction = computeCollisionAttraction(diffTag, m_aggress);
+                
+    AttrPoint* attrPt = new AttrPoint(karts[minI]->getXYZ().getX(), karts[minI]->getXYZ().getZ());
+    attrPt->difficulty = diffTag;
+    attrPt->attraction = attraction;
+    output.push_back(attrPt);
+    
+    // Debug output
+    if(debug)
+    {
+        std::stringstream * t = new std::stringstream();
+        diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100;  // round
+        (*t) << karts[minI]->getIdent() << " Tag = " << diffTag << ", A = " << attraction << endl;
+        ((FuzzyAITaggable*) karts[minI])->setDebugText(t->str());
+        ((FuzzyAITaggable*) karts[minI])->updateDebugTextPosition();
+        cout << t->str();
+    } // if debug
+} // tagKartCollisions
+
+//------------------------------------------------------------------------------
 /** Computes an attraction value for every item in the parameter vector. The
  *  estimation of the difficulty to reach the item is first computed, then this
  *  value is used to compute the output attraction value. Note that this is a
@@ -1610,7 +1713,6 @@ void FuzzyAIController::tagItems( const vector<Item*>& items,
     {
         // -- Compute item difficulty tag --
         diffTag = estimateDifficultyToReach(items[i]->getXYZ());
-        diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100;  // round (for debug display)
         
         // -- Compute item attraction value --
         // Get powerup (y/n)
@@ -1620,11 +1722,7 @@ void FuzzyAIController::tagItems( const vector<Item*>& items,
         // Compute item attraction (for now, use generic boxAttraction model)
         attraction = computeBoxAttraction(diffTag, hasPowerup);
         attraction = (attraction*100 + (attraction<0? -0.5 : 0.5))/100; // round
-
-        // Set taggable data
-//        ((FuzzyAITaggable*) items[i])->setDifficulty(diffTag);
-//        ((FuzzyAITaggable*) items[i])->setAttraction(attraction);
-        
+    
         float x = items[i]->getXYZ().getX();
         float z = items[i]->getXYZ().getZ();
         AttrPoint* attrPt = new AttrPoint(x, z);
@@ -1636,6 +1734,7 @@ void FuzzyAIController::tagItems( const vector<Item*>& items,
         if(debug)
         {
             std::stringstream * t = new std::stringstream();
+            diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100;  // round
             (*t) << " Tag = " << diffTag << ", A = " << attraction << endl;
             ((FuzzyAITaggable*) items[i])->setDebugText(t->str());
             cout << t->str();

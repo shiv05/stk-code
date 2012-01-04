@@ -82,7 +82,7 @@ private :
 public :
     void initDebug();
     void setDebugText(const std::string& newText);
-    void updatePosition();
+    void updateDebugTextPosition();
 //    void setTextXYZ(Vec3& newXYZ)      {text.set....}
 
 #endif // AI_DEBUG (end of debug tools declaration)

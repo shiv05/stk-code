@@ -98,12 +98,12 @@ void FuzzyAITaggable::setDebugText(const std::string& newText)
 /**-----------------------------------------------------------------------------
  */
 // TODO : does not work with moveable (kart)...
-void FuzzyAITaggable::updatePosition()
+void FuzzyAITaggable::updateDebugTextPosition()
 {
     float x = getXYZ().getX();
     float y = getXYZ().getY() + m_dbgTxtY;
     float z = getXYZ().getZ();
     debugText->setPosition(vector3df(x, y, z));
-} // updatePosition
+} // updateDebugTextPosition
 
 #endif // ifdef AI_DEBUG (end of debug functions definition)

@@ -21,8 +21,12 @@
 //The AI debugging works best with just 1 AI kart, so set the number of karts
 //to 2 in main.cpp with quickstart and run supertuxkart with the arg -N.
 
-#include "karts/controller/controller.hpp"
+#include <iostream>
 
+#include "io/file_manager.hpp"
+#include "ffll/FFLLAPI.h"
+
+#include "karts/controller/controller.hpp"
 #include "karts/kart.hpp"
 
 /** Constructor, saves the kart pointer and a pointer to the KartControl
@@ -44,3 +48,41 @@ const irr::core::stringw& Controller::getNamePostfix() const
 }   // getNamePostfix
 
 // ----------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+/** Generic method to interface with FFLL and compute an output using fuzzy
+ *  logic. The first given parameter is the .fcl file that FFLL has to use for
+ *  the computation.
+ *  The next parameters are the values that correspond to the parameters
+ *  declared in the .fcl file (in the same order !).
+ *  TODO : better handling of fcl file opening errors (see FuzzyModelBase->load_from_fcl_file())
+ *  TODO : make this comment doxygen compliant
+ */
+
+float Controller::computeFuzzyModel(const std::string&  file_name,
+                                           std::vector<float> parameters )
+{
+    // Create FFLL model. TODO : make this model a class static variable
+	int model = ffll_new_model();
+
+    std::string full_name = file_manager->getFclFile(file_name);
+    // Load .fcl file
+	int ret_val = (int) ffll_load_fcl_file(model, full_name.c_str());
+
+    // If ffll_load_fcl_file returns an error
+	if(ret_val < 0)
+	{
+		std::cout << "FFLL : Error opening .fcl file '" << file_name << "'" << std::endl; // TODO use fprintf(stderr, msg);
+		return ret_val;
+	}
+    
+    // Create a child FFLL model
+	int child = ffll_new_child(model);
+
+    // Set parameters value.
+	for (size_t i=0, size=parameters.size(); i < size; i++)
+		ffll_set_value(model, child, i, parameters[i]); 
+
+    // Compute and return output
+	return (float) ffll_get_output_value(model, child);
+}

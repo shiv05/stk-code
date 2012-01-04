@@ -55,6 +55,7 @@ private:
     
     float          m_crash_count; // times the player crashed within the 20 last sec.
     float          m_old_speed;
+    float          m_eval;
     //  -- End of fuzzy AI variables --
 
     void           steer(float, int);
@@ -73,6 +74,9 @@ public:
     virtual void   reset             ();
     void           resetInputState   ();
     
+    // Method for fuzzy AI
+    int             computePlayerEvaluation (float player_average_rank,
+                                             float player_crash_count );
     // -- Getters for Fuzzy AI --
     // The average rank is updated every 5secs
     // float          getAverageRank()    {return m_average_rank;}

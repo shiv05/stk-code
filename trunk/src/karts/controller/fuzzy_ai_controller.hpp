@@ -51,11 +51,15 @@ struct AttrPoint
     float            interest;
     float            difficulty; // difficulty to reach the point
     float            attraction;
+    bool             updated;
+    FuzzyAITaggable* object;     // Null if this is the track node attraction pt
     
     AttrPoint(float x = 0.0f, float z = 0.0f) : x(x), z(z),
                                                 interest(0.f),
                                                 difficulty(0.f),
-                                                attraction(0.f)    {}
+                                                attraction(0.f),
+                                                updated(false),
+                                                object(NULL)    {}
 };
 
 /**
@@ -185,12 +189,10 @@ private:
     //--------------------------------------------------------------------------
     // Fuzzy AI methods
 
-    int   computeCompetitiveness  (unsigned int number_of_players,
-                                   int          player_level,
+    int   computeCompetitiveness  (int          player_level,
                                    unsigned int current_ranking );
 
-    int   computeAggressiveness   (unsigned int number_of_players,
-                                   unsigned int kart_class,
+    int   computeAggressiveness   (unsigned int kart_class,
                                    unsigned int current_ranking );
 
     float computeDifficultyTag    (float        angle,

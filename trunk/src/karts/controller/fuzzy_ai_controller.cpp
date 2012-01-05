@@ -27,42 +27,35 @@
 //#undef AI_DEBUG
 #define AI_DEBUG
 
-#include <math.h>
-
-#include <vector2d.h>
-#include <IBillboardTextSceneNode.h>
-
-#include "io/file_manager.hpp"
-#include "karts/controller/fuzzy_ai_controller.hpp"
-#include "karts/controller/fuzzy_data_manager.hpp"
-#include "karts/controller/fuzzy_ai_taggable.hpp"
-#include "tracks/fuzzy_ai_path_tree.hpp"
-
-#ifdef AI_DEBUG
-#  include "irrlicht.h"
-#endif
-
 #include <cstdlib>
 #include <ctime>
 #include <cstdio>
 #include <iostream>
 #include <vector>
+#include <math.h>
+
+#include <vector2d.h>
+#include <IBillboardTextSceneNode.h>
 
 #ifdef AI_DEBUG
+#  include "irrlicht.h"
 #  include "graphics/irr_driver.hpp"
 #endif
 
 #include "ffll/FFLLAPI.h"
-
+#include "io/file_manager.hpp"
 #include "graphics/slip_stream.hpp"
 #include "modes/linear_world.hpp"
 #include "network/network_manager.hpp"
 #include "race/race_manager.hpp" // TODO : check if really necessary
+#include "karts/controller/fuzzy_ai_controller.hpp"
+#include "karts/controller/fuzzy_ai_taggable.hpp"
 #include "karts/controller/fuzzy_data_manager.hpp"
 #include "items/item.hpp"
 #include "items/item_manager.hpp"
 #include "tracks/quad_graph.hpp"
 #include "tracks/track.hpp"
+#include "tracks/fuzzy_ai_path_tree.hpp"
 #include "utils/constants.hpp"
 
 using namespace std;
@@ -132,7 +125,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
     m_compet                = 1; // TODO Constants
     m_aggress               = 1;
     m_attrPts               = vector<AttrPoint*>();
-
+    
     computeForkChoices(m_fork_choices);
     computePath();
     
@@ -148,7 +141,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
     m_debug_sphere = irr_driver->getSceneManager()->addSphereSceneNode(1);
 #endif
     
-    if(FuzzyAIController::instanceCount == 0)
+    if(FuzzyAIController::instanceCount == 1)
         debug = true;
     else
         debug = false;
@@ -161,7 +154,6 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
  */
 FuzzyAIController::~FuzzyAIController()
 {
-//    delete[] m_texts;
 #ifdef AI_DEBUG
     irr_driver->removeNode(m_debug_sphere);
 #endif
@@ -286,35 +278,6 @@ void FuzzyAIController::update(float dt)
         }
         handleRescue(dt);
     }
-    if(!commands_set)
-    {
-        /*Response handling functions*/
-        handleAcceleration(dt);
-        handleSteering(dt);
-        handleItems(dt);
-        handleRescue(dt);
-        handleBraking();
-        // If a bomb is attached, nitro might already be set.
-        if(!m_controls->m_nitro)
-            handleNitroAndZipper();
-    }
-    // If we are supposed to use nitro, but have a zipper, 
-    // use the zipper instead
-    if(m_controls->m_nitro && 
-        m_kart->getPowerup()->getType()==PowerupManager::POWERUP_ZIPPER && 
-        m_kart->getSpeed()>1.0f && 
-        m_kart->getSpeedIncreaseTimeLeft(MaxSpeed::MS_INCREASE_ZIPPER)<=0)
-    {
-        // Make sure that not all AI karts use the zipper at the same
-        // time in time trial at start up, so during the first 5 seconds
-        // this is done at random only.
-        if(race_manager->getMinorMode()!=RaceManager::MINOR_MODE_TIME_TRIAL ||
-            (m_world->getTime()<3.0f && rand()%50==1) )
-        {
-            m_controls->m_nitro = false;
-            m_controls->m_fire  = true;
-        }
-    }
 
     /*And obviously general kart stuff*/
     AIBaseController::update(dt);
@@ -322,10 +285,14 @@ void FuzzyAIController::update(float dt)
     
     //==========================================================================
     // -- Fuzzy controller code --
-    m_attrPts.clear(); // TODO check if clear() deletes pointed items
+    Vec3 straight_point;
+    findNonCrashingPoint(&straight_point);
+    m_target_x = straight_point.getX();
+    m_target_z = straight_point.getZ();
+
     m_mainAPt.x = m_target_x;
     m_mainAPt.z = m_target_z;
-    m_attrPts.push_back(&m_mainAPt);
+    m_mainAPt.attraction = 5.9f;//5.9 is an "upper medium" value (see fcl files)
    
     if(m_last_seen_track_node != m_track_node)
     {
@@ -336,7 +303,7 @@ void FuzzyAIController::update(float dt)
         if(next.size() > 1)
             m_fork_choices.erase(m_fork_choices.begin());
  
-        computePath(); // TODO check if this line INSIDE "if" instead of OUTSIDE does not affect AI
+        computePath();
     }
 
     m_timer += dt;
@@ -344,6 +311,10 @@ void FuzzyAIController::update(float dt)
     {
         m_timer -= 0.5f;
         
+        // TODO update item number at each iteration, and recompute attraction if
+        // it has changed
+        // TODO take in account taken items
+        // TODO avoid bananas
         // Item position & type
         vector<Item*> nitro_b;
         vector<Item*> nitro_s;
@@ -351,21 +322,16 @@ void FuzzyAIController::update(float dt)
         vector<Item*> bubgums;
         vector<Item*> boxes;
         vector<Item*> allItems;
-        item_manager->getCloseItems(nitro_b, m_kart, 30, Item::ITEM_NITRO_BIG);
-        item_manager->getCloseItems(nitro_s, m_kart, 30, Item::ITEM_NITRO_SMALL);
-        item_manager->getCloseItems(maluses, m_kart, 30, Item::ITEM_BANANA);
-        item_manager->getCloseItems(bubgums, m_kart, 30, Item::ITEM_BUBBLEGUM);
+        item_manager->getCloseItems(nitro_b, m_kart, 25, Item::ITEM_NITRO_BIG);
+        item_manager->getCloseItems(nitro_s, m_kart, 25, Item::ITEM_NITRO_SMALL);
+        item_manager->getCloseItems(maluses, m_kart, 25, Item::ITEM_BANANA);
+        item_manager->getCloseItems(bubgums, m_kart, 25, Item::ITEM_BUBBLEGUM);
         maluses.insert(maluses.end(), bubgums.begin(), bubgums.end());
-        item_manager->getCloseItems(boxes, m_kart, 30, Item::ITEM_BONUS_BOX);
-        item_manager->getCloseItems(allItems, m_kart, 30, Item::ITEM_NONE);
+        item_manager->getCloseItems(boxes, m_kart, 25, Item::ITEM_BONUS_BOX);
+        item_manager->getCloseItems(allItems, m_kart, 25, Item::ITEM_NONE);
 
-        Vec3 straight_point;
-        findNonCrashingPoint(&straight_point);
-        m_target_x = straight_point.getX();
-        m_target_z = straight_point.getZ();
-        
-//        if(allItems.size()>0)
-            //tagItems((const vector<Item*>)allItems, m_attrPts);
+        if(allItems.size()>0)
+            tagItems((const vector<Item*>)allItems, m_attrPts);
         
         // Player evaluation
         // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last).
@@ -381,10 +347,8 @@ void FuzzyAIController::update(float dt)
         // TODO: Kart classes (heavy, medium, light) are not implemented.
         // For now we use "medium" for every kart.
         int kart_class = 2;
-
-        //m_compet  = computeCompetitiveness(number_of_karts,eval,current_ranking);
-        //m_aggress = computeAggressiveness(number_of_karts,kart_class,current_ranking);
-        
+        m_compet  = computeCompetitiveness(eval, current_ranking);
+        m_aggress = computeAggressiveness(kart_class, current_ranking);
         
         //Decide if it is interesting or not to use the current possessed weapon
         //Get current powerup
@@ -398,10 +362,10 @@ void FuzzyAIController::update(float dt)
         if(possessed_item != 0)
         {
             //Get the hit estimation            
-            hit_estimation = computeHitEstimation(possessed_item,m_distance_ahead);
+            //hit_estimation = computeHitEstimation(possessed_item,m_distance_ahead);
             
             //Now get the interest the possessed weapons.
-            weapon_interest = computeWeaponInterest(m_compet, hit_estimation);        
+            //weapon_interest = computeWeaponInterest(m_compet, hit_estimation);        
         }
         
         // -- Close karts detection --
@@ -436,16 +400,15 @@ void FuzzyAIController::update(float dt)
         cout << " -- ITEMS -- " << endl;
         cout << m_kart->getIdent() << " : items = " << allItems.size();
         for(int i=0; i < nitro_b.size(); i++)
-            cout << ", big nitro : " << (nitro_b[i])->getXYZ()[1];
+            cout << ", big nitro : " << (nitro_b[i])->getXYZ()[0];
         for(int i=0; i < nitro_s.size(); i++)
-            cout << ", smallnitro : " << (nitro_s[i])->getXYZ()[1];
+            cout << ", smallnitro : " << (nitro_s[i])->getXYZ()[0];
         for(int i=0; i < maluses.size(); i++)
-            cout << ", malus : " << (maluses[i])->getXYZ()[1];
+            cout << ", malus : " << (maluses[i])->getXYZ()[0];
         for(int i=0; i < boxes.size(); i++)
-            cout << ", boxes : " << (boxes[i])->getXYZ()[1];
+            cout << ", boxes : " << (boxes[i])->getXYZ()[0];
         cout << endl;
 
-        
         // -- Agent Data --
         cout << " -- AGENT DATA -- " << endl;
         // Agent nitro gauge
@@ -475,16 +438,23 @@ void FuzzyAIController::update(float dt)
             default : cout << "unexpected value : " << eval << endl;
         } // end switch
         
+        // -- Steering --
+        cout << " -- STEERING -- " << endl;
+        for(unsigned int i = 0; i<m_attrPts.size() ; i++)
+        {
+            cout << "    AttrPt " << i << ", attr = " << m_attrPts[i]->attraction << endl;
+        }
+        
         // -- Hit estimation --
-        cout << " -- HIT ESTIMATION -- " << endl;
-        cout << m_kart->getIdent() << " : agent current powerup type = ";
-        cout << possessed_item << endl;
-        cout << m_kart->getIdent() << " : agent distance from ahead kart = ";
-        cout << m_distance_ahead << endl;
-        cout << m_kart->getIdent() << " : agent weapon hit difficulty = ";
-        cout << hit_estimation << endl;
-        cout << m_kart->getIdent() << " : agent interest to use the possessed weapon = ";
-        cout << weapon_interest << endl; 
+//        cout << " -- HIT ESTIMATION -- " << endl;
+//        cout << m_kart->getIdent() << " : agent current powerup type = ";
+//        cout << possessed_item << endl;
+//        cout << m_kart->getIdent() << " : agent distance from ahead kart = ";
+//        cout << m_distance_ahead << endl;
+//        cout << m_kart->getIdent() << " : agent weapon hit difficulty = ";
+//        cout << hit_estimation << endl;
+//        cout << m_kart->getIdent() << " : agent interest to use the possessed weapon = ";
+//        cout << weapon_interest << endl; 
         
         // -- Path choice --
 //        if(pathData)
@@ -495,6 +465,39 @@ void FuzzyAIController::update(float dt)
 //        }
         }
 #endif
+    }
+
+    if(!commands_set)
+    {
+        /*Response handling functions*/
+        handleAcceleration(dt);
+        m_chosenDir = chooseDirection(m_attrPts);
+        if(debug)
+            cout << "    Chosen = " << m_chosenDir->attraction << endl;
+        handleSteering(dt);
+        handleItems(dt);
+        handleRescue(dt);
+        handleBraking();
+        // If a bomb is attached, nitro might already be set.
+        if(!m_controls->m_nitro)
+            handleNitroAndZipper();
+    }
+    // If we are supposed to use nitro, but have a zipper, 
+    // use the zipper instead
+    if(m_controls->m_nitro && 
+        m_kart->getPowerup()->getType()==PowerupManager::POWERUP_ZIPPER && 
+        m_kart->getSpeed()>1.0f && 
+        m_kart->getSpeedIncreaseTimeLeft(MaxSpeed::MS_INCREASE_ZIPPER)<=0)
+    {
+        // Make sure that not all AI karts use the zipper at the same
+        // time in time trial at start up, so during the first 5 seconds
+        // this is done at random only.
+        if(race_manager->getMinorMode()!=RaceManager::MINOR_MODE_TIME_TRIAL ||
+            (m_world->getTime()<3.0f && rand()%50==1) )
+        {
+            m_controls->m_nitro = false;
+            m_controls->m_fire  = true;
+        }
     }
     
 //    if(!commands_set)
@@ -540,41 +543,33 @@ void FuzzyAIController::update(float dt)
  *  TODO : make this comment doxygen compliant
  */
 
-int FuzzyAIController::computeCompetitiveness(unsigned int  number_of_players,
-                                              int           player_level,
+int FuzzyAIController::computeCompetitiveness(int           player_level,
                                               unsigned int  current_ranking)
 {
     const std::string& file_name = "driving_style_competitiveness.fcl";
     
-	//The rank need to be normalized before computing
+	//The rank needs to be normalized before computing
     float normalized_current_ranking;
-
-	if(number_of_players > 0)
-	{
-      normalized_current_ranking = (current_ranking*10)/number_of_players;
-	}
+    unsigned int kartCount = World::getWorld()->getNumKarts();
+    normalized_current_ranking = (current_ranking*10)/kartCount;
 
     vector<float> evaluationParameters;
     evaluationParameters.push_back(player_level);
-    evaluationParameters.push_back(current_ranking);
+    evaluationParameters.push_back(normalized_current_ranking);
 
     return  (int) computeFuzzyModel(file_name, evaluationParameters);
 }
 
 
-int FuzzyAIController::computeAggressiveness(unsigned int  number_of_players,
-                                             unsigned int  kart_class,
+int FuzzyAIController::computeAggressiveness(unsigned int  kart_class,
                                              unsigned int  current_ranking)
 {
     const std::string& file_name = "driving_style_agressiveness.fcl";
     
-	//The rank need to be normalized before computing
+	//The rank needs to be normalized before computing
     float normalized_current_ranking;
-
-	if(number_of_players > 0)
-	{
-        normalized_current_ranking = (current_ranking*10)/number_of_players;
-	}
+    unsigned int kartCount = World::getWorld()->getNumKarts();
+    normalized_current_ranking = (current_ranking*10)/kartCount;
 
     vector<float> evaluationParameters;
     evaluationParameters.push_back(normalized_current_ranking);
@@ -867,6 +862,8 @@ void FuzzyAIController::handleBraking()
 void FuzzyAIController::handleSteering(float dt)
 {
     const int next = m_next_node_index[m_track_node];
+    const float x = m_kart->getXYZ().getX() - m_chosenDir->x;
+    const float z = m_kart->getXYZ().getZ() - m_chosenDir->z;
     
     float steer_angle = 0.0f;
 
@@ -894,12 +891,12 @@ void FuzzyAIController::handleSteering(float dt)
         //-1 = left, 1 = right, 0 = no crash.
         if( m_start_kart_crash_direction == 1 )
         {
-            steer_angle = steerToAngle(next, -M_PI*0.5f );
+            steer_angle = steerToAngle(x, z, -M_PI*0.5f);
             m_start_kart_crash_direction = 0;
         }
         else if(m_start_kart_crash_direction == -1)
         {
-            steer_angle = steerToAngle(next, M_PI*0.5f);
+            steer_angle = steerToAngle(x, z, M_PI*0.5f);
             m_start_kart_crash_direction = 0;
         }
         else
@@ -907,12 +904,12 @@ void FuzzyAIController::handleSteering(float dt)
             if(m_world->getDistanceToCenterForKart( m_kart->getWorldKartId() ) >
                m_world->getDistanceToCenterForKart( m_crashes.m_kart ))
             {
-                steer_angle = steerToAngle(next, -M_PI*0.5f );
+                steer_angle = steerToAngle(x, z, -M_PI*0.5f );
                 m_start_kart_crash_direction = 1;
             }
             else
             {
-                steer_angle = steerToAngle(next, M_PI*0.5f );
+                steer_angle = steerToAngle(x, z, M_PI*0.5f );
                 m_start_kart_crash_direction = -1;
             }
         }
@@ -922,13 +919,11 @@ void FuzzyAIController::handleSteering(float dt)
             "crashes with road : steer 90 degrees away from kart." <<
             std::endl;
 #endif
-
     }
     else
     {
         m_start_kart_crash_direction = 0;
-        Vec3 straight_point;
-        findNonCrashingPoint(&straight_point);
+        Vec3 straight_point(m_chosenDir->x, 0.f, m_chosenDir->z);
 #ifdef AI_DEBUG
         m_debug_sphere->setPosition(straight_point.toIrrVector());
 #endif
@@ -1257,7 +1252,6 @@ void FuzzyAIController::handleAcceleration( const float dt )
         return;
     }
     
-
     // FIXME: this needs to be rewritten, it doesn't make any sense:
     // wait for players triggers the opposite (if a player is ahead
     // of this AI, go full speed). Besides, it's going to use full
@@ -1670,10 +1664,10 @@ void FuzzyAIController::tagKartCollisions(const vector<const Kart*>& karts,
     } // For every given kart (close kart)
     
     // -- Compute collision difficulty tag --
-    //diffTag = estimateDifficultyToReach(karts[minI]->getXYZ());
+//    diffTag = estimateDifficultyToReach(karts[minI]->getXYZ());
     
     // -- Compute attraction --
-    //attraction = computeCollisionAttraction(diffTag, m_aggress);
+//    attraction = computeCollisionAttraction(2, m_aggress);
                 
     AttrPoint* attrPt = new AttrPoint(karts[minI]->getXYZ().getX(), karts[minI]->getXYZ().getZ());
     attrPt->difficulty = diffTag;
@@ -1685,7 +1679,7 @@ void FuzzyAIController::tagKartCollisions(const vector<const Kart*>& karts,
     {
         std::stringstream * t = new std::stringstream();
         diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100;  // round
-        (*t) << karts[minI]->getIdent() << " Tag = " << diffTag << ", A = " << attraction << endl;
+        (*t) << "++++++++++++++++++++++++++ " << karts[minI]->getIdent() << " Tag = " << diffTag << ", A = " << attraction << endl;
         ((FuzzyAITaggable*) karts[minI])->setDebugText(t->str());
         ((FuzzyAITaggable*) karts[minI])->updateDebugTextPosition();
         cout << t->str();
@@ -1702,44 +1696,97 @@ void FuzzyAIController::tagKartCollisions(const vector<const Kart*>& karts,
  *  TODO make this function generic, using FuzzyAITaggable instead of Item
  *      (for that, getXYZ() of a kart should give the transformed coordinates)
  */
-void FuzzyAIController::tagItems( const vector<Item*>& items,
-                                   vector<AttrPoint*>& output )
+void FuzzyAIController::tagItems(const vector<Item*>& items,
+                                       vector<AttrPoint*>& output )
 {
     vector<std::string*> texts;
-    bool                 hasPowerup;
+    bool                 hasPowerup, known;
     float                diffTag, attraction;
+    
+    if(debug)
+        cout << "TAGGING ITEMS";
+    
+    // Tag every point as not updated
+    for(unsigned int i=0 ; i < output.size() ; i++)
+        output[i]->updated = false;
 
     for(unsigned int i=0 ; i < items.size() ; i++)
     {
-        // -- Compute item difficulty tag --
-        diffTag = estimateDifficultyToReach(items[i]->getXYZ());
-        
-        // -- Compute item attraction value --
-        // Get powerup (y/n)
-        hasPowerup = (m_kart->getPowerup()->getType() !=
-                                               PowerupManager::POWERUP_NOTHING);
-
-        // Compute item attraction (for now, use generic boxAttraction model)
-        attraction = computeBoxAttraction(diffTag, hasPowerup);
-        attraction = (attraction*100 + (attraction<0? -0.5 : 0.5))/100; // round
+        cout << " - Item " << i;
+        known = false;
+        // Check is item is already known
+        for(unsigned int j=0 ; j < output.size() ; j++)
+        {
+            // If item is already known, update the attraction point
+            if(output[j]->object != NULL && output[j]->object == items[i])
+            {
+                // -- Refresh item difficulty tag --
+                diffTag = estimateDifficultyToReach(items[i]->getXYZ());
+                
+                // -- Refresh item attraction value --
+                // Get powerup (y/n)
+                hasPowerup = (m_kart->getPowerup()->getType() !=
+                                                   PowerupManager::POWERUP_NOTHING);
+                
+                // Compute item attraction (for now, use generic boxAttraction model)
+                attraction = computeBoxAttraction(diffTag, hasPowerup);
+                
+                output[j]->difficulty = diffTag;
+                output[j]->attraction = attraction;
+                output[j]->updated = true;
+                known = true;
+                cout << " : known, up (" << attraction << ")";
+                break;
+            }
+        }
+        // If item is not already known, create an attraction point
+        if(!known)
+        {
+            // -- Compute item difficulty tag --
+            diffTag = estimateDifficultyToReach(items[i]->getXYZ());
+            
+            // -- Compute item attraction value --
+            // Get powerup (y/n)
+            hasPowerup = (m_kart->getPowerup()->getType() !=
+                                                   PowerupManager::POWERUP_NOTHING);
     
-        float x = items[i]->getXYZ().getX();
-        float z = items[i]->getXYZ().getZ();
-        AttrPoint* attrPt = new AttrPoint(x, z);
-        attrPt->difficulty = diffTag;
-        attrPt->attraction = attraction;
-        output.push_back(attrPt);
+            // Compute item attraction (for now, use generic boxAttraction model)
+            attraction = computeBoxAttraction(diffTag, hasPowerup);
+            
+            float x = items[i]->getXYZ().getX();
+            float z = items[i]->getXYZ().getZ();
+            AttrPoint* attrPt = new AttrPoint(x, z);
+            attrPt->difficulty = diffTag;
+            attrPt->attraction = attraction;
+            attrPt->object = ((FuzzyAITaggable*) items[i]);
+            attrPt->updated = true;
+            output.push_back(attrPt);
+            cout << " : not known, create (" << attraction << ")";
+        }
         
         // Debug output
         if(debug)
         {
             std::stringstream * t = new std::stringstream();
             diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100;  // round
+            attraction = (attraction*100 + (attraction<0? -0.5 : 0.5))/100; // round
             (*t) << " Tag = " << diffTag << ", A = " << attraction << endl;
             ((FuzzyAITaggable*) items[i])->setDebugText(t->str());
             cout << t->str();
         } // if debug
     } // for every detected item
+    
+    cout << endl << "DELETING OLD ITEMS ";
+    // Finally, remove items that are not detected anymore
+    for(int i=output.size()-1 ; i>=0  ; i--)
+    {
+        if(output[i]->object != NULL && output[i]->updated == false)
+        {
+            output.erase(output.begin() + i);
+            cout << " - Item " << i << " : deleted";
+        }
+    }
+
 } // tagItems
 
 //------------------------------------------------------------------------------

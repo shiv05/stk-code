@@ -234,6 +234,27 @@ float AIBaseController::steerToAngle(const unsigned int sector,
 }   // steerToAngle
 
 //-----------------------------------------------------------------------------
+/**
+ *
+ */
+float AIBaseController::steerToAngle(const float x, const float z, 
+                                     const float add_angle)
+{    
+    float angle = atan2(x, z);
+
+    //Desired angle minus current angle equals how many angles to turn
+    float steer_angle = angle - m_kart->getHeading();
+
+    if(m_kart->hasViewBlockedByPlunger())
+        steer_angle += add_angle*0.2f;
+    else
+        steer_angle += add_angle;
+    steer_angle = normalizeAngle( steer_angle );
+
+    return steer_angle;
+}   // steerToAngle (override)
+
+//-----------------------------------------------------------------------------
 /** Sets when skidding will be used: when the ratio of steering angle to
  *  maximumn steering angle is larger than the fraction set here,
  *  skidding will be used. This is used to set more aggressive skidding

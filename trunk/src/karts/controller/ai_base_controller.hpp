@@ -90,6 +90,7 @@ protected:
     virtual unsigned int getNextSector(unsigned int index);
     virtual void  newLap             (int lap);
     float    steerToAngle  (const unsigned int sector, const float angle);
+    float    steerToAngle  (const float x, const float z, const float add_angle);
     float    steerToPoint  (const Vec3 &point);
     float    normalizeAngle(float angle);
     void     setSteering   (float angle, float dt);

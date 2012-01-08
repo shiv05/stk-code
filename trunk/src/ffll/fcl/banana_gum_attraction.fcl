@@ -1,51 +1,66 @@
-(* FCL File Created From FFLL Model. Used to know if it a banana or gum is dangerous. We use the difficulty  to reach it and the current speed*)
+(* FCL File Created From FFLL Model.                                          *)
+(* Used to know if it a banana or gum is dangerous.                           *)
+(* We use the difficulty  to reach it and the current speed                   *)
+
 FUNCTION_BLOCK
 
 VAR_INPUT
-	Difficulty	REAL; (* RANGE(0 .. 10) *) 
-	Speed	REAL; (* RANGE(0 .. 40) *) 
+    Difficulty  REAL; (* RANGE(0 .. 10) *) 
+    Speed       REAL; (* RANGE(0 .. 100) *) 
 END_VAR
 
 VAR_OUTPUT
-	Attraction_value	REAL; (* RANGE(0 .. 10) *) 
+    Attraction  REAL; (* RANGE(0 .. 10) *) 
 END_VAR
 
 FUZZIFY Difficulty
-	TERM Easy := (0, 0) (0, 1) (3, 0) ;
-	TERM Normal:= (2, 0) (5, 1) (8, 0) ;
-	TERM Difficult := (7, 0) (10, 1) (10, 0) ;
+    TERM VeryEasy := (0, 0) ( 0  , 1) ( 2, 0) ;
+    TERM Easy     := (1, 0) ( 2.5, 1) ( 4, 0) ;
+    TERM Medium   := (3, 0) ( 5  , 1) ( 7, 0) ;
+    TERM Hard     := (6, 0) ( 7.5, 1) (10, 0) ;
+    TERM VeryHard := (8, 0) (10  , 1) (10, 0) ;
 END_FUZZIFY
 
 FUZZIFY Speed
-	TERM Slow:= (0, 0) (0, 1) (15, 0) ;
-	TERM Normal:= (10, 0) (20, 1) (30, 0) ;
-	TERM Fast := (25, 0) (40, 1) (40, 0) ;
+    TERM Slow     := ( 0, 0) ( 0, 1) ( 15, 0) ;
+    TERM Medium   := (10, 0) (20, 1) ( 30, 0) ;
+    TERM Fast     := (25, 0) (40, 1) (100, 1) (100, 0);
 END_FUZZIFY
 
-FUZZIFY Dangerousness
-	TERM Negative := (0, 0) (0, 1) (3, 0) ;
-	TERM Dangerous:= (2, 0) (5, 1) (8, 0) ;
-	TERM Very_Dangerous := (7, 0) (10, 1) (10, 0) ;
+FUZZIFY Attraction
+    TERM Negative      := (0, 0) ( 0, 1) ( 3, 0) ;
+    TERM Dangerous     := (2, 0) ( 5, 1) ( 8, 0) ;
+    TERM VeryDangerous := (7, 0) (10, 1) (10, 0) ;
 END_FUZZIFY
 
 DEFUZZIFY valve
-	METHOD: CoG;
+    METHOD: CoG;
 END_DEFUZZIFY
 
 RULEBLOCK first
-	AND:MIN;
-	ACCUM:MAX;
-	(*          |Difficulty   |Speed       |Output         *)
-    (* -------|-------------|-------------|-------------- *)
-	RULE 0: IF Easy AND Slow THEN Dangerous;
-	RULE 1: IF Easy AND Normal THEN Very_Dangerous;
-	RULE 2: IF Easy AND Fast  THEN Very_Dangerous;
-	RULE 3: IF Normal AND Slow  THEN Negative;
-	RULE 4: IF Normal AND Normal  THEN Dangerous;
-	RULE 5: IF Normal AND Fast  THEN Dangerous;
-	RULE 6: IF Difficult AND Slow  THEN Negative;
-	RULE 7: IF Difficult AND Normal  THEN Negative;
-	RULE 8: IF Difficult AND Fast  THEN Dangerous;
+    AND:MIN;
+    ACCUM:MAX;
+    (*         |Difficulty  |Speed      |Output         *)
+    (* --------|------------|-----------|-------------- *)
+    RULE 0 : IF VeryEasy AND Slow   THEN Dangerous;
+    RULE 1 : IF VeryEasy AND Medium THEN VeryDangerous;
+    RULE 2 : IF VeryEasy AND Fast   THEN VeryDangerous;
+    
+    RULE 3 : IF Easy     AND Slow   THEN Dangerous;
+    RULE 4 : IF Easy     AND Medium THEN VeryDangerous;
+    RULE 5 : IF Easy     AND Fast   THEN VeryDangerous;
+    
+    RULE 6 : IF Medium   AND Slow   THEN Negative;
+    RULE 7 : IF Medium   AND Medium THEN Dangerous;
+    RULE 8 : IF Medium   AND Fast   THEN VeryDangerous;
+    
+    RULE 9 : IF Hard     AND Slow   THEN Negative;
+    RULE 10: IF Hard     AND Medium THEN Negative;
+    RULE 11: IF Hard     AND Fast   THEN Dangerous;
+    
+    RULE 12: IF VeryHard AND Slow   THEN Negative;
+    RULE 13: IF VeryHard AND Medium THEN Negative;
+    RULE 14: IF VeryHard AND Fast   THEN Negative;
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

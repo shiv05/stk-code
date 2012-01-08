@@ -125,6 +125,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
     m_compet                = 1; // TODO Constants
     m_aggress               = 1;
     m_attrPts               = vector<AttrPoint*>();
+    m_item_count            = 0;
     
     computeForkChoices(m_fork_choices);
     computePath();
@@ -306,38 +307,27 @@ void FuzzyAIController::update(float dt)
         computePath();
     }
 
+    vector<Item*> closeItems;
+    item_manager->getCloseItems(closeItems, m_kart, 25);
+    // If item count has changed, recompute attraction
+    if(m_item_count != closeItems.size())
+        tagItems((const vector<Item*>)closeItems, m_attrPts);
+    
     m_timer += dt;
-    if(m_timer >= 0.5f)        // every ~1/2 second, do
+    if(m_timer >= 0.25f)        // every ~1/2 second, do
     {
-        m_timer -= 0.5f;
+        m_timer -= 0.25f;
         
         // TODO update item number at each iteration, and recompute attraction if
         // it has changed
-        // TODO take in account taken items
         // TODO avoid bananas
         // Item position & type
-        vector<Item*> nitro_b;
-        vector<Item*> nitro_s;
-        vector<Item*> maluses;
-        vector<Item*> bubgums;
-        vector<Item*> boxes;
-        vector<Item*> allItems;
-        item_manager->getCloseItems(nitro_b, m_kart, 25, Item::ITEM_NITRO_BIG);
-        item_manager->getCloseItems(nitro_s, m_kart, 25, Item::ITEM_NITRO_SMALL);
-        item_manager->getCloseItems(maluses, m_kart, 25, Item::ITEM_BANANA);
-        item_manager->getCloseItems(bubgums, m_kart, 25, Item::ITEM_BUBBLEGUM);
-        maluses.insert(maluses.end(), bubgums.begin(), bubgums.end());
-        item_manager->getCloseItems(boxes, m_kart, 25, Item::ITEM_BONUS_BOX);
-        item_manager->getCloseItems(allItems, m_kart, 25, Item::ITEM_NONE);
 
-        if(allItems.size()>0)
-            tagItems((const vector<Item*>)allItems, m_attrPts);
+        // Update item attraction if not already done
+        if(closeItems.size()>0 && m_item_count != closeItems.size())
+            tagItems((const vector<Item*>)closeItems, m_attrPts);
         
-        // Player evaluation
-        // TODO : take in account the distance the player has reached ? So that on a 2 karts race, the player can be evaluated as good even if he is just behind the AI kart but has always been 2nd (so last).
-        
-        // see m_kart_info[kart_id].getSector()->getDistanceFromStart()
-
+        // Player evaluation        
         int eval = fuzzy_data_manager->getPlayerEvaluation();
 
         // -- Choose the driving style : competitiveness and agressiveness --
@@ -398,16 +388,7 @@ void FuzzyAIController::update(float dt)
         
         // -- Items --
         cout << " -- ITEMS -- " << endl;
-        cout << m_kart->getIdent() << " : items = " << allItems.size();
-        for(int i=0; i < nitro_b.size(); i++)
-            cout << ", big nitro : " << (nitro_b[i])->getXYZ()[0];
-        for(int i=0; i < nitro_s.size(); i++)
-            cout << ", smallnitro : " << (nitro_s[i])->getXYZ()[0];
-        for(int i=0; i < maluses.size(); i++)
-            cout << ", malus : " << (maluses[i])->getXYZ()[0];
-        for(int i=0; i < boxes.size(); i++)
-            cout << ", boxes : " << (boxes[i])->getXYZ()[0];
-        cout << endl;
+        cout << m_kart->getIdent() << " : items = " << closeItems.size() << endl;
 
         // -- Agent Data --
         cout << " -- AGENT DATA -- " << endl;
@@ -466,6 +447,8 @@ void FuzzyAIController::update(float dt)
         }
 #endif
     }
+    // Update close items count
+    m_item_count = closeItems.size();
 
     if(!commands_set)
     {
@@ -673,6 +656,26 @@ float FuzzyAIController::computeBoxAttraction(float difficultyTag,
     return computeFuzzyModel(file_name, params);
 }
 
+//------------------------------------------------------------------------------
+/** TODO Comment
+ */
+
+float FuzzyAIController::computeBananaAttraction(float difficultyTag,
+                                                 float speed)
+{
+    const std::string file_name = "banana_gum_attraction.fcl";
+    
+    // Normalize speed
+    speed = (speed > 100)? 99 : speed;
+    speed = (speed < 0  )?  1 : speed;
+    
+    vector<float> params;
+    params.push_back(difficultyTag);
+    params.push_back(speed);
+    
+    // return negative value as in this case this is a repulsion value
+    return (-1)*(computeFuzzyModel(file_name, params));
+}
 //------------------------------------------------------------------------------
 /** TODO Comment
  */
@@ -1686,6 +1689,38 @@ void FuzzyAIController::tagKartCollisions(const vector<const Kart*>& karts,
     } // if debug
 } // tagKartCollisions
 
+
+//------------------------------------------------------------------------------
+/** Wrapper for computeBoxAttraction and computeBananaAttraction functions
+ */
+float FuzzyAIController::computeItemAttraction(const Item* item)
+{
+    float diffTag, attraction;
+
+    // Difficulty tag
+    diffTag = estimateDifficultyToReach(item->getXYZ());
+    
+    if(item->getType() == Item::ITEM_NITRO_BIG   ||
+       item->getType() == Item::ITEM_NITRO_SMALL ||
+       item->getType() == Item::ITEM_BONUS_BOX)
+    {
+
+        bool hasPowerup = (m_kart->getPowerup()->getType() !=
+                                               PowerupManager::POWERUP_NOTHING);
+        // "Good item" attraction (for now, use a generic boxAttraction model)
+        // TODO use a different model for nitro
+        attraction = computeBoxAttraction(diffTag, hasPowerup);    
+    }
+    else if(item->getType() == Item::ITEM_BANANA ||
+            item->getType() == Item::ITEM_BUBBLEGUM)
+    {
+        // "Bad item" attraction (ie. negative attraction, or repulsion)
+        attraction = computeBananaAttraction(diffTag, m_kart->getSpeed());
+    }
+    
+    return attraction;
+}
+
 //------------------------------------------------------------------------------
 /** Computes an attraction value for every item in the parameter vector. The
  *  estimation of the difficulty to reach the item is first computed, then this
@@ -1693,65 +1728,44 @@ void FuzzyAIController::tagKartCollisions(const vector<const Kart*>& karts,
  *  simplified model of attraction value computation, which should also compute
  *  and take in account an interest value for the item (see Fuzzy AI specs).
  *  TODO make this comment doxygen compliant
- *  TODO make this function generic, using FuzzyAITaggable instead of Item
- *      (for that, getXYZ() of a kart should give the transformed coordinates)
  */
 void FuzzyAIController::tagItems(const vector<Item*>& items,
-                                       vector<AttrPoint*>& output )
+                                       vector<AttrPoint*>& attrPts )
 {
     vector<std::string*> texts;
-    bool                 hasPowerup, known;
+    bool                 known;
     float                diffTag, attraction;
-    
+
     if(debug)
         cout << "TAGGING ITEMS";
     
-    // Tag every point as not updated
-    for(unsigned int i=0 ; i < output.size() ; i++)
-        output[i]->updated = false;
-
+    // Every attraction point must be updated
+    for(unsigned int i=0 ; i < attrPts.size() ; i++)
+        attrPts[i]->updated = false;
+    
     for(unsigned int i=0 ; i < items.size() ; i++)
     {
-        cout << " - Item " << i;
+        if(debug)
+            cout << " - Item " << i;
         known = false;
         // Check is item is already known
-        for(unsigned int j=0 ; j < output.size() ; j++)
+        for(unsigned int j=0 ; j < attrPts.size() ; j++)
         {
             // If item is already known, update the attraction point
-            if(output[j]->object != NULL && output[j]->object == items[i])
-            {
-                // -- Refresh item difficulty tag --
-                diffTag = estimateDifficultyToReach(items[i]->getXYZ());
-                
-                // -- Refresh item attraction value --
-                // Get powerup (y/n)
-                hasPowerup = (m_kart->getPowerup()->getType() !=
-                                                   PowerupManager::POWERUP_NOTHING);
-                
-                // Compute item attraction (for now, use generic boxAttraction model)
-                attraction = computeBoxAttraction(diffTag, hasPowerup);
-                
-                output[j]->difficulty = diffTag;
-                output[j]->attraction = attraction;
-                output[j]->updated = true;
+            if(attrPts[j]->object != NULL && attrPts[j]->object == items[i])
+            {   
+                attrPts[j]->attraction = computeItemAttraction(items[i]);
+                attrPts[j]->updated = true;
                 known = true;
-                cout << " : known, up (" << attraction << ")";
+                if(debug)
+                    cout << " : known, up (" << attraction << ")";
                 break;
-            }
-        }
-        // If item is not already known, create an attraction point
-        if(!known)
+            } // if item is already known
+        } // for each known attraction point
+        if(!known) // If item is not known, create a new attraction point
         {
-            // -- Compute item difficulty tag --
-            diffTag = estimateDifficultyToReach(items[i]->getXYZ());
-            
-            // -- Compute item attraction value --
-            // Get powerup (y/n)
-            hasPowerup = (m_kart->getPowerup()->getType() !=
-                                                   PowerupManager::POWERUP_NOTHING);
-    
-            // Compute item attraction (for now, use generic boxAttraction model)
-            attraction = computeBoxAttraction(diffTag, hasPowerup);
+            // Compute item attraction
+            attraction = computeItemAttraction(items[i]);
             
             float x = items[i]->getXYZ().getX();
             float z = items[i]->getXYZ().getZ();
@@ -1760,9 +1774,10 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             attrPt->attraction = attraction;
             attrPt->object = ((FuzzyAITaggable*) items[i]);
             attrPt->updated = true;
-            output.push_back(attrPt);
-            cout << " : not known, create (" << attraction << ")";
-        }
+            attrPts.push_back(attrPt);
+            if(debug)
+                cout << " : not known, create (" << attraction << ")";
+        } // if !known
         
         // Debug output
         if(debug)
@@ -1776,17 +1791,18 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
         } // if debug
     } // for every detected item
     
-    cout << endl << "DELETING OLD ITEMS ";
-    // Finally, remove items that are not detected anymore
-    for(int i=output.size()-1 ; i>=0  ; i--)
+    cout << endl << "DELETING OLD ITEMS ATTR PTS";
+    // Finally, remove attraction points from that are not detected anymore
+    for(int i=attrPts.size()-1 ; i>=0  ; i--)
     {
-        if(output[i]->object != NULL && output[i]->updated == false)
+        if(attrPts[i]->object != NULL && attrPts[i]->updated == false)
         {
-            output.erase(output.begin() + i);
-            cout << " - Item " << i << " : deleted";
-        }
-    }
-
+            AttrPoint* toDelete = attrPts[i];
+            attrPts.erase(attrPts.begin() + i);
+            delete toDelete;
+            cout << " - Item " << i << " : attraction point deleted";
+        } // if item is not detected anymore
+    } // for each known attraction point
 } // tagItems
 
 //------------------------------------------------------------------------------
@@ -1835,7 +1851,10 @@ void FuzzyAIController::computeForkChoices(vector<unsigned int>& output)
 } // computeForkChoices
 
 //------------------------------------------------------------------------------
-/** Direction chooser
+/** Direction chooser :
+ *  Choose the attraction point with the highest attraction value.
+ *  Also take in account attraction points with negative attraction value
+ *  (ie. dangerous places).
  */
 AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
 {

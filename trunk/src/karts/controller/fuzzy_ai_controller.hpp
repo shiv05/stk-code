@@ -94,8 +94,8 @@ private:
     float                   m_timer;
     int                     m_compet; // Competitiveness of the agent TODO Constant values for this variable (LOW, HIGH, ...)
     int                     m_aggress; // Aggressiveness
-    /* Collision tagger */
-    // Vector<int> m_speed_diff;
+
+    int                     m_item_count; // detected items (ie. close items) count
     std::vector<AttrPoint*> m_attrPts;  // Attraction points
     AttrPoint               m_mainAPt;  // Main Attraction Point (straight point)
     int                     m_target_x; // Target point coords got by handleSteering()
@@ -202,6 +202,9 @@ private:
     float computeBoxAttraction    (float        difficultyTag,
                                    bool         hasPowerup);
 
+    float computeBananaAttraction (float        difficultyTag,
+                                   float        speed);
+    
     float computeCollisionAttraction(float difficultyTag,
                                      int   aggressiveness);
     
@@ -216,9 +219,10 @@ private:
                                    int          competitiveness,
                                    int          skid);
     
-    // -- Wrapper function for computeDifficultyTag --
+    // -- Wrapper functions for fuzzy model call functions  --
     float estimateDifficultyToReach (const Vec3& point);
-    
+    float computeItemAttraction     (const Item* item);
+
     // -- Detection methods --
     void  getCloseKarts           (std::vector<const Kart*>& closeKarts,
                                    float max_dist = 40.f);

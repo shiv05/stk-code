@@ -50,7 +50,6 @@ private:
 
     //  -- Fuzzy AI variables used for player evaluation --
     float          m_average_rank;
-    //unsigned int   m_times_average_rank_was_computed; // Used only by exact average formula
     float          m_timer;
     
     float          m_crash_count; // times the player crashed within the 20 last sec.

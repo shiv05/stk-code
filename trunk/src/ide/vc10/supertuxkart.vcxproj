@@ -143,6 +143,7 @@
     <ClCompile Include="..\..\items\rubber_ball.cpp" />
     <ClCompile Include="..\..\items\swatter.cpp" />
     <ClCompile Include="..\..\karts\controller\fuzzy_ai_controller.cpp" />
+    <ClCompile Include="..\..\karts\controller\fuzzy_ai_taggable.cpp" />
     <ClCompile Include="..\..\karts\controller\fuzzy_data_manager.cpp" />
     <ClCompile Include="..\..\karts\kart_with_stats.cpp" />
     <ClCompile Include="..\..\main.cpp" />
@@ -389,6 +390,7 @@
     <ClInclude Include="..\..\items\rubber_ball.hpp" />
     <ClInclude Include="..\..\items\swatter.hpp" />
     <ClInclude Include="..\..\karts\controller\fuzzy_ai_controller.hpp" />
+    <ClInclude Include="..\..\karts\controller\fuzzy_ai_taggable.hpp" />
     <ClInclude Include="..\..\karts\controller\fuzzy_data_manager.hpp" />
     <ClInclude Include="..\..\karts\kart_with_stats.hpp" />
     <ClInclude Include="..\..\main_loop.hpp" />

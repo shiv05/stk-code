@@ -879,6 +879,9 @@
     <ClCompile Include="..\..\karts\max_speed.cpp">
       <Filter>Source Files\modes</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\karts\controller\fuzzy_ai_taggable.cpp">
+      <Filter>Source Files\karts\controller</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\main_loop.hpp">
@@ -1678,6 +1681,9 @@
     </ClInclude>
     <ClInclude Include="..\..\tracks\fuzzy_ai_path_tree.hpp">
       <Filter>Header Files\tracks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\karts\controller\fuzzy_ai_taggable.hpp">
+      <Filter>Header Files\karts\controller</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

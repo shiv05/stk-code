@@ -202,6 +202,9 @@ private:
     float computeBoxAttraction    (float        difficultyTag,
                                    bool         hasPowerup);
 
+    float computeNitroAttraction    (float        difficultyTag,
+                                   float         availableNitro);
+
     float computeBananaAttraction (float        difficultyTag,
                                    float        speed);
     

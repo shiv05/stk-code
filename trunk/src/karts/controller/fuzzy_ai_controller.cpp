@@ -660,6 +660,23 @@ float FuzzyAIController::computeBoxAttraction(float difficultyTag,
 /** TODO Comment
  */
 
+float FuzzyAIController::computeNitroAttraction    (float        difficultyTag,
+                                   float         availableNitro)
+{
+    const std::string file_name = "nitro_attraction.fcl";
+    
+    vector<float> objectParameters;
+    objectParameters.push_back(difficultyTag);
+    objectParameters.push_back(availableNitro);
+    
+    return computeFuzzyModel(file_name, objectParameters);
+
+}
+
+//------------------------------------------------------------------------------
+/** TODO Comment
+ */
+
 float FuzzyAIController::computeBananaAttraction(float difficultyTag,
                                                  float speed)
 {
@@ -1691,7 +1708,7 @@ void FuzzyAIController::tagKartCollisions(const vector<const Kart*>& karts,
 
 
 //------------------------------------------------------------------------------
-/** Wrapper for computeBoxAttraction and computeBananaAttraction functions
+/** Wrapper for computeBoxAttraction computeNitroAttraction and computeBananaAttraction functions
  */
 float FuzzyAIController::computeItemAttraction(const Item* item)
 {
@@ -1700,19 +1717,28 @@ float FuzzyAIController::computeItemAttraction(const Item* item)
     // Difficulty tag
     diffTag = estimateDifficultyToReach(item->getXYZ());
     
-    if(item->getType() == Item::ITEM_NITRO_BIG   ||
-       item->getType() == Item::ITEM_NITRO_SMALL ||
-       item->getType() == Item::ITEM_BONUS_BOX)
+    if(item->getType() == Item::ITEM_BONUS_BOX)
     {
 
         bool hasPowerup = (m_kart->getPowerup()->getType() !=
                                                PowerupManager::POWERUP_NOTHING);
-        // "Good item" attraction (for now, use a generic boxAttraction model)
-        // TODO use a different model for nitro
+        // Box attraction
         attraction = computeBoxAttraction(diffTag, hasPowerup);    
     }
+
+   if(item->getType() == Item::ITEM_NITRO_BIG   ||
+      item->getType() == Item::ITEM_NITRO_SMALL)
+   {
+       float energy = m_kart->getEnergy();
+
+       //Nitro attraction
+       attraction = computeNitroAttraction(diffTag,energy);
+
+   }
+
     else if(item->getType() == Item::ITEM_BANANA ||
             item->getType() == Item::ITEM_BUBBLEGUM)
+
     {
         // "Bad item" attraction (ie. negative attraction, or repulsion)
         attraction = computeBananaAttraction(diffTag, m_kart->getSpeed());
@@ -1788,7 +1814,7 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             (*t) << " Tag = " << diffTag << ", A = " << attraction << endl;
             ((FuzzyAITaggable*) items[i])->setDebugText(t->str());
             cout << t->str();
-        } // if debug
+        } // if debug*/
     } // for every detected item
     
     cout << endl << "DELETING OLD ITEMS ATTR PTS";

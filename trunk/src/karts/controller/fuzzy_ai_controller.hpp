@@ -48,15 +48,11 @@ struct AttrPoint
 {
     float            x;
     float            z;          // Irrlicht-like Z-axis coordinate
-    float            interest;
-    float            difficulty; // difficulty to reach the point
     float            attraction;
     bool             updated;
     FuzzyAITaggable* object;     // Null if this is the track node attraction pt
     
     AttrPoint(float x = 0.0f, float z = 0.0f) : x(x), z(z),
-                                                interest(0.f),
-                                                difficulty(0.f),
                                                 attraction(0.f),
                                                 updated(false),
                                                 object(NULL)    {}
@@ -82,15 +78,16 @@ private:
     {
         public:
 
-        bool m_road; //true if we are going to 'crash' with the bounds of the road
-        int m_kart; //-1 if no crash, pos numbers are the kart it crashes with
-        CrashTypes() : m_road(false), m_kart(-1) {};
-        void clear() {m_road = false; m_kart = -1;}
+        bool  m_road; //true if we are going to 'crash' with the bounds of the road
+        int   m_kart; //-1 if no crash, pos numbers are the kart it crashes with
+        int   m_item; // NULL if no crash 
+        CrashTypes() : m_road(false), m_kart(-1), m_item(-1) {};
+        void clear() {m_road = false; m_kart = -1; m_item = -1;}
     } m_crashes;
     
     //==========================================================================
     // Fuzzy AI variables
-    static unsigned int     instanceCount; // used to determine which instance has to debug (the first one only)
+    static unsigned int     instanceCount; // used to determine which instance has to print the debug output & random
     float                   m_timer;
     int                     m_compet; // Competitiveness of the agent TODO Constant values for this variable (LOW, HIGH, ...)
     int                     m_aggress; // Aggressiveness
@@ -100,7 +97,7 @@ private:
     AttrPoint               m_mainAPt;  // Main Attraction Point (straight point)
     int                     m_target_x; // Target point coords got by handleSteering()
     int                     m_target_z;
-    AttrPoint *             m_chosenDir;
+    AttrPoint*              m_chosenDir;
     bool                    debug;      // if this agent must print debug output
     unsigned int            instanceID; // for random
     // End of Fuzzy AI variables
@@ -223,7 +220,7 @@ private:
                                    int          skid);
     
     // -- Wrapper functions for fuzzy model call functions  --
-    float estimateDifficultyToReach (const Vec3& point);
+    float estimateDifficultyToReach (const Vec3& point, bool returnDir = false);
     float computeItemAttraction     (const Item* item);
 
     // -- Detection methods --

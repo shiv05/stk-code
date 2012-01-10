@@ -47,12 +47,12 @@ RULEBLOCK first
     RULE 1: IF VeryEasy      AND False  THEN VeryHigh;
     RULE 2: IF Easy          AND True   THEN Medium;
     RULE 3: IF Easy          AND False  THEN High;
-    RULE 4: IF Medium        AND True   THEN Medium;
-    RULE 5: IF Medium        AND False  THEN Medium;
-    RULE 6: IF Difficult     AND True   THEN Low;
-    RULE 7: IF Difficult     AND False  THEN Medium;
+    RULE 4: IF Medium        AND True   THEN Low;
+    RULE 5: IF Medium        AND False  THEN Low;
+    RULE 6: IF Difficult     AND True   THEN VeryLow;
+    RULE 7: IF Difficult     AND False  THEN Low;
     RULE 8: IF VeryDifficult AND True   THEN VeryLow;
-    RULE 9: IF VeryDifficult AND False  THEN Low;
+    RULE 9: IF VeryDifficult AND False  THEN VeryLow;
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK

@@ -133,7 +133,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
     const Vec3 v=QuadGraph::get()->getQuadOfNode(m_next_node_index[m_track_node]).getCenter();
     m_mainAPt.x = v.getX();
     m_mainAPt.z = v.getZ();
-    m_mainAPt.attraction = 5.9f;//5.9 is an "upper medium" value (see fcl files)
+    m_mainAPt.attraction = 6.4f;//6.4 is an "upper medium" value (see fcl files)
 
     m_attrPts.push_back(&m_mainAPt);
     
@@ -293,7 +293,7 @@ void FuzzyAIController::update(float dt)
 
     m_mainAPt.x = m_target_x;
     m_mainAPt.z = m_target_z;
-    m_mainAPt.attraction = 5.9f;//5.9 is an "upper medium" value (see fcl files)
+    m_mainAPt.attraction = 6.4f;//6.4 is an "upper medium" value (see fcl files)
    
     if(m_last_seen_track_node != m_track_node)
     {
@@ -311,7 +311,11 @@ void FuzzyAIController::update(float dt)
     item_manager->getCloseItems(closeItems, m_kart, 25);
     // If item count has changed, recompute attraction
     if(m_item_count != closeItems.size())
+    {
+        if(debug)
+            cout << "Item environment has changed, forced updating" << endl;
         tagItems((const vector<Item*>)closeItems, m_attrPts);
+    }
     
     m_timer += dt;
     if(m_timer >= 0.25f)        // every ~1/2 second, do
@@ -324,8 +328,12 @@ void FuzzyAIController::update(float dt)
         // Item position & type
 
         // Update item attraction if not already done
-        if(closeItems.size()>0 && m_item_count != closeItems.size())
+        if(closeItems.size()>0 && m_item_count == closeItems.size())
+        {
+            if(debug)
+                cout << "Item environment has not changed, normal updating" << endl;
             tagItems((const vector<Item*>)closeItems, m_attrPts);
+        }
         
         // Player evaluation        
         int eval = fuzzy_data_manager->getPlayerEvaluation();
@@ -619,7 +627,6 @@ int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
  *  TODO : make this comment doxygen compliant
  *         Use the direction?
  */
-
 float FuzzyAIController::computeDifficultyTag(float        angle,
                                               int          direction,
                                               float        distance)
@@ -643,7 +650,6 @@ float FuzzyAIController::computeDifficultyTag(float        angle,
 //------------------------------------------------------------------------------
 /** TODO Comment
  */
-
 float FuzzyAIController::computeBoxAttraction(float difficultyTag,
                                               bool  hasWeapon)
 {
@@ -659,7 +665,6 @@ float FuzzyAIController::computeBoxAttraction(float difficultyTag,
 //------------------------------------------------------------------------------
 /** TODO Comment
  */
-
 float FuzzyAIController::computeNitroAttraction    (float        difficultyTag,
                                    float         availableNitro)
 {
@@ -693,10 +698,10 @@ float FuzzyAIController::computeBananaAttraction(float difficultyTag,
     // return negative value as in this case this is a repulsion value
     return (-1)*(computeFuzzyModel(file_name, params));
 }
+
 //------------------------------------------------------------------------------
 /** TODO Comment
  */
-
 float FuzzyAIController::computeCollisionAttraction(float difficultyTag,
                                                     int   aggressiveness)
 {
@@ -817,7 +822,7 @@ void FuzzyAIController::handleBraking()
     //We may brake if we are about to get out of the road, but only if the
     //kart is on top of the road, and if we won't slow down below a certain
     //limit.
-    if (m_crashes.m_road && m_kart->getVelocityLC().getZ() > MIN_SPEED && 
+    if (m_crashes.m_road == true && m_kart->getVelocityLC().getZ() > MIN_SPEED && 
         m_world->isOnRoad(m_kart->getWorldKartId()) )
     {
         float kart_ang_diff = 
@@ -904,9 +909,20 @@ void FuzzyAIController::handleSteering(float dt)
             std::endl;
 #endif
     }
+    // Avoid bad items
+    else if( m_crashes.m_item != -1 )
+    {
+//        if(debug)
+//            cout << "- Steering to avoid bad item" << endl;
+        if( m_crashes.m_item == 0 )
+            steer_angle = steerToAngle(x, z, -M_PI*0.5f);
+        else if(m_crashes.m_item == 1)
+            steer_angle = steerToAngle(x, z, M_PI*0.5f);
+    }
     //If we are going to crash against a kart, avoid it if it doesn't
-    //drives the kart out of the road
-    else if( m_crashes.m_kart != -1 && !m_crashes.m_road )
+    //drives the kart out of the road or on a bad item
+    else if( m_crashes.m_kart != -1 &&
+             !m_crashes.m_road && m_crashes.m_item == -1)
     {
         //-1 = left, 1 = right, 0 = no crash.
         if( m_start_kart_crash_direction == 1 )
@@ -1409,7 +1425,7 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
         // trying to overtake it, actually speeding the other kart up.
         m_crashes.m_kart = slip->getSlipstreamTarget()->getWorldKartId();
     }
-
+    
     const size_t NUM_KARTS = m_world->getNumKarts();
 
     //Protection against having vel_normal with nan values
@@ -1419,6 +1435,44 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
     // If the velocity is zero, no sense in checking for crashes in time
     if(speed==0) return;
 
+    // -- Bad items crashes --
+    Item*         crashItem;
+    vector<Item*> closeItems;
+    float         dist, diff;
+    float         smallestDist = 99999.f;
+    unsigned int  closestId    = 99999;
+    
+    // Get close items
+    item_manager->getCloseItems(closeItems, m_kart, 7.5f);
+    // Get the closest bad item
+    for(unsigned int i=0; i<closeItems.size(); i++)
+    {
+        if(closeItems[i]->getType() == Item::ITEM_BANANA ||
+           closeItems[i]->getType() == Item::ITEM_BUBBLEGUM )
+        {
+            dist = (closeItems[i]->getXYZ() - m_kart->getXYZ()).length();
+            if(dist < smallestDist)
+            {
+                smallestDist = dist;
+                closestId = i;
+            } // if it is closest than the currently known closest
+        } // if this is a bad item
+    } // for each close item
+    if(closestId < 99999)
+    {
+        crashItem = closeItems[closestId];
+        diff = estimateDifficultyToReach(crashItem->getXYZ(), true);
+        if(diff < 0 && diff > -3)       // left
+            m_crashes.m_item = 0;
+        else if(diff > 0 && diff < 3)   // right
+            m_crashes.m_item = 1;
+        else                            // no crash
+            m_crashes.m_item = -1;
+    }
+    else
+        m_crashes.m_item = -1;
+    
+    // -- Kart & road crashes --
     // Time it takes to drive for m_kart_length units.
     float dt = m_kart_length / speed; 
     vel_normal/=speed;
@@ -1452,6 +1506,7 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
 
                 if( kart_distance < m_kart_length)
                     m_crashes.m_kart = j;
+
             }
         }
 
@@ -1625,11 +1680,13 @@ void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
 /** Difficulty computation : computes the needed parameters and calls the fuzzy
  *  logic model (computeDifficultyTag() function) to estimate the difficulty to
  *  reach the given point.
+ *  if returnDir, returns -output to mean that item is on the left
  */
-float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
+float FuzzyAIController::estimateDifficultyToReach(const Vec3& point,
+                                                   bool  returnDir)
 {
     vector2d<float> kartToPoint, kartToNextNode, kartVel;
-    int             direction;
+    int             direction, angleSign;
     float           dist, x, z, vel, angle;
     float           kartX = m_kart->getXYZ().getX();
     float           kartZ = m_kart->getXYZ().getZ();
@@ -1644,21 +1701,29 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
     kartToNextNode = vector2d<float>(m_target_x-kartX, m_target_z-kartZ);
     
     // (KartToNextNode, kartToPoint) angle
-    angle = kartToNextNode.getAngleTrig() - kartToPoint.getAngleTrig();
-    angle = (angle > 180)? 360 - angle : angle;
+    angle = kartToNextNode.getAngleTrig() - kartToPoint.getAngleTrig() - 180;
     
     // Kart direction (in % of the above angle)        
     x = m_kart->getVelocity().getX();
     z = m_kart->getVelocity().getZ();
     kartVel = vector2d<float>(x, z);
-    vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig();
+    vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig() - 180;
     direction = 100 * vel / angle;
     
     // Once the relative direction is known, only keep the angle's magnitude
-    angle = (angle < 0) ? -angle : angle;
+    if(angle < 0)
+    {
+        angle = -angle;
+        angleSign = -1;
+    }
+    else
+        angleSign = 1;
     
-    // Finally, call the fuzzy model to estimate the difficulty 
-    return computeDifficultyTag(angle, direction, dist);
+    // Finally, call the fuzzy model to estimate the difficulty
+    if(returnDir)
+        return angleSign*computeDifficultyTag(angle, direction, dist);
+    else
+        return computeDifficultyTag(angle, direction, dist);
 }
 
 //------------------------------------------------------------------------------
@@ -1690,7 +1755,6 @@ void FuzzyAIController::tagKartCollisions(const vector<const Kart*>& karts,
 //    attraction = computeCollisionAttraction(2, m_aggress);
                 
     AttrPoint* attrPt = new AttrPoint(karts[minI]->getXYZ().getX(), karts[minI]->getXYZ().getZ());
-    attrPt->difficulty = diffTag;
     attrPt->attraction = attraction;
     output.push_back(attrPt);
     
@@ -1731,8 +1795,11 @@ float FuzzyAIController::computeItemAttraction(const Item* item)
    {
        float energy = m_kart->getEnergy();
 
+       bool hasPowerup = (m_kart->getPowerup()->getType() !=
+                                               PowerupManager::POWERUP_NOTHING);
        //Nitro attraction
-       attraction = computeNitroAttraction(diffTag,energy);
+       attraction = computeBoxAttraction(diffTag, hasPowerup);
+       // TODO use computeNitroAttraction
 
    }
 
@@ -1741,7 +1808,8 @@ float FuzzyAIController::computeItemAttraction(const Item* item)
 
     {
         // "Bad item" attraction (ie. negative attraction, or repulsion)
-        attraction = computeBananaAttraction(diffTag, m_kart->getSpeed());
+        attraction = -1;
+//        attraction = computeBananaAttraction(diffTag, m_kart->getSpeed());
     }
     
     return attraction;
@@ -1760,7 +1828,7 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
 {
     vector<std::string*> texts;
     bool                 known;
-    float                diffTag, attraction;
+    float                attraction;
 
     if(debug)
         cout << "TAGGING ITEMS";
@@ -1780,7 +1848,8 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             // If item is already known, update the attraction point
             if(attrPts[j]->object != NULL && attrPts[j]->object == items[i])
             {   
-                attrPts[j]->attraction = computeItemAttraction(items[i]);
+                attraction = computeItemAttraction(items[i]);
+                attrPts[j]->attraction = attraction;
                 attrPts[j]->updated = true;
                 known = true;
                 if(debug)
@@ -1796,7 +1865,6 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             float x = items[i]->getXYZ().getX();
             float z = items[i]->getXYZ().getZ();
             AttrPoint* attrPt = new AttrPoint(x, z);
-            attrPt->difficulty = diffTag;
             attrPt->attraction = attraction;
             attrPt->object = ((FuzzyAITaggable*) items[i]);
             attrPt->updated = true;
@@ -1809,15 +1877,15 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
         if(debug)
         {
             std::stringstream * t = new std::stringstream();
-            diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100;  // round
             attraction = (attraction*100 + (attraction<0? -0.5 : 0.5))/100; // round
-            (*t) << " Tag = " << diffTag << ", A = " << attraction << endl;
+            (*t) << "A = " << attraction << endl;
             ((FuzzyAITaggable*) items[i])->setDebugText(t->str());
             cout << t->str();
-        } // if debug*/
+        } // if debug
     } // for every detected item
     
-    cout << endl << "DELETING OLD ITEMS ATTR PTS";
+    if(debug)
+        cout << endl << "DELETING OLD ITEMS ATTR PTS";
     // Finally, remove attraction points from that are not detected anymore
     for(int i=attrPts.size()-1 ; i>=0  ; i--)
     {
@@ -1826,7 +1894,8 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             AttrPoint* toDelete = attrPts[i];
             attrPts.erase(attrPts.begin() + i);
             delete toDelete;
-            cout << " - Item " << i << " : attraction point deleted";
+            if(debug)
+                cout << " - Item " << i << " : attraction point deleted";
         } // if item is not detected anymore
     } // for each known attraction point
 } // tagItems

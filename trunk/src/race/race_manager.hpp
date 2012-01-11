@@ -415,6 +415,10 @@ public:
     }
     
     // ------------------------------------------------------------------------
+    /** \brief Returns true if the given index corresponds to a player kart. */
+    bool isPlayerKart(int index) {return getKartType(index) == KT_PLAYER;}
+
+    // ------------------------------------------------------------------------
     /** \brief Returns true if the current mode has laps. */
     bool modeHasLaps()
     {

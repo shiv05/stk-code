@@ -42,7 +42,7 @@ namespace irr
 
 
 /**-----------------------------------------------------------------------------
- *
+ * Attraction point structure
  */
 struct AttrPoint
 {

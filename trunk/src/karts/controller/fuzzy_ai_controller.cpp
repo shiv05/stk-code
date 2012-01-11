@@ -1094,6 +1094,7 @@ void FuzzyAIController::handleItems(const float dt)
     // towards m_kart_ahead.
     case PowerupManager::POWERUP_CAKE:
         {
+
             // Leave some time between shots
             if(m_time_since_last_shot<3.0f) break;
             // Since cakes can be fired all around, just use a sane distance
@@ -1103,8 +1104,27 @@ void FuzzyAIController::handleItems(const float dt)
                                   !m_kart_ahead;
             float distance = fire_backwards ? m_distance_behind
                                             : m_distance_ahead;
+                                            
             m_controls->m_fire = (fire_backwards && distance < 25.0f)  ||
                                  (!fire_backwards && distance < 20.0f);
+
+            // "Bad players" filter : 9.5 times out of 10 don't fire at them
+            if(m_controls->m_fire)
+            {
+                bool playerBehind = (m_kart_behind && race_manager->isPlayerKart(
+                                              m_kart_behind->getWorldKartId()));
+                bool playerAhead  = (m_kart_ahead && race_manager->isPlayerKart(
+                                               m_kart_ahead->getWorldKartId()));
+                bool beNiceWithPlayers = (m_aggress == 3); // 3 = careful
+
+                if((fire_backwards && beNiceWithPlayers && playerBehind) ||
+                   (!fire_backwards && beNiceWithPlayers && playerAhead))
+                {
+                    m_controls->m_fire = (((rand()*instanceCount*33)%100) < 5);
+                    cout << "baaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbd player filter" << endl;
+                }
+            }
+            
             if(m_controls->m_fire)
                 m_controls->m_look_back = fire_backwards;
             break;
@@ -1127,6 +1147,24 @@ void FuzzyAIController::handleItems(const float dt)
             m_controls->m_fire = ( (fire_backwards && distance < 30.0f)  ||
                                    (!fire_backwards && distance <10.0f)    ) &&
                                 m_time_since_last_shot > 3.0f;
+                                
+            // "Bad players" filter : 9.5 times out of 10 don't fire at them
+            if(m_controls->m_fire)
+            {
+                bool playerBehind = (m_kart_behind && race_manager->isPlayerKart(
+                                              m_kart_behind->getWorldKartId()));
+                bool playerAhead  = (m_kart_ahead && race_manager->isPlayerKart(
+                                               m_kart_ahead->getWorldKartId()));
+                bool beNiceWithPlayers = (m_aggress == 3); // 3 = careful
+
+                if((fire_backwards && beNiceWithPlayers && playerBehind) ||
+                   (!fire_backwards && beNiceWithPlayers && playerAhead))
+                {
+                    m_controls->m_fire = (((rand()*instanceCount*33)%100) < 5);
+                    cout << "baaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbd player filter" << endl;
+                }
+            }
+            
             if(m_controls->m_fire)
                 m_controls->m_look_back = fire_backwards;
             break;
@@ -1212,7 +1250,7 @@ void FuzzyAIController::handleItems(const float dt)
         m_controls->m_fire = m_kart_ahead != NULL;
         break;
     default:
-        printf("Invalid or unhandled powerup '%d' in fuzzy AI.\n",
+        printf("Invalid or unhandled powerup '%d' in fuzzyAIController.\n",
                 m_kart->getPowerup()->getType());
         assert(false);
     }
@@ -1701,13 +1739,15 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point,
     kartToNextNode = vector2d<float>(m_target_x-kartX, m_target_z-kartZ);
     
     // (KartToNextNode, kartToPoint) angle
-    angle = kartToNextNode.getAngleTrig() - kartToPoint.getAngleTrig() - 180;
+    angle = kartToNextNode.getAngleTrig() - kartToPoint.getAngleTrig();
+    angle = (angle > 180) ? 360 - angle : angle;
     
     // Kart direction (in % of the above angle)        
     x = m_kart->getVelocity().getX();
     z = m_kart->getVelocity().getZ();
     kartVel = vector2d<float>(x, z);
-    vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig() - 180;
+    vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig();
+    vel = (vel > 180) ? 360 - vel : vel;
     direction = 100 * vel / angle;
     
     // Once the relative direction is known, only keep the angle's magnitude
@@ -1779,31 +1819,31 @@ float FuzzyAIController::computeItemAttraction(const Item* item)
     float diffTag, attraction;
 
     // Difficulty tag
-    diffTag = estimateDifficultyToReach(item->getXYZ());
+    attraction = 10 - estimateDifficultyToReach(item->getXYZ());
     
-    if(item->getType() == Item::ITEM_BONUS_BOX)
-    {
+//    if(item->getType() == Item::ITEM_BONUS_BOX)
+//    {
+//
+//        bool hasPowerup = (m_kart->getPowerup()->getType() !=
+//                                               PowerupManager::POWERUP_NOTHING);
+//        // Box attraction
+//        attraction = computeBoxAttraction(diffTag, hasPowerup);    
+//    }
+//
+//   if(item->getType() == Item::ITEM_NITRO_BIG   ||
+//      item->getType() == Item::ITEM_NITRO_SMALL)
+//   {
+//       float energy = m_kart->getEnergy();
+//
+//       bool hasPowerup = (m_kart->getPowerup()->getType() !=
+//                                               PowerupManager::POWERUP_NOTHING);
+//       //Nitro attraction
+//       attraction = computeBoxAttraction(diffTag, hasPowerup);
+//       // TODO use computeNitroAttraction
+//
+//   }
 
-        bool hasPowerup = (m_kart->getPowerup()->getType() !=
-                                               PowerupManager::POWERUP_NOTHING);
-        // Box attraction
-        attraction = computeBoxAttraction(diffTag, hasPowerup);    
-    }
-
-   if(item->getType() == Item::ITEM_NITRO_BIG   ||
-      item->getType() == Item::ITEM_NITRO_SMALL)
-   {
-       float energy = m_kart->getEnergy();
-
-       bool hasPowerup = (m_kart->getPowerup()->getType() !=
-                                               PowerupManager::POWERUP_NOTHING);
-       //Nitro attraction
-       attraction = computeBoxAttraction(diffTag, hasPowerup);
-       // TODO use computeNitroAttraction
-
-   }
-
-    else if(item->getType() == Item::ITEM_BANANA ||
+    if(item->getType() == Item::ITEM_BANANA ||
             item->getType() == Item::ITEM_BUBBLEGUM)
 
     {
@@ -1885,7 +1925,7 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
     } // for every detected item
     
     if(debug)
-        cout << endl << "DELETING OLD ITEMS ATTR PTS";
+        cout << endl << "DELETING OLD ITEMS ATTR PTS : ";
     // Finally, remove attraction points from that are not detected anymore
     for(int i=attrPts.size()-1 ; i>=0  ; i--)
     {
@@ -1895,7 +1935,7 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             attrPts.erase(attrPts.begin() + i);
             delete toDelete;
             if(debug)
-                cout << " - Item " << i << " : attraction point deleted";
+                cout << " - Item " << i << " : attraction point deleted" << endl;
         } // if item is not detected anymore
     } // for each known attraction point
 } // tagItems

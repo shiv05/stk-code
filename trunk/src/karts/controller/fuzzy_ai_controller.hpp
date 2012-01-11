@@ -224,14 +224,14 @@ private:
     float computeItemAttraction     (const Item* item);
 
     // -- Detection methods --
-    void  getCloseKarts           (std::vector<const Kart*>& closeKarts,
-                                   float max_dist = 40.f);
+//    void  getCloseKarts           (std::vector<const Kart*>& closeKarts,
+//                                   float max_dist = 40.f);
     // -- Items tagging method --
     void  tagItems                (const std::vector<Item*>& items,
                                          std::vector<AttrPoint*>& output);
     // -- Collisions tagging method --
-    void tagKartCollisions        (const std::vector<const Kart*>& karts,
-                                         std::vector<AttrPoint*>&  output);
+//    void tagKartCollisions        (const std::vector<const Kart*>& karts,
+//                                         std::vector<AttrPoint*>&  output);
     // -- Path Choosing methods --
     // Fork detection in the look_ahead nodes
     void  computeForkChoices      (std::vector<unsigned int>& output);
@@ -241,7 +241,7 @@ private:
     
     AttrPoint* chooseDirection(std::vector<AttrPoint*> & attrPts);
 
-    void handleAccelerationAndBrake(float dt);
+//    void handleAccelerationAndBrake(float dt);
 
     // -- Debug method --
 //    void setDebugText(const Item* item, const std::string* text);

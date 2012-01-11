@@ -346,7 +346,7 @@ void FuzzyAIController::update(float dt)
         // For now we use "medium" for every kart.
         int kart_class = 2;
         m_compet  = computeCompetitiveness(eval, current_ranking);
-        m_aggress = computeAggressiveness(kart_class, current_ranking);
+        m_aggress = 2; //computeAggressiveness(kart_class, current_ranking);
         
         //Decide if it is interesting or not to use the current possessed weapon
         //Get current powerup
@@ -357,26 +357,26 @@ void FuzzyAIController::update(float dt)
         float hit_estimation = 0;
         float weapon_interest = 0;
 
-        if(possessed_item != 0)
-        {
+//        if(possessed_item != 0)
+//        {
             //Get the hit estimation            
             //hit_estimation = computeHitEstimation(possessed_item,m_distance_ahead);
             
             //Now get the interest the possessed weapons.
             //weapon_interest = computeWeaponInterest(m_compet, hit_estimation);        
-        }
+//        }
         
         // -- Close karts detection --
-        vector<const Kart*> closeKarts;
-        getCloseKarts(closeKarts, 40.0f);
-        for(unsigned int i=0; i<closeKarts.size() ; i++)
-        {
-            float dist = (closeKarts[i]->getXYZ() - m_kart->getXYZ()).length();
+//        vector<const Kart*> closeKarts;
+//        getCloseKarts(closeKarts, 40.0f);
+//        for(unsigned int i=0; i<closeKarts.size() ; i++)
+//        {
+//            float dist = (closeKarts[i]->getXYZ() - m_kart->getXYZ()).length();
         
             //tagKartCollisions(closeKarts, m_attrPts);
             // TODO : compute class (heavy, light) difference between kart and this
             //cout << m_kart->getIdent() << " : close kart detected ! " << closeKarts[i]->getIdent() << ", dist = " << dist << endl;
-        }
+//        }
 #ifdef AI_DEBUG
         if(debug)
         {
@@ -427,13 +427,6 @@ void FuzzyAIController::update(float dt)
             default : cout << "unexpected value : " << eval << endl;
         } // end switch
         
-        // -- Steering --
-        cout << " -- STEERING -- " << endl;
-        for(unsigned int i = 0; i<m_attrPts.size() ; i++)
-        {
-            cout << "    AttrPt " << i << ", attr = " << m_attrPts[i]->attraction << endl;
-        }
-        
         // -- Hit estimation --
 //        cout << " -- HIT ESTIMATION -- " << endl;
 //        cout << m_kart->getIdent() << " : agent current powerup type = ";
@@ -463,8 +456,8 @@ void FuzzyAIController::update(float dt)
         /*Response handling functions*/
         handleAcceleration(dt);
         m_chosenDir = chooseDirection(m_attrPts);
-        if(debug)
-            cout << "    Chosen = " << m_chosenDir->attraction << endl;
+//        if(debug)
+//            cout << "    Chosen = " << m_chosenDir->attraction << endl;
         handleSteering(dt);
         handleItems(dt);
         handleRescue(dt);
@@ -490,42 +483,6 @@ void FuzzyAIController::update(float dt)
             m_controls->m_fire  = true;
         }
     }
-    
-//    if(!commands_set)
-//    {
-//        /* Response handling functions */
-////        handleAcceleration(dt); Replaced by fuzzy function
-//        handleAccelerationAndBrake(dt); // fuzzy function
-//        m_chosenDir = chooseDirection(m_attrPts);
-//        handleSteering(dt);
-//        handleItems(dt);
-//        handleRescue(dt);
-////        handleBraking();  Replaced by fuzzy function
-//        // If a bomb is attached, nitro might already be set.
-//        //if(!m_controls->m_nitro)
-//          //  handleNitroAndZipper(); Replaced by fuzzy function
-//    }
-//    // If we are supposed to use nitro, but have a zipper, 
-//    // use the zipper instead
-//    if(m_controls->m_nitro && 
-//        m_kart->getPowerup()->getType()==PowerupManager::POWERUP_ZIPPER && 
-//        m_kart->getSpeed()>1.0f && 
-//        m_kart->getSpeedIncreaseTimeLeft(MaxSpeed::MS_INCREASE_ZIPPER)<=0)
-//    {
-//        // Make sure that not all AI karts use the zipper at the same
-//        // time in time trial at start up, so during the first 5 seconds
-//        // this is done at random only.
-//        if(race_manager->getMinorMode()!=RaceManager::MINOR_MODE_TIME_TRIAL ||
-//            (m_world->getTime()<3.0f && rand()%50==1) )
-//        {
-//            m_controls->m_nitro = false;
-//            m_controls->m_fire  = true;
-//        }
-//    }
-//
-//    /* And obviously general kart stuff */
-//    AIBaseController::update(dt);
-//    m_collided = false;
 }   // update
 
 //------------------------------------------------------------------------------
@@ -700,21 +657,6 @@ float FuzzyAIController::computeBananaAttraction(float difficultyTag,
 }
 
 //------------------------------------------------------------------------------
-/** TODO Comment
- */
-float FuzzyAIController::computeCollisionAttraction(float difficultyTag,
-                                                    int   aggressiveness)
-{
-    const std::string file_name = "collision_attraction.fcl";
-    
-    vector<float> params;
-    params.push_back(difficultyTag);
-    params.push_back(aggressiveness);
-    
-    return computeFuzzyModel(file_name, params);
-}
-
-//------------------------------------------------------------------------------
 /** Module to compute a difficulty prediction to hit an opponent with a weapon.
  *  Simply call computeFuzzyModel with the right parameters.
  *  TODO : make this comment doxygen compliant
@@ -787,24 +729,6 @@ float FuzzyAIController::computeWeaponInterest(int   competitiveness,
     return  computeFuzzyModel(file_name, interestParameters);
 } // computeWeaponInterest
 
-//------------------------------------------------------------------------------
-/** 
- */
-float FuzzyAIController::computeSpeedHandling(float difficulty,
-                                              float currentSpeed,
-                                              int   competitiveness,
-                                              int   skid)
-{
-    const std::string& file_name = "speed_handler.fcl";
-    vector<float> params;
-    params.push_back(difficulty);
-    params.push_back(currentSpeed);
-    params.push_back(competitiveness);
-    params.push_back(skid);
-    
-    return computeFuzzyModel(file_name, params);
-} // computeSpeedHandling
-
 //-----------------------------------------------------------------------------
 void FuzzyAIController::handleBraking()
 {
@@ -873,7 +797,8 @@ void FuzzyAIController::handleBraking()
            kart_ang_diff          > MIN_TRACK_ANGLE         )
         {
 #ifdef AI_DEBUG
-        std::cout << "BRAKING" << std::endl;
+        if(debug)
+            std::cout << "BRAKING" << std::endl;
 #endif
             m_controls->m_brake = true;
             return;
@@ -883,6 +808,7 @@ void FuzzyAIController::handleBraking()
 
     m_controls->m_brake = false;
 }   // handleBraking
+
 
 void FuzzyAIController::handleSteering(float dt)
 {
@@ -903,17 +829,19 @@ void FuzzyAIController::handleSteering(float dt)
                                                     .getCenter());
 
 #ifdef AI_DEBUG
-        m_debug_sphere->setPosition(QuadGraph::get()->getQuadOfNode(next)
+        if(debug)
+        {
+            m_debug_sphere->setPosition(QuadGraph::get()->getQuadOfNode(next)
                        .getCenter().toIrrVector());
-        std::cout << "- Outside of road: steer to center point." <<
-            std::endl;
+            std::cout << "- Outside of road: steer to center point."<<std::endl;
+        }
 #endif
     }
     // Avoid bad items
     else if( m_crashes.m_item != -1 )
     {
-//        if(debug)
-//            cout << "- Steering to avoid bad item" << endl;
+        if(debug)
+            cout << "-/////////////////// Steering to avoid bad item" << endl;
         if( m_crashes.m_item == 0 )
             steer_angle = steerToAngle(x, z, -M_PI*0.5f);
         else if(m_crashes.m_item == 1)
@@ -940,20 +868,20 @@ void FuzzyAIController::handleSteering(float dt)
             if(m_world->getDistanceToCenterForKart( m_kart->getWorldKartId() ) >
                m_world->getDistanceToCenterForKart( m_crashes.m_kart ))
             {
-                steer_angle = steerToAngle(x, z, -M_PI*0.5f );
+                steer_angle = steerToAngle(x, z, M_PI*0.5f );
                 m_start_kart_crash_direction = 1;
             }
             else
             {
-                steer_angle = steerToAngle(x, z, M_PI*0.5f );
+                steer_angle = steerToAngle(x, z, -M_PI*0.5f );
                 m_start_kart_crash_direction = -1;
             }
         }
 
 #ifdef AI_DEBUG
-        std::cout << "- Velocity vector crashes with kart and doesn't " <<
-            "crashes with road : steer 90 degrees away from kart." <<
-            std::endl;
+        if(debug)
+            std::cout << "- Velocity vector crashes with kart and doesn't " <<
+            "crashes with road : steer 90 degrees away from kart." << std::endl;
 #endif
     }
     else
@@ -970,81 +898,6 @@ void FuzzyAIController::handleSteering(float dt)
 }   // handleSteering
 
 //-----------------------------------------------------------------------------
-// Handle steering for fuzzy steering
-//void FuzzyAIController::handleSteering(float dt)
-//{
-//    const int next = m_next_node_index[m_track_node];
-//    
-//    float steer_angle = 0.0f;
-//
-//    /*The AI responds based on the information we just gathered, using a
-//     *finite state machine.
-//     */
-//    //Reaction to being outside of the road
-//    if( fabsf(m_world->getDistanceToCenterForKart( m_kart->getWorldKartId() ))  >
-//       0.5f* QuadGraph::get()->getNode(m_track_node).getPathWidth()+0.5f )
-//    {
-//        steer_angle = steerToPoint(QuadGraph::get()->getQuadOfNode(next)
-//                                                    .getCenter());
-//
-//#ifdef AI_DEBUG
-//        m_debug_sphere->setPosition(QuadGraph::get()->getQuadOfNode(next)
-//                       .getCenter().toIrrVector());
-//        std::cout << "- Outside of road: steer to center point." <<
-//        std::endl;
-//#endif
-//    }
-//    //If we are going to crash against a kart, avoid it if it doesn't
-//    //drives the kart out of the road
-//    else if( m_crashes.m_kart != -1 && !m_crashes.m_road )
-//    {
-//        //-1 = left, 1 = right, 0 = no crash.
-//        if( m_start_kart_crash_direction == 1 )
-//        {
-//            steer_angle = steerToAngle(next, -M_PI*0.5f );
-//            m_start_kart_crash_direction = 0;
-//        }
-//        else if(m_start_kart_crash_direction == -1)
-//        {
-//            steer_angle = steerToAngle(next, M_PI*0.5f);
-//            m_start_kart_crash_direction = 0;
-//        }
-//        else
-//        {
-//            if(m_world->getDistanceToCenterForKart( m_kart->getWorldKartId() ) >
-//               m_world->getDistanceToCenterForKart( m_crashes.m_kart ))
-//            {
-//                steer_angle = steerToAngle(next, -M_PI*0.5f );
-//                m_start_kart_crash_direction = 1;
-//            }
-//            else
-//            {
-//                steer_angle = steerToAngle(next, M_PI*0.5f );
-//                m_start_kart_crash_direction = -1;
-//            }
-//        }
-//
-//#ifdef AI_DEBUG
-//        std::cout << "- Velocity vector crashes with kart and doesn't " <<
-//            "crashes with road : steer 90 degrees away from kart." <<
-//            std::endl;
-//#endif
-//
-//    }
-//    else
-//    {
-//        m_start_kart_crash_direction = 0;
-//        Vec3 straight_point(m_chosenDir->x, 0.f, m_chosenDir->z);
-//#ifdef AI_DEBUG
-//        m_debug_sphere->setPosition(straight_point.toIrrVector());
-//#endif
-//        steer_angle = steerToPoint(straight_point);
-//    }
-//
-//    setSteering(steer_angle, dt);
-//}   // handleSteering
-
-//-----------------------------------------------------------------------------
 /** Handle all items depending on the chosen strategy: Either (low level AI)
  *  just use an item after 10 seconds, or do a much better job on higher level
  *  AI - e.g. aiming at karts ahead/behind, wait an appropriate time before 
@@ -1052,6 +905,13 @@ void FuzzyAIController::handleSteering(float dt)
  */
 void FuzzyAIController::handleItems(const float dt)
 {
+    bool playerBehind = (m_kart_behind && race_manager->isPlayerKart(
+                                    m_kart_behind->getWorldKartId()));
+    bool playerAhead  = (m_kart_ahead && race_manager->isPlayerKart(
+                                    m_kart_ahead->getWorldKartId()));
+    int eval = fuzzy_data_manager->getPlayerEvaluation();
+    bool beNiceWithPlayers = (eval == 3); // 3 = bad
+    
     m_controls->m_fire = false;
     if(m_kart->playingEmergencyAnimation() || 
         m_kart->getPowerup()->getType() == PowerupManager::POWERUP_NOTHING ) 
@@ -1111,18 +971,10 @@ void FuzzyAIController::handleItems(const float dt)
             // "Bad players" filter : 9.5 times out of 10 don't fire at them
             if(m_controls->m_fire)
             {
-                bool playerBehind = (m_kart_behind && race_manager->isPlayerKart(
-                                              m_kart_behind->getWorldKartId()));
-                bool playerAhead  = (m_kart_ahead && race_manager->isPlayerKart(
-                                               m_kart_ahead->getWorldKartId()));
-                bool beNiceWithPlayers = (m_aggress == 3); // 3 = careful
-
                 if((fire_backwards && beNiceWithPlayers && playerBehind) ||
                    (!fire_backwards && beNiceWithPlayers && playerAhead))
-                {
                     m_controls->m_fire = (((rand()*instanceCount*33)%100) < 5);
-                    cout << "baaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbd player filter" << endl;
-                }
+
             }
             
             if(m_controls->m_fire)
@@ -1151,18 +1003,9 @@ void FuzzyAIController::handleItems(const float dt)
             // "Bad players" filter : 9.5 times out of 10 don't fire at them
             if(m_controls->m_fire)
             {
-                bool playerBehind = (m_kart_behind && race_manager->isPlayerKart(
-                                              m_kart_behind->getWorldKartId()));
-                bool playerAhead  = (m_kart_ahead && race_manager->isPlayerKart(
-                                               m_kart_ahead->getWorldKartId()));
-                bool beNiceWithPlayers = (m_aggress == 3); // 3 = careful
-
                 if((fire_backwards && beNiceWithPlayers && playerBehind) ||
                    (!fire_backwards && beNiceWithPlayers && playerAhead))
-                {
                     m_controls->m_fire = (((rand()*instanceCount*33)%100) < 5);
-                    cout << "baaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbd player filter" << endl;
-                }
             }
             
             if(m_controls->m_fire)
@@ -1420,7 +1263,6 @@ void FuzzyAIController::handleNitroAndZipper()
         m_kart->getAttachment()->getType()==Attachment::ATTACH_ANVIL;
     if(has_slowdown_attachment) return;
 
-/*  // Disabled because handled in fuzzy function handleAccelerationAndBrake()
     // If the kart is very slow (e.g. after rescue), use nitro
     if(m_kart->getSpeed()<5)
     {
@@ -1437,7 +1279,6 @@ void FuzzyAIController::handleNitroAndZipper()
         m_controls->m_nitro = true;
         return;
     }
-*/
 }   // handleNitroAndZipper
 
 //-----------------------------------------------------------------------------
@@ -1500,13 +1341,16 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
     {
         crashItem = closeItems[closestId];
         diff = estimateDifficultyToReach(crashItem->getXYZ(), true);
-        if(diff < 0 && diff > -3)       // left
+        if(diff <= 0 && diff > -3)       // left
             m_crashes.m_item = 0;
-        else if(diff > 0 && diff < 3)   // right
+        else if(diff >= 0 && diff < 3)   // right
             m_crashes.m_item = 1;
         else                            // no crash
             m_crashes.m_item = -1;
-    }
+            
+        if(debug)
+            cout << "-----=== Bad item detected ! : " << diff << endl;
+    } // if there is bad items around
     else
         m_crashes.m_item = -1;
     
@@ -1526,8 +1370,7 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
     {
         Vec3 step_coord = pos + vel_normal* m_kart_length * float(i);
 
-        /* Find if we crash with any kart, as long as we haven't found one
-         * yet
+        /* Find if we crash with any kart, as long as we haven't found one yet
          */
         if( m_crashes.m_kart == -1 )
         {
@@ -1544,7 +1387,6 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
 
                 if( kart_distance < m_kart_length)
                     m_crashes.m_kart = j;
-
             }
         }
 
@@ -1676,7 +1518,6 @@ void FuzzyAIController::findCurve()
                                                          m_successor_index[i]);
     }
 
-
     m_curve_angle = 
         normalizeAngle(QuadGraph::get()->getAngleToNext(i, 
                                                         m_successor_index[i])
@@ -1685,34 +1526,6 @@ void FuzzyAIController::findCurve()
     
     m_curve_target_speed = m_kart->getCurrentMaxSpeed();
 }   // findCurve
-
-//==============================================================================
-// Fuzzy AI controller functions
-
-//------------------------------------------------------------------------------
-/** Get close karts (computed using real distance, not "on track distance").
- * TODO make this comment doxygen compliant
- */
-
-void FuzzyAIController::getCloseKarts(std::vector<const Kart*>& closeKarts,
-                                      float max_dist)
-{
-    // Only do this on the server
-    //if(network_manager->getMode()==NetworkManager::NW_CLIENT) return NULL;
-    
-    // for each kart in the world, keep it if it is close
-    for(unsigned int i=0; i<m_world->getNumKarts(); i++)
-    {
-        const Kart* curKart = m_world->getKart(i);
-        if(curKart != m_kart)
-        {
-            if((curKart->getXYZ() - m_kart->getXYZ()).length() < max_dist)
-            {
-                closeKarts.push_back(curKart);
-            }
-        }
-    } // for all karts
-}   // getCloseKarts
 
 //------------------------------------------------------------------------------
 /** Difficulty computation : computes the needed parameters and calls the fuzzy
@@ -1725,7 +1538,7 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point,
 {
     vector2d<float> kartToPoint, kartToNextNode, kartVel;
     int             direction, angleSign;
-    float           dist, x, z, vel, angle;
+    float           dist, x, z, vel, angle, diff;
     float           kartX = m_kart->getXYZ().getX();
     float           kartZ = m_kart->getXYZ().getZ();
     
@@ -1759,57 +1572,18 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point,
     else
         angleSign = 1;
     
+    // Fuzzy Logic replacement : if angle is small, this is very easy
+//    if(angle < 25)
+//        diff = 0.f;
+//    else
+        diff = computeDifficultyTag(angle, direction, dist);
+        
     // Finally, call the fuzzy model to estimate the difficulty
     if(returnDir)
-        return angleSign*computeDifficultyTag(angle, direction, dist);
+        return angleSign*diff;
     else
-        return computeDifficultyTag(angle, direction, dist);
+        return diff;
 }
-
-//------------------------------------------------------------------------------
-/** Collision tagger & attraction setter
- *
- */
-void FuzzyAIController::tagKartCollisions(const vector<const Kart*>& karts,
-                                                vector<AttrPoint*>&  output)
-{
-    float        diffTag, attraction, dist;
-    float        minDist = 9999;
-    unsigned int i;
-    unsigned int minI = 9999;
-    // Get the closest kart (only compute once the collision)
-    for(i=0 ; i<karts.size() ; i++)
-    {
-        dist = (m_kart->getXYZ() - karts[i]->getXYZ()).length();
-        if(dist < minDist)
-        {
-            minDist = dist;
-            minI = i;
-        }
-    } // For every given kart (close kart)
-    
-    // -- Compute collision difficulty tag --
-//    diffTag = estimateDifficultyToReach(karts[minI]->getXYZ());
-    
-    // -- Compute attraction --
-//    attraction = computeCollisionAttraction(2, m_aggress);
-                
-    AttrPoint* attrPt = new AttrPoint(karts[minI]->getXYZ().getX(), karts[minI]->getXYZ().getZ());
-    attrPt->attraction = attraction;
-    output.push_back(attrPt);
-    
-    // Debug output
-    if(debug)
-    {
-        std::stringstream * t = new std::stringstream();
-        diffTag = (diffTag*100 + (diffTag<0? -0.5 : 0.5))/100;  // round
-        (*t) << "++++++++++++++++++++++++++ " << karts[minI]->getIdent() << " Tag = " << diffTag << ", A = " << attraction << endl;
-        ((FuzzyAITaggable*) karts[minI])->setDebugText(t->str());
-        ((FuzzyAITaggable*) karts[minI])->updateDebugTextPosition();
-        cout << t->str();
-    } // if debug
-} // tagKartCollisions
-
 
 //------------------------------------------------------------------------------
 /** Wrapper for computeBoxAttraction computeNitroAttraction and computeBananaAttraction functions
@@ -1870,8 +1644,8 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
     bool                 known;
     float                attraction;
 
-    if(debug)
-        cout << "TAGGING ITEMS";
+//    if(debug)
+//        cout << "TAGGING ITEMS";
     
     // Every attraction point must be updated
     for(unsigned int i=0 ; i < attrPts.size() ; i++)
@@ -1879,8 +1653,8 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
     
     for(unsigned int i=0 ; i < items.size() ; i++)
     {
-        if(debug)
-            cout << " - Item " << i;
+//        if(debug)
+//            cout << " - Item " << i;
         known = false;
         // Check is item is already known
         for(unsigned int j=0 ; j < attrPts.size() ; j++)
@@ -1892,8 +1666,8 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
                 attrPts[j]->attraction = attraction;
                 attrPts[j]->updated = true;
                 known = true;
-                if(debug)
-                    cout << " : known, up (" << attraction << ")";
+//                if(debug)
+//                    cout << " : known, up (" << attraction << ")";
                 break;
             } // if item is already known
         } // for each known attraction point
@@ -1909,8 +1683,8 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             attrPt->object = ((FuzzyAITaggable*) items[i]);
             attrPt->updated = true;
             attrPts.push_back(attrPt);
-            if(debug)
-                cout << " : not known, create (" << attraction << ")";
+//            if(debug)
+//                cout << " : not known, create (" << attraction << ")";
         } // if !known
         
         // Debug output
@@ -1924,8 +1698,8 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
         } // if debug
     } // for every detected item
     
-    if(debug)
-        cout << endl << "DELETING OLD ITEMS ATTR PTS : ";
+//    if(debug)
+//        cout << endl << "DELETING OLD ITEMS ATTR PTS : ";
     // Finally, remove attraction points from that are not detected anymore
     for(int i=attrPts.size()-1 ; i>=0  ; i--)
     {
@@ -1934,8 +1708,8 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             AttrPoint* toDelete = attrPts[i];
             attrPts.erase(attrPts.begin() + i);
             delete toDelete;
-            if(debug)
-                cout << " - Item " << i << " : attraction point deleted" << endl;
+//            if(debug)
+//                cout << " - Item " << i << " : attraction point deleted" << endl;
         } // if item is not detected anymore
     } // for each known attraction point
 } // tagItems
@@ -2006,132 +1780,3 @@ AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
     
     return attrPts[bestId];
 } // chooseDirection
-
-//------------------------------------------------------------------------------
-/** Fuzzy acceleration and brake handling
- */
-void FuzzyAIController::handleAccelerationAndBrake(float dt)
-{
-    // -- Special situations handling --
-    //Do not accelerate until we have delayed the start enough
-    if( m_start_delay > 0.0f )
-    {
-        m_start_delay -= dt;
-        m_controls->m_accel = 0.0f;
-        return;
-    }
-    
-    // Plunger limitations
-    if(m_kart->hasViewBlockedByPlunger())
-    {
-        if(!(m_kart->getSpeed() > m_kart->getCurrentMaxSpeed() / 2))
-            m_controls->m_accel = 0.05f;
-        else 
-            m_controls->m_accel = 0.0f;
-        return;
-    }
-    
-    // -- "Most of the time" handling --
-    // Estimated difficulty to reach the targetted point
-    float diff = estimateDifficultyToReach(Vec3(m_target_x, 0.f, m_target_z));
-        
-    // Competitiveness & skid... for now, skid = 0 since the skid filter is not implemented yet
-    float control = computeSpeedHandling(diff, m_kart->getSpeed(), m_compet, 0);
-    
-    switch((int) (control + (control<0? -0.5 : 0.5)))
-    {
-        case 0 :        // NONE
-            m_controls->m_brake = false;
-            m_controls->m_accel = 0.0f;
-            if(!m_controls->m_nitro) // if a bomb is attached, nitro might already be set (see update())
-                m_controls->m_nitro = false;
-            break;
-        
-        case 1 :
-            m_controls->m_brake = false;
-            m_controls->m_accel = 1.0f;
-            if(!m_controls->m_nitro) // if a bomb is attached, nitro might already be set (see update())
-                m_controls->m_nitro = false;
-            break;
-        
-        case 2 :
-            m_controls->m_brake = false;
-            m_controls->m_accel = 1.0f;
-            m_controls->m_nitro = true;
-            break;
-
-        case 3 :
-            m_controls->m_brake = true;
-            m_controls->m_accel = 0.0f;
-            if(!m_controls->m_nitro) // if a bomb is attached, nitro might already be set (see update())
-                m_controls->m_nitro = false;
-            break;
-            
-        default :
-            cout << "Control error, unexpected value : " << control << endl;
-    }
-    
-    
-    // -- Nitro special situations --
-    // On the last track shortly before the finishing line, use nitro 
-    // anyway. Since the kart is faster with nitro, estimate a 50% time
-    // decrease (additionally some nitro will be saved when top speed
-    // is reached).
-    if(m_world->getLapForKart(m_kart->getWorldKartId())==race_manager->getNumLaps()-1 &&
-        m_nitro_level == NITRO_ALL)
-    {
-        float finish = m_world->getEstimatedFinishTime(m_kart->getWorldKartId());
-        if( 1.5f*m_kart->getEnergy() >= finish - m_world->getTime() )
-        {
-            m_controls->m_nitro = true;
-            return;
-        }
-    }
-
-    // A kart within this distance is considered to be overtaking (or to be
-    // overtaken).
-    const float overtake_distance = 10.0f;
-
-    // Try to overtake a kart that is close ahead, except 
-    // when we are already much faster than that kart
-    if(m_kart_ahead                                       && 
-        m_distance_ahead < overtake_distance              &&
-        m_kart_ahead->getSpeed()+5.0f > m_kart->getSpeed()   )
-    {
-            m_controls->m_nitro = true;
-            return;
-    }
-
-    if(m_kart_behind                                   &&
-        m_distance_behind < overtake_distance          &&
-        m_kart_behind->getSpeed() > m_kart->getSpeed()    )
-    {
-        // Only prevent overtaking on highest level
-        m_controls->m_nitro = m_nitro_level==NITRO_ALL;
-        return;
-    }
-    
-    // Don't use nitro when the AI has a plunger in the face!
-    if(m_kart->hasViewBlockedByPlunger())
-        { m_controls->m_nitro = false; return; }
-    
-    // Don't use nitro if the kart doesn't have any or is not on ground.
-    if(!m_kart->isOnGround() || m_kart->hasFinishedRace())
-        { m_controls->m_nitro = false; return; }
-    
-    // Don't compute nitro usage if we don't have nitro or are not supposed
-    // to use it, and we don't have a zipper or are not supposed to use
-    // it (calculated).
-    if( (m_kart->getEnergy()==0 || m_nitro_level==NITRO_NONE)  &&
-        (m_kart->getPowerup()->getType()!=PowerupManager::POWERUP_ZIPPER ||
-          m_item_tactic==IT_TEN_SECONDS                                    ) )
-        { m_controls->m_nitro = false; return; }
-
-    // If a parachute or anvil is attached, the nitro doesn't give much
-    // benefit. Better wait till later.
-    const bool has_slowdown_attachment = 
-        m_kart->getAttachment()->getType()==Attachment::ATTACH_PARACHUTE ||
-        m_kart->getAttachment()->getType()==Attachment::ATTACH_ANVIL;
-    if(has_slowdown_attachment)
-        { m_controls->m_nitro = false; return; }
-}

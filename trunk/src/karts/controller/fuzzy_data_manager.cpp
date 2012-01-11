@@ -40,6 +40,7 @@ FuzzyDataManager::FuzzyDataManager()
     // PlayerController
     m_player_crash_count  = 0;
     m_player_average_rank = 0;
+    m_player_eval         = 3; // 3 = bad
     
     m_pathTrees = vector<FuzzyAIPathTree*>();
 } // Constructor 
@@ -59,8 +60,9 @@ FuzzyDataManager::~FuzzyDataManager()
  */
 void FuzzyDataManager::reset()
 {
-    m_player_crash_count = 0;
+    m_player_crash_count  = 0;
     m_player_average_rank = 0;
+    m_player_eval         = 3; // 3 = bad
 }
 
 

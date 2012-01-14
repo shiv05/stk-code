@@ -51,8 +51,8 @@ private:
     //  -- Variables used for the player evaluation --
     float          m_timer;
     float          m_old_speed;    // speed at last iteration
-    float          m_average_rank; // average player rank estimation
-    float          m_crash_count;  // Times crashed for the last 10 seconds
+    float          m_average_rank; // average rank estimation(for the last ~15s)
+    float          m_crash_count;  // Times crashed for the last ~10 seconds
     float          m_eval;
     //  -- End of player evaluation variables --
 

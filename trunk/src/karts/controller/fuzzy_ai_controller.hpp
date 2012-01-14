@@ -36,21 +36,24 @@ namespace irr
     namespace scene
     {
         class ISceneNode;
-        class IBillboardTextSceneNode;
     }
 }
 
 
-/**-----------------------------------------------------------------------------
- * Attraction point structure
+/**
+  * \ingroup controller
+  */
+
+/**-------------------------------------------------------------------------
+ * Attraction point structure, used for bonus items gathering
  */
 struct AttrPoint
 {
     float            x;
-    float            z;          // Irrlicht-like Z-axis coordinate
+    float            z;      // Irrlicht-like Z-axis coordinate
     float            attraction;
     bool             updated;
-    FuzzyAITaggable* object;     // Null if this is the track node attraction pt
+    FuzzyAITaggable* object; // Null if this is the track node attraction pt
     
     AttrPoint(float x = 0.0f, float z = 0.0f) : x(x), z(z),
                                                 attraction(0.f),
@@ -58,9 +61,6 @@ struct AttrPoint
                                                 object(NULL)    {}
 };
 
-/**
-  * \ingroup controller
-  */
 class FuzzyAIController : public AIBaseController
 {
 private:
@@ -84,26 +84,40 @@ private:
         CrashTypes() : m_road(false), m_kart(-1), m_item(NULL) {};
         void clear() {m_road = false; m_kart = -1; m_item = NULL;}
     } m_crashes;
-    
-    //==========================================================================
-    // Fuzzy AI variables
-    static unsigned int     instanceCount; // used to determine which instance has to print the debug output & random
-    float                   m_timer;
-    int                     m_compet; // Competitiveness of the agent TODO Constant values for this variable (LOW, HIGH, ...)
-    int                     m_aggress; // Aggressiveness
 
-    int                     m_item_count; // detected items (ie. close items) count
-    std::vector<AttrPoint*> m_attrPts;  // Attraction points
-    AttrPoint               m_mainAPt;  // Main Attraction Point (straight point)
-    int                     m_target_x; // Target point coords got by handleSteering()
-    int                     m_target_z;
-    AttrPoint*              m_chosenDir;
-    bool                    debug;      // if this agent must print debug output
-    unsigned int            instanceID; // for random
-    // End of Fuzzy AI variables
-    //==========================================================================
+    /* -- Variables used by fuzzy AI -- */
+    /** Static instance count to set a unique instance ID */
+    static unsigned int  instanceCount;
+
+    /** Timer for periodical tasks */
+    float m_timer;
     
-    /*Difficulty handling variables*/
+    /** Competitiveness of the agent : Competitive = 1, notCompetitive = 0*/
+    int m_compet;
+
+    /** Aggressiveness of the agent : Aggressive = 1, Neutral = 2, Careful = 3*/
+//    int                     m_aggress;
+
+    /** Number of items close to the kart */
+    int                     m_item_count; // detected items (ie. close items) count
+    
+    /** Attraction point vector, to compare different interesting points */
+    std::vector<AttrPoint*> m_attrPts;
+    
+    /** Driveline attraction point (vs. item attraction points) */
+    AttrPoint               m_mainAPt;  // Driveline point (straightPoint)
+    
+    /** Chosen attraction point, i.e. where the agent wants to go to */
+    AttrPoint*              m_chosenDir;
+    
+    /** If this agent must print debug output or not */
+    bool                    debug;
+    
+    /** Seed value for randoms, and used to distribute computations over time */
+    unsigned int            m_instanceID;
+
+    
+    /* -- Difficulty handling variables -- */
     /** Chance of a false start. */
     float m_false_start_probability;
     /** The minimum delay time before a AI kart starts. */
@@ -134,7 +148,8 @@ private:
     /** True if the AI should avtively try to make use of slipstream. */
     bool m_make_use_of_slipstream;
 
-    /*General purpose variables*/
+
+    /* -- General purpose variables -- */
     //The crash percentage is how much of the time the AI has been crashing,
     //if the AI has been crashing for some time, use the rescue.
     float m_crash_time;

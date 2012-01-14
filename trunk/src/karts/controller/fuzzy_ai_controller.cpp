@@ -118,12 +118,12 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
     
     // -- Fuzzy controller code --
     FuzzyAIController::instanceCount ++;
-    FuzzyAIController::instanceID = instanceCount;
+    m_instanceID = instanceCount;
 
     // Player evaluation
-    m_timer                 = (0.5/instanceCount)*instanceCount; // So that fuzzy computation is well distributed
+    m_timer                 = (0.25/instanceCount)*instanceCount; // So that fuzzy computation is well distributed over iterations
     m_compet                = 1; // TODO Constants
-    m_aggress               = 1;
+//    m_aggress               = 1;
     m_attrPts               = vector<AttrPoint*>();
     m_item_count            = 0;
     
@@ -176,6 +176,8 @@ void FuzzyAIController::reset()
     m_distance_ahead             = 0.0f;
     m_kart_behind                = NULL;
     m_distance_behind            = 0.0f;
+    
+    FuzzyAIController::instanceCount = 0;
 
     AIBaseController::reset();
     m_track_node               = QuadGraph::UNKNOWN_SECTOR;
@@ -289,12 +291,8 @@ void FuzzyAIController::update(float dt)
     // -- Fuzzy controller code --
     Vec3 straight_point;
     findNonCrashingPoint(&straight_point);
-    m_target_x = straight_point.getX();
-    m_target_z = straight_point.getZ();
-
-    m_mainAPt.x = m_target_x;
-    m_mainAPt.z = m_target_z;
-    m_mainAPt.attraction = 6.4f;//6.4 is an "upper medium" value (see fcl files)
+    m_mainAPt.x = straight_point.getX();
+    m_mainAPt.z = straight_point.getZ();
    
     if(m_last_seen_track_node != m_track_node)
     {
@@ -347,41 +345,20 @@ void FuzzyAIController::update(float dt)
         //Get the current ranking
         int current_ranking = m_kart->getPosition();
 
-        // TODO: Kart classes (heavy, medium, light) are not implemented.
-        // For now we use "medium" for every kart.
+        // TODO: Kart classes (heavy, medium, light) are not implemented, so
+        // for now we use "medium" for every kart.
         int kart_class = 2;
-        m_compet  = computeCompetitiveness(eval, current_ranking);
-        m_aggress = 2; //computeAggressiveness(kart_class, current_ranking);
+        m_compet = computeCompetitiveness(eval, current_ranking);
+//        m_aggress = 2; //computeAggressiveness(kart_class, current_ranking);
         
         //Decide if it is interesting or not to use the current possessed weapon
         //Get current powerup
-        const Powerup* current_powerup = m_kart->getPowerup();
-        PowerupManager::PowerupType possessed_item = current_powerup->getType();
-        //TODO m_distance_ahead only refreshed when a position change.
+//        const Powerup* current_powerup = m_kart->getPowerup();
+//        PowerupManager::PowerupType possessed_item = current_powerup->getType();
 
-        float hit_estimation = 0;
-        float weapon_interest = 0;
+//        float hit_estimation = 0;
+//        float weapon_interest = 0;
 
-//        if(possessed_item != 0)
-//        {
-            //Get the hit estimation            
-            //hit_estimation = computeHitEstimation(possessed_item,m_distance_ahead);
-            
-            //Now get the interest the possessed weapons.
-            //weapon_interest = computeWeaponInterest(m_compet, hit_estimation);        
-//        }
-        
-        // -- Close karts detection --
-//        vector<const Kart*> closeKarts;
-//        getCloseKarts(closeKarts, 40.0f);
-//        for(unsigned int i=0; i<closeKarts.size() ; i++)
-//        {
-//            float dist = (closeKarts[i]->getXYZ() - m_kart->getXYZ()).length();
-        
-            //tagKartCollisions(closeKarts, m_attrPts);
-            // TODO : compute class (heavy, light) difference between kart and this
-            //cout << m_kart->getIdent() << " : close kart detected ! " << closeKarts[i]->getIdent() << ", dist = " << dist << endl;
-//        }
 #ifdef AI_DEBUG
         if(debug)
         {
@@ -401,19 +378,8 @@ void FuzzyAIController::update(float dt)
         cout << " -- ITEMS -- " << endl;
         cout << m_kart->getIdent() << " : items = " << closeItems.size() << endl;
 
-        // -- Agent Data --
-        cout << " -- AGENT DATA -- " << endl;
-        // Agent nitro gauge
-        cout << m_kart->getIdent() << " : nitro gauge = " << m_kart->getEnergy() << endl;
-        // Agent powerup (possessed item/weapon)
-        cout << m_kart->getIdent() << " : powerup count = " << m_kart->getNumPowerup() << endl;
-        // Agent speed
-        cout << m_kart->getIdent() << " : speed = " << m_kart->getSpeed() << endl;
-        
         // -- Agent driving style --
         cout << " -- DRIVING STYLE --" << endl;
-        cout << m_kart->getIdent() << " : agent current ranking = ";
-        cout << current_ranking << endl;
         cout << m_kart->getIdent() << " : agent competitiveness = ";
         switch(m_compet)
         {
@@ -421,33 +387,15 @@ void FuzzyAIController::update(float dt)
             case (1): cout << "Competitive" << endl; break;
             default : cout << "unexpected value : " << eval << endl;
         } // end switch
-        cout << m_kart->getIdent() << " : agent agressiveness = ";
-        switch(m_aggress)
-        {
-            case (1): cout << "Agressive" << endl;   break;
-            case (2): cout << "Neutral" << endl; break;
-            case (3): cout << "Careful" << endl; break;
-            default : cout << "unexpected value : " << eval << endl;
-        } // end switch
         
-        // -- Hit estimation --
-//        cout << " -- HIT ESTIMATION -- " << endl;
-//        cout << m_kart->getIdent() << " : agent current powerup type = ";
-//        cout << possessed_item << endl;
-//        cout << m_kart->getIdent() << " : agent distance from ahead kart = ";
-//        cout << m_distance_ahead << endl;
-//        cout << m_kart->getIdent() << " : agent weapon hit difficulty = ";
-//        cout << hit_estimation << endl;
-//        cout << m_kart->getIdent() << " : agent interest to use the possessed weapon = ";
-//        cout << weapon_interest << endl; 
-        
-        // -- Path choice --
-//        if(pathData)
+//        cout << m_kart->getIdent() << " : agent agressiveness = ";
+//        switch(m_aggress)
 //        {
-//         cout << " -- PATH CHOICE -- " << endl;
-//         cout << m_kart->getIdent() << " best path number = ";
-//         cout << bestPath << endl;
-//        }
+//            case (1): cout << "Agressive" << endl;   break;
+//            case (2): cout << "Neutral" << endl; break;
+//            case (3): cout << "Careful" << endl; break;
+//            default : cout << "unexpected value : " << eval << endl;
+//        } // end switch
         }
 #endif
     }
@@ -576,16 +524,15 @@ int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
 	} // for each possible choice
 	
 	// Randomization to avoid every agent from choosing the best path
-	random1 = (instanceID * rand()) % pathData->size();
-	random2 = (instanceID * rand() * 3) % pathData->size();
+	random1 = (m_instanceID * rand()) % pathData->size();
+	random2 = (m_instanceID * rand() * 3) % pathData->size();
     return (random2 < pathData->size()/2.1)? bestChoice : random1;
 } // choosePath
 
 //------------------------------------------------------------------------------
-/** A generic module to compute the difficulty to reach an object (items, karts ...). Simply call computeFuzzyModel with the
- *  right parameters.
+/** A generic module to compute the difficulty to reach a point (e.g. items...).
+ *  Simply calls computeFuzzyModel with the right parameters.
  *  TODO : make this comment doxygen compliant
- *         Use the direction?
  */
 float FuzzyAIController::computeDifficultyTag(float        angle,
                                               int          direction,
@@ -606,131 +553,6 @@ float FuzzyAIController::computeDifficultyTag(float        angle,
 
     return computeFuzzyModel(file_name, objectParameters);
 }
-
-//------------------------------------------------------------------------------
-/** TODO Comment
- */
-float FuzzyAIController::computeBoxAttraction(float difficultyTag,
-                                              bool  hasWeapon)
-{
-    const std::string file_name = "box_attraction.fcl";
-    
-    vector<float> params;
-    params.push_back(difficultyTag);
-    params.push_back(hasWeapon);
-    
-    return computeFuzzyModel(file_name, params);
-}
-
-//------------------------------------------------------------------------------
-/** TODO Comment
- */
-float FuzzyAIController::computeNitroAttraction    (float        difficultyTag,
-                                   float         availableNitro)
-{
-    const std::string file_name = "nitro_attraction.fcl";
-    
-    vector<float> objectParameters;
-    objectParameters.push_back(difficultyTag);
-    objectParameters.push_back(availableNitro);
-    
-    return computeFuzzyModel(file_name, objectParameters);
-
-}
-
-//------------------------------------------------------------------------------
-/** TODO Comment
- */
-
-float FuzzyAIController::computeBananaAttraction(float difficultyTag,
-                                                 float speed)
-{
-    const std::string file_name = "banana_gum_attraction.fcl";
-    
-    // Normalize speed
-    speed = (speed > 100)? 99 : speed;
-    speed = (speed < 0  )?  1 : speed;
-    
-    vector<float> params;
-    params.push_back(difficultyTag);
-    params.push_back(speed);
-    
-    // return negative value as in this case this is a repulsion value
-    return (-1)*(computeFuzzyModel(file_name, params));
-}
-
-//------------------------------------------------------------------------------
-/** Module to compute a difficulty prediction to hit an opponent with a weapon.
- *  Simply call computeFuzzyModel with the right parameters.
- *  TODO : make this comment doxygen compliant
- *  Fuzzy model for each weapon difficulty prediction ?
- */
-
-float  FuzzyAIController::computeHitEstimation(int     possessed_item_type,
-                                               float   next_kart_distance)
-{
-    const std::string file_name = "weapon_hit_estimation.fcl";
-
-    float normalized_distance;
-
-    //Check if the distance is too important for fuzzyfication.
-    if (next_kart_distance > 30)
-        normalized_distance = 30;
-    else
-        normalized_distance = next_kart_distance;
-
-    int type;
-    switch(possessed_item_type)
-    {
-        // TODO : use constant names like "ITEM_BANANA" instead of hard-coded values. (see items.hpp)
-
-        // Weapons that do not a close opponent to fire.
-        case 1 : //POWERUP_BUBBLEGUM
-        case 4 : //POWERUP_ZIPPER
-        case 6 : //POWERUP_SWITCH
-        case 9 : //POWERUP_PARACHUTE
-        case 10 : //POWERUP_ANVIL (Rubber ball)
-        case 7 : //POWERUP_SWATTER
-            type = 1;
-            break;
-
-        // Weapon that need a short distance for better result.
-        case 2 : //POWERUP_CAKE
-        case 3 : //POWERUP_BOWLING
-        case 5 : //POWERUP_PLUNGER
-        case 8 : //POWERUP_RUBBERBALL
-            type = 2;
-            break;
-
-        default :
-            type = 0;
-    }
-
-    vector<float> HitEstimation;
-    HitEstimation.push_back(type);
-    HitEstimation.push_back(normalized_distance);
-
-    return computeFuzzyModel(file_name, HitEstimation);
-}
-
-//------------------------------------------------------------------------------
-/** Module to know if it is interesting to use the possessed weapon. Simply call computeFuzzyModel with the
- *  right parameters.
- *  TODO : make this comment doxygen compliant
- *  Fuzzy model for each weapon?
- */
-
-float FuzzyAIController::computeWeaponInterest(int   competitiveness,
-                                               float hit_estimation )
-{
-    const std::string& file_name = "weapon_interest.fcl";
-    
-    vector<float> interestParameters;
-    interestParameters.push_back(competitiveness);
-    interestParameters.push_back(hit_estimation);
-
-    return  computeFuzzyModel(file_name, interestParameters);
-} // computeWeaponInterest
 
 //-----------------------------------------------------------------------------
 void FuzzyAIController::handleBraking()
@@ -806,9 +628,7 @@ void FuzzyAIController::handleBraking()
             m_controls->m_brake = true;
             return;
         }
-
     }
-
     m_controls->m_brake = false;
 }   // handleBraking
 
@@ -1215,7 +1035,7 @@ void FuzzyAIController::handleAcceleration( const float dt )
         //Find if any player is ahead of this kart
         bool player_winning = false;
         for(unsigned int i = 0; i < race_manager->getNumPlayers(); ++i )
-            if( m_kart->getPosition() > m_world->getPlayerKart(i)->getPosition() )
+            if(m_kart->getPosition() > m_world->getPlayerKart(i)->getPosition())
             {
                 player_winning = true;
                 break;
@@ -1239,7 +1059,7 @@ void FuzzyAIController::handleRaceStart()
         // Each kart starts at a different, random time, and the time is
         // smaller depending on the difficulty.
         m_start_delay = m_min_start_delay 
-                      + (float) rand() / RAND_MAX * (m_max_start_delay-m_min_start_delay);
+            + (float) rand() / RAND_MAX * (m_max_start_delay-m_min_start_delay);
 
         // Now check for a false start. If so, add 1 second penalty time.
         if(rand() < RAND_MAX * m_false_start_probability)
@@ -1619,7 +1439,7 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
     kartToPoint = vector2d<float>(point.getX()-kartX, point.getZ()-kartZ);
     
     // Kart to next node vector
-    kartToNextNode = vector2d<float>(m_target_x-kartX, m_target_z-kartZ);
+    kartToNextNode = vector2d<float>(m_mainAPt.x-kartX, m_mainAPt.z-kartZ);
     
     // (KartToNextNode, kartToPoint) angle
     angle = kartToNextNode.getAngleTrig() - kartToPoint.getAngleTrig();
@@ -1641,25 +1461,23 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
     }
     else
         angleSign = 1;
-    
-    // Fuzzy Logic replacement : if angle is small, this is very easy
-//    if(angle < 25)
-//        diff = 0.f;
-//    else
-        diff = computeDifficultyTag(angle, direction, dist);
+
+    diff = computeDifficultyTag(angle, direction, dist);
         
     // Finally, call the fuzzy model to estimate the difficulty
     return diff;
 }
 
 //------------------------------------------------------------------------------
-/** Wrapper for computeBoxAttraction computeNitroAttraction and computeBananaAttraction functions
+/** Wrapper function for computing attraction for all items. In this function,
+ *  the computation method for the different kinds of items can be modified.
  */
 float FuzzyAIController::computeItemAttraction(const Item* item)
 {
     float diffTag, attraction;
 
-    // Difficulty tag
+    // Simplified version for every item : attraction just depends on the
+    // estimated difficulty to reach the item.
     attraction = 10 - estimateDifficultyToReach(item->getXYZ());
     
 //    if(item->getType() == Item::ITEM_BONUS_BOX)
@@ -1683,15 +1501,6 @@ float FuzzyAIController::computeItemAttraction(const Item* item)
 //       // TODO use computeNitroAttraction
 //
 //   }
-
-    if(item->getType() == Item::ITEM_BANANA ||
-            item->getType() == Item::ITEM_BUBBLEGUM)
-
-    {
-        // "Bad item" attraction (ie. negative attraction, or repulsion)
-        attraction = -1;
-//        attraction = computeBananaAttraction(diffTag, m_kart->getSpeed());
-    }
     
     return attraction;
 }
@@ -1711,17 +1520,22 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
     bool                 known;
     float                attraction;
 
-    // Every attraction point must be updated
+    // Every existing attraction point must be updated
     for(unsigned int i=0 ; i < attrPts.size() ; i++)
         attrPts[i]->updated = false;
     
     for(unsigned int i=0 ; i < items.size() ; i++)
     {
+        // Don't pay attention to bad items
+        if(items[i]->getType() == Item::ITEM_BANANA ||
+           items[i]->getType() == Item::ITEM_BUBBLEGUM)
+            continue;
+        
         known = false;
-        // Check if item is already known
+        // Check if the item is already known
         for(unsigned int j=0 ; j < attrPts.size() ; j++)
         {
-            // If item is already known, update the attraction point
+            // If the item is already known, update the attraction point
             if(attrPts[j]->object != NULL && attrPts[j]->object == items[i])
             {   
                 attraction = computeItemAttraction(items[i]);
@@ -1729,9 +1543,9 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
                 attrPts[j]->updated = true;
                 known = true;
                 break;
-            } // if item is already known
+            } // if the item is already known
         } // for each known attraction point
-        if(!known) // If item is not known, create a new attraction point
+        if(!known) // If the item is not known, create a new attraction point
         {
             // Compute item attraction
             attraction = computeItemAttraction(items[i]);
@@ -1745,7 +1559,7 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             attrPts.push_back(attrPt);
         } // if !known
         
-        // Debug output
+#ifdef AI_DEBUG
         if(debug)
         {
             std::stringstream * t = new std::stringstream();
@@ -1754,6 +1568,7 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             ((FuzzyAITaggable*) items[i])->setDebugText(t->str());
             cout << t->str();
         } // if debug
+#endif
     } // for every detected item
     
     for(int i=attrPts.size()-1 ; i>=0  ; i--)
@@ -1763,12 +1578,12 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             AttrPoint* toDelete = attrPts[i];
             attrPts.erase(attrPts.begin() + i);
             delete toDelete;
-        } // if item is not detected anymore
+        } // if the item from the attraction point is not detected anymore
     } // for each known attraction point
 } // tagItems
 
 //------------------------------------------------------------------------------
-/** Detects forks in the look_ahead nodes, and launches a path choice
+/** Detects path forks in the look_ahead nodes, and launches a path choice
  *  computation when needed.
  *  Important note : the m_fork_choices vector contains the choices for the
  *  encountered forks in the look_ahead nodes. Its first element MUST be removed
@@ -1833,3 +1648,126 @@ AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
     
     return attrPts[bestId];
 } // chooseDirection
+
+
+//------------------------------------------------------------------------------
+/** TODO Comment
+ */
+//float FuzzyAIController::computeBoxAttraction(float difficultyTag,
+//                                              bool  hasWeapon)
+//{
+//    const std::string file_name = "box_attraction.fcl";
+//    
+//    vector<float> params;
+//    params.push_back(difficultyTag);
+//    params.push_back(hasWeapon);
+//    
+//    return computeFuzzyModel(file_name, params);
+//}
+
+//------------------------------------------------------------------------------
+/** TODO Comment
+ */
+//float FuzzyAIController::computeNitroAttraction    (float        difficultyTag,
+//                                   float         availableNitro)
+//{
+//    const std::string file_name = "nitro_attraction.fcl";
+//    
+//    vector<float> objectParameters;
+//    objectParameters.push_back(difficultyTag);
+//    objectParameters.push_back(availableNitro);
+//    
+//    return computeFuzzyModel(file_name, objectParameters);
+//
+//}
+
+//------------------------------------------------------------------------------
+/** TODO Comment
+ */
+//float FuzzyAIController::computeBananaAttraction(float difficultyTag,
+//                                                 float speed)
+//{
+//    const std::string file_name = "banana_gum_attraction.fcl";
+//    
+//    // Normalize speed
+//    speed = (speed > 100)? 99 : speed;
+//    speed = (speed < 0  )?  1 : speed;
+//    
+//    vector<float> params;
+//    params.push_back(difficultyTag);
+//    params.push_back(speed);
+//    
+//    // return negative value as in this case this is a repulsion value
+//    return (-1)*(computeFuzzyModel(file_name, params));
+//}
+
+//------------------------------------------------------------------------------
+/** Module to compute a difficulty prediction to hit an opponent with a weapon.
+ *  Simply call computeFuzzyModel with the right parameters.
+ *  TODO : make this comment doxygen compliant
+ *  Fuzzy model for each weapon difficulty prediction ?
+ */
+//float  FuzzyAIController::computeHitEstimation(int     possessed_item_type,
+//                                               float   next_kart_distance)
+//{
+//    const std::string file_name = "weapon_hit_estimation.fcl";
+//
+//    float normalized_distance;
+//
+//    //Check if the distance is too important for fuzzyfication.
+//    if (next_kart_distance > 30)
+//        normalized_distance = 30;
+//    else
+//        normalized_distance = next_kart_distance;
+//
+//    int type;
+//    switch(possessed_item_type)
+//    {
+//        // TODO : use constant names like "ITEM_BANANA" instead of hard-coded values. (see items.hpp)
+//
+//        // Weapons that do not a close opponent to fire.
+//        case 1 : //POWERUP_BUBBLEGUM
+//        case 4 : //POWERUP_ZIPPER
+//        case 6 : //POWERUP_SWITCH
+//        case 9 : //POWERUP_PARACHUTE
+//        case 10 : //POWERUP_ANVIL (Rubber ball)
+//        case 7 : //POWERUP_SWATTER
+//            type = 1;
+//            break;
+//
+//        // Weapon that need a short distance for better result.
+//        case 2 : //POWERUP_CAKE
+//        case 3 : //POWERUP_BOWLING
+//        case 5 : //POWERUP_PLUNGER
+//        case 8 : //POWERUP_RUBBERBALL
+//            type = 2;
+//            break;
+//
+//        default :
+//            type = 0;
+//    }
+//
+//    vector<float> HitEstimation;
+//    HitEstimation.push_back(type);
+//    HitEstimation.push_back(normalized_distance);
+//
+//    return computeFuzzyModel(file_name, HitEstimation);
+//}
+
+//------------------------------------------------------------------------------
+/** Module to know if it is interesting to use the possessed weapon. Simply call computeFuzzyModel with the
+ *  right parameters.
+ *  TODO : make this comment doxygen compliant
+ *  Fuzzy model for each weapon?
+ */
+//float FuzzyAIController::computeWeaponInterest(int   competitiveness,
+//                                               float hit_estimation )
+//{
+//    const std::string& file_name = "weapon_interest.fcl";
+//    
+//    vector<float> interestParameters;
+//    interestParameters.push_back(competitiveness);
+//    interestParameters.push_back(hit_estimation);
+//
+//    return  computeFuzzyModel(file_name, interestParameters);
+//} // computeWeaponInterest

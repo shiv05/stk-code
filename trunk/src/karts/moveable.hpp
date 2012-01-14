@@ -41,7 +41,7 @@ const int MAX_NITRO = 16;
 /**
   * \ingroup karts
   */
-class Moveable: public NoCopy, public FuzzyAITaggable
+class Moveable: public NoCopy
 {
 private:
     btVector3              m_velocityLC;      /**<Velocity in kart coordinates. */

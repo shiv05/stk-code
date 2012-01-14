@@ -309,12 +309,14 @@ void FuzzyAIController::update(float dt)
     }
 
     vector<Item*> closeItems;
-    item_manager->getCloseItems(closeItems, m_kart, 25);
+    item_manager->getCloseItems(closeItems, m_kart, 17.f);
     // If item count has changed, recompute attraction
     if(m_item_count != closeItems.size())
     {
+#ifdef AI_DEBUG
         if(debug)
             cout << "Item environment has changed, forced updating" << endl;
+#endif
         tagItems((const vector<Item*>)closeItems, m_attrPts);
     }
     
@@ -331,8 +333,10 @@ void FuzzyAIController::update(float dt)
         // Update item attraction if not already done
         if(closeItems.size()>0 && m_item_count == closeItems.size())
         {
+#ifdef AI_DEBUG
             if(debug)
                 cout << "Item environment has not changed, normal updating" << endl;
+#endif
             tagItems((const vector<Item*>)closeItems, m_attrPts);
         }
         
@@ -384,8 +388,6 @@ void FuzzyAIController::update(float dt)
         cout << "----------------------------------------" << endl;
         // -- Player evaluation --
         cout << " -- PLAYER EVALUATION -- " << endl;
-        cout << m_kart->getIdent() << " : player crashes = " << fuzzy_data_manager->getPlayerCrashCount() << endl;
-        cout << m_kart->getIdent() << " : player av.rank = " << fuzzy_data_manager->getPlayerAverageRank() << endl;
         cout << m_kart->getIdent() << " : player evaluation = ";
         switch(eval)
         {
@@ -1314,6 +1316,46 @@ void FuzzyAIController::handleNitroAndZipper()
         m_controls->m_nitro = true;
         return;
     }
+
+    // On the last track shortly before the finishing line, use nitro 
+    // anyway. Since the kart is faster with nitro, estimate a 50% time
+    // decrease (additionally some nitro will be saved when top speed
+    // is reached).
+    if(m_world->getLapForKart(m_kart->getWorldKartId())==race_manager->getNumLaps()-1 &&
+        m_nitro_level == NITRO_ALL)
+    {
+        float finish = m_world->getEstimatedFinishTime(m_kart->getWorldKartId());
+        if( 1.5f*m_kart->getEnergy() >= finish - m_world->getTime() )
+        {
+            m_controls->m_nitro = true;
+            return;
+        }
+    }
+
+    // A kart within this distance is considered to be overtaking (or to be
+    // overtaken).
+    const float overtake_distance = 10.0f;
+
+    // Try to overtake a kart that is close ahead, except 
+    // when we are already much faster than that kart
+    // --------------------------------------------------
+    if(m_kart_ahead                                       && 
+        m_distance_ahead < overtake_distance              &&
+        m_kart_ahead->getSpeed()+5.0f > m_kart->getSpeed()   )
+    {
+            m_controls->m_nitro = true;
+            return;
+    }
+
+    if(m_kart_behind                                   &&
+        m_distance_behind < overtake_distance          &&
+        m_kart_behind->getSpeed() > m_kart->getSpeed()    )
+    {
+        // Only prevent overtaking on highest level
+        m_controls->m_nitro = m_nitro_level==NITRO_ALL;
+        return;
+    }
+    
 }   // handleNitroAndZipper
 
 //-----------------------------------------------------------------------------
@@ -1380,9 +1422,6 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
             m_crashes.m_item = crashItem;
         else                            // no crash
             m_crashes.m_item = NULL;
-            
-        if(debug)
-            cout << "-----=== Bad item detected ! : " << diff << endl;
     } // if there is bad items around
     else
         m_crashes.m_item = NULL;
@@ -1672,19 +1711,14 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
     bool                 known;
     float                attraction;
 
-//    if(debug)
-//        cout << "TAGGING ITEMS";
-    
     // Every attraction point must be updated
     for(unsigned int i=0 ; i < attrPts.size() ; i++)
         attrPts[i]->updated = false;
     
     for(unsigned int i=0 ; i < items.size() ; i++)
     {
-//        if(debug)
-//            cout << " - Item " << i;
         known = false;
-        // Check is item is already known
+        // Check if item is already known
         for(unsigned int j=0 ; j < attrPts.size() ; j++)
         {
             // If item is already known, update the attraction point
@@ -1694,8 +1728,6 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
                 attrPts[j]->attraction = attraction;
                 attrPts[j]->updated = true;
                 known = true;
-//                if(debug)
-//                    cout << " : known, up (" << attraction << ")";
                 break;
             } // if item is already known
         } // for each known attraction point
@@ -1711,8 +1743,6 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             attrPt->object = ((FuzzyAITaggable*) items[i]);
             attrPt->updated = true;
             attrPts.push_back(attrPt);
-//            if(debug)
-//                cout << " : not known, create (" << attraction << ")";
         } // if !known
         
         // Debug output
@@ -1726,9 +1756,6 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
         } // if debug
     } // for every detected item
     
-//    if(debug)
-//        cout << endl << "DELETING OLD ITEMS ATTR PTS : ";
-    // Finally, remove attraction points from that are not detected anymore
     for(int i=attrPts.size()-1 ; i>=0  ; i--)
     {
         if(attrPts[i]->object != NULL && attrPts[i]->updated == false)
@@ -1736,8 +1763,6 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
             AttrPoint* toDelete = attrPts[i];
             attrPts.erase(attrPts.begin() + i);
             delete toDelete;
-//            if(debug)
-//                cout << " - Item " << i << " : attraction point deleted" << endl;
         } // if item is not detected anymore
     } // for each known attraction point
 } // tagItems
@@ -1776,7 +1801,7 @@ void FuzzyAIController::computeForkChoices(vector<unsigned int>& output)
                 nextId = pathChoice;
                 forkId++;
 #ifdef AI_DEBUG
-                //cout << "path fork detected ! choice = " << pathChoice << endl;
+                cout << "path fork detected ! choice = " << pathChoice << endl;
 #endif
             } // if this fork's choice is not already in the fork choices vector
         } // if there is a fork in the look_ahead nodes

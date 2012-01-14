@@ -45,10 +45,7 @@ class FuzzyDataManager
 {
 private :
     // -- Player data --
-    float       m_player_crash_count;
-    float       m_player_average_rank;
     int         m_player_eval;
-    // TODO : traveled distance
     // TODO : store player data for multiple players
 
     // -- Racetrack data --
@@ -66,18 +63,9 @@ public :
     void        reset();
     
     // -- Setters --
-    // Set the number of crashes (called by PlayerController)
-    void        setPlayerCrashCount(float c)  { m_player_crash_count = c; }
-    
-    // Set player average rank (called by PlayerController)
-    void        setPlayerAverageRank(float r) { m_player_average_rank = r; }
-    
-    // Set player evaluation (called by PlayerController)
     void        setPlayerEvaluation(float e) { m_player_eval = e; }
     
     // -- Getters --
-    float       getPlayerCrashCount()         { return m_player_crash_count; }
-    float       getPlayerAverageRank()        { return m_player_average_rank; }
     float       getPlayerEvaluation()         { return m_player_eval; }
     
     const std::vector<std::vector<PathData*>*>* getPathData(

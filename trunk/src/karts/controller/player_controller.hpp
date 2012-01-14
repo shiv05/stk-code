@@ -48,14 +48,13 @@ private:
     SFXBase       *m_grab_sound;
     SFXBase       *m_full_sound;
 
-    //  -- Fuzzy AI variables used for player evaluation --
-    float          m_average_rank;
+    //  -- Variables used for the player evaluation --
     float          m_timer;
-    
-    float          m_crash_count; // times the player crashed within the 20 last sec.
-    float          m_old_speed;
+    float          m_old_speed;    // speed at last iteration
+    float          m_average_rank; // average player rank estimation
+    float          m_crash_count;  // Times crashed for the last 10 seconds
     float          m_eval;
-    //  -- End of fuzzy AI variables --
+    //  -- End of player evaluation variables --
 
     void           steer(float, int);
 public:
@@ -73,14 +72,9 @@ public:
     virtual void   reset             ();
     void           resetInputState   ();
     
-    // Method for fuzzy AI
-    int             computePlayerEvaluation (float player_average_rank,
-                                             float player_crash_count );
-    // -- Getters for Fuzzy AI --
-    // The average rank is updated every 5secs
-    // float          getAverageRank()    {return m_average_rank;}
-    // The number of times the player has slowed down to less than 10mps
-    // float          getCrashCount()     {return m_crash_number;}
+    // Player evaluation for FuzzyAIController
+    int            computePlayerEvaluation (float player_average_rank,
+                                            float player_crash_count );
 };
 
 #endif

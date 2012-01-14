@@ -36,10 +36,6 @@ FuzzyDataManager* fuzzy_data_manager = NULL;
  */
 FuzzyDataManager::FuzzyDataManager()
 {
-    // These variables are set to -1 until the manager is updated by the
-    // PlayerController
-    m_player_crash_count  = 0;
-    m_player_average_rank = 0;
     m_player_eval         = 3; // 3 = bad
     
     m_pathTrees = vector<FuzzyAIPathTree*>();
@@ -60,8 +56,6 @@ FuzzyDataManager::~FuzzyDataManager()
  */
 void FuzzyDataManager::reset()
 {
-    m_player_crash_count  = 0;
-    m_player_average_rank = 0;
     m_player_eval         = 3; // 3 = bad
 }
 
@@ -126,18 +120,3 @@ const vector<vector<PathData*>*>* FuzzyDataManager::getPathData(
     }
     return NULL;
 } // getPathData
-
-
-//------------------------------------------------------------------------------
-/** Returns the world player kart ID. -1 if no player is found.
- *   Currently considers there is only one player.
- */
-//int   FuzzyDataManager::getPlayerKartId()
-//{
-//    for(unsigned int id=0; id<m_kart_status.size(); id++)
-//    {
-//        if(m_kart_status[id].m_local_player_id != -1)
-//            return id;
-//    }
-//    return -1;
-//}

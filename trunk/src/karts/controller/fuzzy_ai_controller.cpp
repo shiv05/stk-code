@@ -165,6 +165,7 @@ void FuzzyAIController::reset()
 {
     m_time_since_last_shot       = 0.0f;
     m_start_kart_crash_direction = 0;
+    m_start_bad_item_crash_direction = 0;
     m_curve_target_speed         = m_kart->getCurrentMaxSpeed();
     m_curve_angle                = 0.0;
     m_start_delay                = -1.0f;
@@ -838,19 +839,53 @@ void FuzzyAIController::handleSteering(float dt)
 #endif
     }
     // Avoid bad items
-    else if( m_crashes.m_item != -1 )
+    else if( m_crashes.m_item != NULL )
     {
+        float dist = (m_crashes.m_item->getXYZ() - m_kart->getXYZ()).length();
+        float steerOffset = (dist > 7.5f)? M_PI*0.97f : M_PI*0.85f;
+        if(m_start_bad_item_crash_direction == 1)
+        {
+            steer_angle = steerToAngle(x, z, -steerOffset);
+            m_start_bad_item_crash_direction = 0;
+        }
+        else if(m_start_bad_item_crash_direction == -1)
+        {
+            steer_angle = steerToAngle(x, z, steerOffset);
+            m_start_bad_item_crash_direction = 0;
+        }
+        else
+        {
+            vector2d<float> kartToItem, kartToTarget;
+            float           angle;
+            kartToItem = vector2d<float>(
+                   m_kart->getXYZ().getX() - m_crashes.m_item->getXYZ().getX(),
+                   m_kart->getXYZ().getZ() - m_crashes.m_item->getXYZ().getZ());
+            kartToTarget = vector2d<float>(m_kart->getXYZ().getX() - x,
+                                           m_kart->getXYZ().getZ() - z);
+            angle = kartToTarget.getAngleTrig() - kartToItem.getAngleTrig();
+            angle = (angle > 180) ? 360 - angle : angle;
+
+            if(angle > 0) // left
+            {
+                steer_angle = steerToAngle(x, z, -steerOffset );
+                m_start_bad_item_crash_direction = 1;
+            }
+            else          // right
+            {
+                steer_angle = steerToAngle(x, z, steerOffset );
+                m_start_bad_item_crash_direction = -1;
+            }
+        }
+            
+#ifdef AI_DEBUG
         if(debug)
-            cout << "-/////////////////// Steering to avoid bad item" << endl;
-        if( m_crashes.m_item == 0 )
-            steer_angle = steerToAngle(x, z, -M_PI*0.5f);
-        else if(m_crashes.m_item == 1)
-            steer_angle = steerToAngle(x, z, M_PI*0.5f);
+            cout << "- Steering to avoid bad item." << endl;
+#endif
     }
     //If we are going to crash against a kart, avoid it if it doesn't
     //drives the kart out of the road or on a bad item
-    else if( m_crashes.m_kart != -1 &&
-             !m_crashes.m_road && m_crashes.m_item == -1)
+    else if( m_crashes.m_kart != -1 && !m_crashes.m_road &&
+             m_crashes.m_item == NULL )
     {
         //-1 = left, 1 = right, 0 = no crash.
         if( m_start_kart_crash_direction == 1 )
@@ -868,12 +903,12 @@ void FuzzyAIController::handleSteering(float dt)
             if(m_world->getDistanceToCenterForKart( m_kart->getWorldKartId() ) >
                m_world->getDistanceToCenterForKart( m_crashes.m_kart ))
             {
-                steer_angle = steerToAngle(x, z, M_PI*0.5f );
+                steer_angle = steerToAngle(x, z, -M_PI*0.5f );
                 m_start_kart_crash_direction = 1;
             }
             else
             {
-                steer_angle = steerToAngle(x, z, -M_PI*0.5f );
+                steer_angle = steerToAngle(x, z, M_PI*0.5f );
                 m_start_kart_crash_direction = -1;
             }
         }
@@ -1322,7 +1357,7 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
     unsigned int  closestId    = 99999;
     
     // Get close items
-    item_manager->getCloseItems(closeItems, m_kart, 7.5f);
+    item_manager->getCloseItems(closeItems, m_kart, 15.f);
     // Get the closest bad item
     for(unsigned int i=0; i<closeItems.size(); i++)
     {
@@ -1340,19 +1375,17 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
     if(closestId < 99999)
     {
         crashItem = closeItems[closestId];
-        diff = estimateDifficultyToReach(crashItem->getXYZ(), true);
-        if(diff <= 0 && diff > -3)       // left
-            m_crashes.m_item = 0;
-        else if(diff >= 0 && diff < 3)   // right
-            m_crashes.m_item = 1;
+        diff = estimateDifficultyToReach(crashItem->getXYZ());
+        if(diff >= 0 && diff < 1.f)       // crash
+            m_crashes.m_item = crashItem;
         else                            // no crash
-            m_crashes.m_item = -1;
+            m_crashes.m_item = NULL;
             
         if(debug)
             cout << "-----=== Bad item detected ! : " << diff << endl;
     } // if there is bad items around
     else
-        m_crashes.m_item = -1;
+        m_crashes.m_item = NULL;
     
     // -- Kart & road crashes --
     // Time it takes to drive for m_kart_length units.
@@ -1531,10 +1564,8 @@ void FuzzyAIController::findCurve()
 /** Difficulty computation : computes the needed parameters and calls the fuzzy
  *  logic model (computeDifficultyTag() function) to estimate the difficulty to
  *  reach the given point.
- *  if returnDir, returns -output to mean that item is on the left
  */
-float FuzzyAIController::estimateDifficultyToReach(const Vec3& point,
-                                                   bool  returnDir)
+float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
 {
     vector2d<float> kartToPoint, kartToNextNode, kartVel;
     int             direction, angleSign;
@@ -1579,10 +1610,7 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point,
         diff = computeDifficultyTag(angle, direction, dist);
         
     // Finally, call the fuzzy model to estimate the difficulty
-    if(returnDir)
-        return angleSign*diff;
-    else
-        return diff;
+    return diff;
 }
 
 //------------------------------------------------------------------------------

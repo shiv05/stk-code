@@ -80,9 +80,9 @@ private:
 
         bool  m_road; //true if we are going to 'crash' with the bounds of the road
         int   m_kart; //-1 if no crash, pos numbers are the kart it crashes with
-        int   m_item; // NULL if no crash 
-        CrashTypes() : m_road(false), m_kart(-1), m_item(-1) {};
-        void clear() {m_road = false; m_kart = -1; m_item = -1;}
+        Item* m_item; // NULL if no crash 
+        CrashTypes() : m_road(false), m_kart(-1), m_item(NULL) {};
+        void clear() {m_road = false; m_kart = -1; m_item = NULL;}
     } m_crashes;
     
     //==========================================================================
@@ -161,6 +161,7 @@ private:
     float m_time_since_stuck;
 
     int m_start_kart_crash_direction; //-1 = left, 1 = right, 0 = no crash.
+    int m_start_bad_item_crash_direction;
 
     /** For debugging purpose: a sphere indicating where the AI 
      *  is targeting at. */
@@ -220,7 +221,7 @@ private:
                                    int          skid);
     
     // -- Wrapper functions for fuzzy model call functions  --
-    float estimateDifficultyToReach (const Vec3& point, bool returnDir = false);
+    float estimateDifficultyToReach (const Vec3& point);
     float computeItemAttraction     (const Item* item);
 
     // -- Detection methods --

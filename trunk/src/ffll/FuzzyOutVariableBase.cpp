@@ -8,10 +8,10 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-FuzzyOutVariableBase::FuzzyOutVariableBase()
-{
+//FuzzyOutVariableBase::FuzzyOutVariableBase()
+//{
 
-}
+//}
 
 FuzzyOutVariableBase::~FuzzyOutVariableBase()
 {

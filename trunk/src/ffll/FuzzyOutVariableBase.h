@@ -24,8 +24,9 @@
 
 class FuzzyOutVariableBase : public FuzzyVariableBase  
 {
-	public:
+    private:
 		FuzzyOutVariableBase();
+	public:
 		virtual ~FuzzyOutVariableBase();
 
 }; // end class FuzzyOutVariableBase

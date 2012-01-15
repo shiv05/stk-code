@@ -28,6 +28,10 @@ static char THIS_FILE[]=__FILE__;
 #include "debug.h"
 
 #endif
+#ifdef WIN32
+   // Avoid warning about wcsicmp being deprecated
+#  define wcsicmp _wcsicmp
+#endif
 
 //
 // Function:	~FuzzyModelBase()

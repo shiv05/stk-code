@@ -30,11 +30,11 @@ class   FuzzyOutVariable : virtual public FuzzyVariableBase
 	////////////////////////////////////////
 	////////// Member Functions ////////////
 	////////////////////////////////////////
-
+    private:
+ 		FuzzyOutVariable(); // No function body for this. Explicitly disallow auto-creation of it by the compiler
 	public:
 
 		// construct/destruct functions
- 		FuzzyOutVariable(); // No function body for this. Explicitly disallow auto-creation of it by the compiler
 		FuzzyOutVariable(FuzzyModelBase* _parent);
 		virtual ~FuzzyOutVariable();
 		virtual int init(const wchar_t* _id, RealType _left_x, RealType _right_x, bool create_unique_id = true);

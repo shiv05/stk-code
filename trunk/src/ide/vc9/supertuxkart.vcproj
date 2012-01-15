@@ -678,6 +678,18 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\karts\controller\fuzzy_ai_controller.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\karts\controller\fuzzy_ai_taggable.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\karts\controller\fuzzy_data_manager.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\karts\controller\new_ai_controller.cpp"
 						>
 					</File>
@@ -848,6 +860,10 @@
 				</File>
 				<File
 					RelativePath="..\..\tracks\check_structure.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\tracks\fuzzy_ai_path_tree.cpp"
 					>
 				</File>
 				<File
@@ -1252,6 +1268,90 @@
 				</File>
 				<File
 					RelativePath="..\..\tinygettext\tinygettext.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="ffll"
+				>
+				<File
+					RelativePath="..\..\ffll\COGDefuzzSetObj.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\COGDefuzzVarObj.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\DefuzzSetObj.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\DefuzzVarObj.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FFLLAPI.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FFLLBase.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzyModelBase.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzyOutSet.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzyOutVariable.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzyOutVariableBase.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzySetBase.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzyVariableBase.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MemberFuncBase.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MemberFuncSCurve.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MemberFuncSingle.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MemberFuncTrap.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MemberFuncTri.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MOMDefuzzSetObj.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MOMDefuzzVarObj.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\RuleArray.cpp"
 					>
 				</File>
 			</Filter>
@@ -1772,6 +1872,18 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\karts\controller\fuzzy_ai_controller.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\karts\controller\fuzzy_ai_taggable.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\karts\controller\fuzzy_data_manager.hpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\karts\controller\new_ai_controller.hpp"
 						>
 					</File>
@@ -1906,6 +2018,10 @@
 				</File>
 				<File
 					RelativePath="..\..\tracks\check_structure.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\tracks\fuzzy_ai_path_tree.hpp"
 					>
 				</File>
 				<File
@@ -2330,6 +2446,102 @@
 				</File>
 				<File
 					RelativePath="..\..\tinygettext\tinygettext.hpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="ffll"
+				>
+				<File
+					RelativePath="..\..\ffll\COGDefuzz.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\COGDefuzzSetObj.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\COGDefuzzVarObj.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\crossPlatform.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\debug.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\DefuzzSetObj.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\DefuzzVarObj.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FFLLAPI.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FFLLBase.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzyModelBase.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzyOutSet.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzyOutVariable.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzyOutVariableBase.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzySetBase.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\FuzzyVariableBase.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MemberFuncBase.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MemberFuncSCurve.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MemberFuncSingle.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MemberFuncTrap.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MemberFuncTri.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MOMDefuzzSetObj.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\MOMDefuzzVarObj.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\ffll\RuleArray.h"
 					>
 				</File>
 			</Filter>

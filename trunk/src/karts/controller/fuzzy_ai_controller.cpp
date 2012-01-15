@@ -121,7 +121,8 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
     m_instanceID = instanceCount;
 
     // Player evaluation
-    m_timer                 = (0.25/instanceCount)*instanceCount; // So that fuzzy computation is well distributed over iterations
+    // So that fuzzy computation is well distributed over iterations
+    m_timer                 = (0.25f/instanceCount)*instanceCount;
     m_compet                = 1; // TODO Constants
 //    m_aggress               = 1;
     m_attrPts               = vector<AttrPoint*>();
@@ -450,10 +451,10 @@ int FuzzyAIController::computeCompetitiveness(int           player_level,
 	//The rank needs to be normalized before computing
     float normalized_current_ranking;
     unsigned int kartCount = World::getWorld()->getNumKarts();
-    normalized_current_ranking = (current_ranking*10)/kartCount;
+    normalized_current_ranking = (current_ranking*10.0f)/kartCount;
 
     vector<float> evaluationParameters;
-    evaluationParameters.push_back(player_level);
+    evaluationParameters.push_back((float)player_level);
     evaluationParameters.push_back(normalized_current_ranking);
 
     return  (int) computeFuzzyModel(file_name, evaluationParameters);
@@ -468,11 +469,11 @@ int FuzzyAIController::computeAggressiveness(unsigned int  kart_class,
 	//The rank needs to be normalized before computing
     float normalized_current_ranking;
     unsigned int kartCount = World::getWorld()->getNumKarts();
-    normalized_current_ranking = (current_ranking*10)/kartCount;
+    normalized_current_ranking = (current_ranking*10.0f)/kartCount;
 
     vector<float> evaluationParameters;
     evaluationParameters.push_back(normalized_current_ranking);
-    evaluationParameters.push_back(kart_class);
+    evaluationParameters.push_back((float)kart_class);
 
     return  (int) computeFuzzyModel(file_name, evaluationParameters);
 }
@@ -502,8 +503,8 @@ int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
         for (unsigned int j=0; j < pathData->at(i)->size(); j++)
         {
             // Get the length and bonus count of the path
-            length = pathData->at(i)->at(j)->pathLength;
-            bonusCount = pathData->at(i)->at(j)->bonusCount;
+            length = (float)pathData->at(i)->at(j)->pathLength;
+            bonusCount = (float)(pathData->at(i)->at(j)->bonusCount);
 
             pathParameters.push_back(length);
             pathParameters.push_back(bonusCount);
@@ -548,7 +549,7 @@ float FuzzyAIController::computeDifficultyTag(float        angle,
 
     vector<float> objectParameters;
     objectParameters.push_back(angle);
-    objectParameters.push_back(direction);
+    objectParameters.push_back((float)direction);
     objectParameters.push_back(distance);
 
     return computeFuzzyModel(file_name, objectParameters);
@@ -684,7 +685,7 @@ void FuzzyAIController::handleSteering(float dt)
                    m_kart->getXYZ().getZ() - m_crashes.m_item->getXYZ().getZ());
             kartToTarget = vector2d<float>(m_kart->getXYZ().getX() - x,
                                            m_kart->getXYZ().getZ() - z);
-            angle = kartToTarget.getAngleTrig() - kartToItem.getAngleTrig();
+            angle = (float)kartToTarget.getAngleTrig() - (float)kartToItem.getAngleTrig();
             angle = (angle > 180) ? 360 - angle : angle;
 
             if(angle > 0) // left
@@ -1442,16 +1443,16 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
     kartToNextNode = vector2d<float>(m_mainAPt.x-kartX, m_mainAPt.z-kartZ);
     
     // (KartToNextNode, kartToPoint) angle
-    angle = kartToNextNode.getAngleTrig() - kartToPoint.getAngleTrig();
+    angle = (float)kartToNextNode.getAngleTrig() - (float)kartToPoint.getAngleTrig();
     angle = (angle > 180) ? 360 - angle : angle;
     
     // Kart direction (in % of the above angle)        
     x = m_kart->getVelocity().getX();
     z = m_kart->getVelocity().getZ();
     kartVel = vector2d<float>(x, z);
-    vel = kartToNextNode.getAngleTrig() - kartVel.getAngleTrig();
+    vel = (float)kartToNextNode.getAngleTrig() - (float)kartVel.getAngleTrig();
     vel = (vel > 180) ? 360 - vel : vel;
-    direction = 100 * vel / angle;
+    direction = (int)(100.0f * vel / angle);
     
     // Once the relative direction is known, only keep the angle's magnitude
     if(angle < 0)
@@ -1474,12 +1475,13 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
  */
 float FuzzyAIController::computeItemAttraction(const Item* item)
 {
-    float diffTag, attraction;
+    float attraction;
 
     // Simplified version for every item : attraction just depends on the
     // estimated difficulty to reach the item.
     attraction = 10 - estimateDifficultyToReach(item->getXYZ());
-    
+
+//    float diffTag;
 //    if(item->getType() == Item::ITEM_BONUS_BOX)
 //    {
 //
@@ -1563,7 +1565,7 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
         if(debug)
         {
             std::stringstream * t = new std::stringstream();
-            attraction = (attraction*100 + (attraction<0? -0.5 : 0.5))/100; // round
+            attraction = (attraction*100 + (attraction<0? -0.5f : 0.5f))/100.0f; // round
             (*t) << "A = " << attraction << endl;
             ((FuzzyAITaggable*) items[i])->setDebugText(t->str());
             cout << t->str();
@@ -1611,7 +1613,7 @@ void FuzzyAIController::computeForkChoices(vector<unsigned int>& output)
 #ifdef AI_DEBUG // If the FuzzyAIPathTree is OK, data should exist for this fork
                 assert(pathData);
 #endif
-                unsigned int pathChoice = choosePath(pathData, m_compet);
+                unsigned int pathChoice = choosePath(pathData, (float)m_compet);
                 output.push_back(pathChoice);
                 nextId = pathChoice;
                 forkId++;

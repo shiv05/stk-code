@@ -177,11 +177,7 @@ public:
     float        getLapLength() const {return m_lap_length; }
     // ----------------------------------------------------------------------
     /** Returns the quad count of the main driveline. */
-    float        getLapQuadCount() const { return m_lap_quad_count; }
-    // ----------------------------------------------------------------------
-    /** Returns the QuadSet */
-    //Quad&        getQuad(unsigned int index)
-    //                                       {return m_all_quads->getQuad(index);}
+    unsigned int getLapQuadCount() const { return m_lap_quad_count; }
     // ----------------------------------------------------------------------
     /** Returns the QuadSet (const) */
     const Quad&  getQuad(unsigned int index) const

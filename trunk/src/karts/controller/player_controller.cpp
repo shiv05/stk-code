@@ -67,9 +67,6 @@ PlayerController::PlayerController(Kart *kart, StateManager::ActivePlayer *playe
     // Player evaluation variables
     m_timer        = 0.f;
     m_old_speed    = 0.f;
-    m_crash_count  = 0.f;
-    m_average_rank = m_kart->getPosition();
-    m_eval         = 0.f;
     
     reset();
 }   // PlayerController
@@ -98,7 +95,7 @@ void PlayerController::reset()
     m_prev_accel   = 0;
     m_penalty_time = 0;
     m_crash_count  = 0;
-    m_average_rank = m_kart->getPosition();
+    m_average_rank = (float)m_kart->getPosition();
     m_eval         = 0;
     Controller::reset();
 }   // reset
@@ -385,7 +382,7 @@ void PlayerController::update(float dt)
         if(m_crash_count > 0)
         {
             //Decrement crash count
-            m_crash_count -= 0.1f * (floor(m_crash_count + 0.5));
+            m_crash_count -= 0.1f * (floor(m_crash_count + 0.5f));
         }
         
         // Update player evaluation

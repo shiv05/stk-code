@@ -63,10 +63,10 @@ public :
     void        reset();
     
     // -- Setters --
-    void        setPlayerEvaluation(float e) { m_player_eval = e; }
+    void        setPlayerEvaluation(int e) { m_player_eval = e; }
     
     // -- Getters --
-    float       getPlayerEvaluation()         { return m_player_eval; }
+    int         getPlayerEvaluation()         { return m_player_eval; }
     
     const std::vector<std::vector<PathData*>*>* getPathData(
                                                     unsigned int nodeId ) const;

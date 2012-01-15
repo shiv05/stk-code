@@ -71,7 +71,7 @@ FuzzyAITaggable::~FuzzyAITaggable()
  */
 void FuzzyAITaggable::initDebug()
 {
-    m_dbgTxtY = 1 + (FuzzyAITaggable::instanceCount + rand())%3;
+    m_dbgTxtY = 1.0f + (FuzzyAITaggable::instanceCount + rand())%3;
     float x  = getXYZ().getX();
     float y  = getXYZ().getY() + m_dbgTxtY;
     float z  = getXYZ().getZ();
@@ -89,7 +89,7 @@ void FuzzyAITaggable::setDebugText(const std::string& newText)
     if(debugText == NULL)
         initDebug(); // TODO print warning?
 
-    float width = newText.size()/2;
+    float width = newText.size()*0.5f;
     std::wstring newTextw = std::wstring(newText.begin(), newText.end());
     debugText->setText(newTextw.c_str());
     debugText->setSize(core::dimension2d< f32 >(width, 1.f));

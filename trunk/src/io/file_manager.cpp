@@ -825,7 +825,7 @@ std::string FileManager::getTutorialFile(const std::string &file_name) const
  */
 std::string FileManager::getFclFile(const std::string &file_name) const
 {
-    return m_root_dir+"/data/ai/fcl/"+file_name;
+    return m_root_dir+"/data/ai/"+file_name;
 }   // getFclFile
 
 //-----------------------------------------------------------------------------

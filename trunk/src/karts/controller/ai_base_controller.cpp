@@ -37,7 +37,6 @@ AIBaseController::AIBaseController(Kart *kart,
     m_kart_width  = m_kart->getKartModel()->getWidth();
 
     m_path_choice = pathChoiceMethod; // This attribute is set to 1 by fuzzy_ai_controller
-    m_fork_choices = std::vector<unsigned int>();
     m_look_ahead = 10;
 //    m_last_seen_track_node = 0;
 //    m_track_node = 0;

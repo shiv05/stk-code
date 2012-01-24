@@ -36,7 +36,7 @@ FuzzyDataManager* fuzzy_data_manager = NULL;
  */
 FuzzyDataManager::FuzzyDataManager()
 {
-    m_player_eval         = 3; // 3 = bad
+    m_player_eval         = 1; // 3 = bad, 1 = good
     
     m_pathTrees = vector<FuzzyAIPathTree*>();
 } // Constructor 

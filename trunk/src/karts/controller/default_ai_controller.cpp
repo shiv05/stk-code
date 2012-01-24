@@ -47,6 +47,8 @@
 #include "tracks/track.hpp"
 #include "utils/constants.hpp"
 
+unsigned int DefaultAIController::instanceCount = 0;
+
 DefaultAIController::DefaultAIController(Kart *kart) : AIBaseController(kart)
 {
     reset();
@@ -96,9 +98,17 @@ DefaultAIController::DefaultAIController(Kart *kart) : AIBaseController(kart)
         setSkiddingFraction(2.0f);
         break;
     }
+    DefaultAIController::instanceCount ++;
 
+    // -- Debug stuff -- TODO in AI_DEBUG condition (just below)
+    if(DefaultAIController::instanceCount == 1)
+        m_debug = true;
+    else
+        m_debug = false;
+    
 #ifdef AI_DEBUG
-    m_debug_sphere = irr_driver->getSceneManager()->addSphereSceneNode(1);
+    if(m_debug)
+        m_debug_sphere = irr_driver->getSceneManager()->addSphereSceneNode(1);
 #endif
 }   // DefaultAIController
 
@@ -109,7 +119,8 @@ DefaultAIController::DefaultAIController(Kart *kart) : AIBaseController(kart)
 DefaultAIController::~DefaultAIController()
 {
 #ifdef AI_DEBUG
-    irr_driver->removeNode(m_debug_sphere);
+    if(m_debug)
+        irr_driver->removeNode(m_debug_sphere);
 #endif
 }   // ~DefaultAIController
 
@@ -140,6 +151,8 @@ void DefaultAIController::reset()
                 m_kart->getIdent().c_str());
         m_track_node = QuadGraph::get()->findOutOfRoadSector(m_kart->getXYZ());
     }
+    
+    DefaultAIController::instanceCount = 0;
 
 }   // reset
 
@@ -364,10 +377,13 @@ void DefaultAIController::handleSteering(float dt)
                                                     .getCenter());
 
 #ifdef AI_DEBUG
+    if(m_debug)
+    {
         m_debug_sphere->setPosition(QuadGraph::get()->getQuadOfNode(next)
                        .getCenter().toIrrVector());
         std::cout << "- Outside of road: steer to center point." <<
             std::endl;
+    }
 #endif
     }
     //If we are going to crash against a kart, avoid it if it doesn't
@@ -413,7 +429,8 @@ void DefaultAIController::handleSteering(float dt)
         Vec3 straight_point;
         findNonCrashingPoint(&straight_point);
 #ifdef AI_DEBUG
-        m_debug_sphere->setPosition(straight_point.toIrrVector());
+        if(m_debug)
+            m_debug_sphere->setPosition(straight_point.toIrrVector());
 #endif
         steer_angle = steerToPoint(straight_point);
     }

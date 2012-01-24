@@ -69,7 +69,8 @@ public:
                             ~KartPropertiesManager();
     static void              addKartSearchDir       (const std::string &s);
     const KartProperties*    getKartById            (int i) const;
-    const KartProperties*    getKart(const std::string &ident) const;
+    // Kinsu : removed these 2 consts for fuzzy AI debug
+    /*const*/ KartProperties*    getKart(const std::string &ident) /*const*/;
     const int                getKartId(const std::string &ident) const;
     int                      getKartByGroup(const std::string& group, 
                                            int i) const;

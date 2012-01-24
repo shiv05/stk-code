@@ -252,10 +252,11 @@ const int KartPropertiesManager::getKartId(const std::string &ident) const
 }   // getKartId
 
 //-----------------------------------------------------------------------------
-const KartProperties* KartPropertiesManager::getKart(
-                                                const std::string &ident) const
+// Kinsu : removed these 3 consts for fuzzy AI debug
+/*const*/ KartProperties* KartPropertiesManager::getKart(
+                                                const std::string &ident) /*const*/
 {
-    const KartProperties* kp;
+    /*const*/ KartProperties* kp;
     for_in (kp, m_karts_properties)
     {
         if (kp->getIdent() == ident)

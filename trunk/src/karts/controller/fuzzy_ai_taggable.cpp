@@ -87,7 +87,7 @@ void FuzzyAITaggable::initDebug()
 void FuzzyAITaggable::setDebugText(const std::string& newText)
 {
     if(debugText == NULL)
-        initDebug(); // TODO print warning?
+        initDebug(); // TODO print warning in this case?
 
     float width = newText.size()*0.5f;
     std::wstring newTextw = std::wstring(newText.begin(), newText.end());

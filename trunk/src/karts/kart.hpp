@@ -214,7 +214,8 @@ private:
     void          handleMaterialGFX();
 
 protected:
-    const KartProperties *m_kart_properties;
+    // KINSU removed this const for fuzzy AI debug
+    /*const*/ KartProperties *m_kart_properties;
     /** This stores a copy of the kart model. It has to be a copy
      *  since otherwise incosistencies can happen if the same kart
      *  is used more than once. */
@@ -267,7 +268,8 @@ public:
                    getKartProperties() const      { return m_kart_properties; }
     // ------------------------------------------------------------------------
     /** Sets the kart properties. */
-    void setKartProperties(const KartProperties *kp) { m_kart_properties=kp; }
+    // Kinsu : removed this const for fuzzy AI debug
+    void setKartProperties(/*const*/ KartProperties *kp) { m_kart_properties=kp; }
     // ------------------------------------------------------------------------
     /** Sets a new powerup. */
     void setPowerup (PowerupManager::PowerupType t, int n)
@@ -439,6 +441,10 @@ public:
     // ------------------------------------------------------------------------
     /** Sets the energy the kart has collected. */
     void           setEnergy(float val) { m_collected_energy = val; }
+    // ------------------------------------------------------------------------
+    /** Adds a prefix to the id (name) of the kart. */
+	// KINSU : Modified for fuzzy AI Debug, had to remove some const for that
+    void           addPrefix(std::string& id) { m_kart_properties->addPrefix(id); }
     // ------------------------------------------------------------------------
     /** Returns if the kart is currently being squashed. */
     bool           isSquashed() const { return m_squash_time >0; }

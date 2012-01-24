@@ -227,6 +227,8 @@ Kart *World::createKart(const std::string &kart_ident, int index,
 /** Creates an AI controller for the kart.
  *  \param kart The kart to be controlled by an AI.
  */
+bool World::m_aiType = false;
+
 Controller* World::loadAIController(Kart *kart)
 {
     Controller *controller;
@@ -235,9 +237,24 @@ Controller* World::loadAIController(Kart *kart)
     // robot in turns: switch(m_random.get(NUM_ROBOTS))
     // static int turn=1;
     // turn=1-turn;
-
-    // Use Fuzzy AI
+    
     int turn=2;
+    
+//    if(m_aiType) // fuzzy ai
+//    {
+//        m_aiType = false;
+//        turn = 2;
+//        std::string pre = "_Fuzzy";
+//        kart->addPrefix(pre);
+//    }
+//    else        // default AI
+//    {
+//        m_aiType = true;
+//        turn=0;
+//        std::string pre = "_Default";
+//        kart->addPrefix(pre);
+//    }
+    
     switch(turn)
     {
         case 0:

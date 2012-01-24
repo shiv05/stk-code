@@ -66,10 +66,10 @@ FuzzyAIPathTree::FuzzyAIPathTree(unsigned int rootNodeId = 0)
 } // Constructor
 
 //------------------------------------------------------------------------------
-/** The buildTree functions recursively builds a tree structure using TreeNode
+/** The buildTree function recursively builds a tree structure using TreeNode
  *  instances. Each node of a tree corresponds to a path fork, and will later
  *  store data about the road section that leads to the fork (see setPathData).
- *  Each leave corresponds to a path end.
+ *  Each leaf corresponds to a path end.
  *  An example of multi-level tree, and the corresponding driveline :
  *
  *            _____1_______             |                    Fork1

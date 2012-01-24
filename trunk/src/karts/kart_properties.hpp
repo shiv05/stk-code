@@ -633,6 +633,10 @@ public:
     float getSquashSlowdown() const {return m_squash_slowdown; }
 
 	bool hasRandomWheels() const { return m_has_rand_wheels; }
+	
+	/** Adds a prefix to the id of the kart (for debug purposes,see World.cpp)*/
+	// KINSU : Modified for fuzzy AI Debug, had to remove some const for that
+	void addPrefix(std::string& id) {m_ident += id;}
 };   // KartProperties
 
 #endif

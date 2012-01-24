@@ -65,6 +65,9 @@ private:
     /** A pointer to the global world object for a race. */
     static World *m_world;
 
+    /** A variable to create different types of AI (see loadAIController) */
+    static bool m_aiType;
+    
 protected:
     /** The list of all karts. */
     KartList                  m_karts;

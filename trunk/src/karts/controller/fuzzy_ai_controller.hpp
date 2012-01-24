@@ -111,7 +111,7 @@ private:
     AttrPoint*              m_chosenDir;
     
     /** If this agent must print debug output or not */
-    bool                    debug;
+    bool                    m_debug;
     
     /** Seed value for randoms, and used to distribute computations over time */
     unsigned int            m_instanceID;

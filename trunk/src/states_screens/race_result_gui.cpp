@@ -259,7 +259,10 @@ void RaceResultGUI::determineTableLayout()
         // Save a pointer to the current row_info entry
         RowInfo *ri              = &(m_all_row_infos[position-first_position]);
         ri->m_is_player_kart     = kart->getController()->isPlayerController();
-        ri->m_kart_name          = translations->fribidize(kart->getName());
+        // -- modified for DEMO Kinsu --
+        std::wstring wident = std::wstring(kart->getIdent().begin(), kart->getIdent().end()); // added
+        ri->m_kart_name          = wident.c_str();//translations->fribidize(kart->getName()); // modified
+        // -- end of modifications
         ri->m_player             = ri->m_is_player_kart 
                                  ? kart->getController()->getPlayer() : NULL;
         

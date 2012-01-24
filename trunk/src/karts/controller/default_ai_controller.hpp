@@ -62,6 +62,9 @@ private:
         void clear() {m_road = false; m_kart = -1;}
     } m_crashes;
 
+    /** Static instance count to set a unique instance ID */
+    static unsigned int  instanceCount;
+    
     /*Difficulty handling variables*/
     /** Chance of a false start. */
     float m_false_start_probability;
@@ -124,7 +127,10 @@ private:
     /** For debugging purpose: a sphere indicating where the AI 
      *  is targeting at. */
     irr::scene::ISceneNode *m_debug_sphere;
-
+    
+    /** If this agent must print debug output or not */
+    bool                    m_debug;
+    
     /*Functions called directly from update(). They all represent an action
      *that can be done, and end up setting their respective m_controls
      *variable, except handle_race_start() that isn't associated with any

@@ -138,16 +138,16 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
 
     m_attrPts.push_back(&m_mainAPt);
     
-    // -- Debug stuff --
-#ifdef AI_DEBUG
-    m_debug_sphere = irr_driver->getSceneManager()->addSphereSceneNode(1);
-#endif
-    
+    // -- Debug stuff -- TODO IN AI_DEBUG condition (just below)
     if(FuzzyAIController::instanceCount == 1)
-        debug = true;
+        m_debug = true;
     else
-        debug = false;
+        m_debug = false;
     
+#ifdef AI_DEBUG
+    if(m_debug)
+        m_debug_sphere = irr_driver->getSceneManager()->addSphereSceneNode(1);
+#endif
 }   // FuzzyAIController
 
 //-----------------------------------------------------------------------------
@@ -157,7 +157,8 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
 FuzzyAIController::~FuzzyAIController()
 {
 #ifdef AI_DEBUG
-    irr_driver->removeNode(m_debug_sphere);
+    if(m_debug)
+        irr_driver->removeNode(m_debug_sphere);
 #endif
 }   // ~FuzzyAIController
 
@@ -313,7 +314,7 @@ void FuzzyAIController::update(float dt)
     if(m_item_count != closeItems.size())
     {
 #ifdef AI_DEBUG
-        if(debug)
+        if(m_debug)
             cout << "Item environment has changed, forced updating" << endl;
 #endif
         tagItems((const vector<Item*>)closeItems, m_attrPts);
@@ -333,7 +334,7 @@ void FuzzyAIController::update(float dt)
         if(closeItems.size()>0 && m_item_count == closeItems.size())
         {
 #ifdef AI_DEBUG
-            if(debug)
+            if(m_debug)
                 cout << "Item environment has not changed, normal updating" << endl;
 #endif
             tagItems((const vector<Item*>)closeItems, m_attrPts);
@@ -361,7 +362,7 @@ void FuzzyAIController::update(float dt)
 //        float weapon_interest = 0;
 
 #ifdef AI_DEBUG
-        if(debug)
+        if(m_debug)
         {
         cout << "----------------------------------------" << endl;
         // -- Player evaluation --
@@ -408,7 +409,7 @@ void FuzzyAIController::update(float dt)
         /*Response handling functions*/
         handleAcceleration(dt);
         m_chosenDir = chooseDirection(m_attrPts);
-//        if(debug)
+//        if(m_debug)
 //            cout << "    Chosen = " << m_chosenDir->attraction << endl;
         handleSteering(dt);
         handleItems(dt);
@@ -496,7 +497,9 @@ int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
     float         bestInterest = 0;
     unsigned int  bestChoice;
     unsigned int  random1, random2;
-       
+    
+    PathData*     bestPath;
+    
     // Evaluate each path
     for (unsigned int i=0; i < pathData->size(); i++)
 	{
@@ -520,6 +523,7 @@ int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
                 // If the path has a better interest than current best, store it
                 bestInterest = interest;
                 bestChoice = i;
+                bestPath = pathData->at(i)->at(j);
             } // if current path has a better interest than current max interest
         } // for each path in the current choice
 	} // for each possible choice
@@ -527,7 +531,18 @@ int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
 	// Randomization to avoid every agent from choosing the best path
 	random1 = (m_instanceID * rand()) % pathData->size();
 	random2 = (m_instanceID * rand() * 3) % pathData->size();
-    return (random2 < pathData->size()/2.1)? bestChoice : random1;
+	
+	unsigned int choice = (random2 < pathData->size()/2.1)? bestChoice : random1;
+	
+#ifdef AI_DEBUG
+    if(m_debug)
+    {
+        cout << "**************************************************************" << endl;
+        cout << "path fork detected ! choice = " << choice << ", best choice = " << bestChoice << endl;
+        cout << "bonusCount = " << bestPath->bonusCount << ", length = " << bestPath->pathLength << endl;
+    }
+#endif
+    return choice;
 } // choosePath
 
 //------------------------------------------------------------------------------
@@ -623,7 +638,7 @@ void FuzzyAIController::handleBraking()
            kart_ang_diff          > MIN_TRACK_ANGLE         )
         {
 #ifdef AI_DEBUG
-        if(debug)
+        if(m_debug)
             std::cout << "BRAKING" << std::endl;
 #endif
             m_controls->m_brake = true;
@@ -653,7 +668,7 @@ void FuzzyAIController::handleSteering(float dt)
                                                     .getCenter());
 
 #ifdef AI_DEBUG
-        if(debug)
+        if(m_debug)
         {
             m_debug_sphere->setPosition(QuadGraph::get()->getQuadOfNode(next)
                        .getCenter().toIrrVector());
@@ -701,8 +716,11 @@ void FuzzyAIController::handleSteering(float dt)
         }
             
 #ifdef AI_DEBUG
-        if(debug)
+        if(m_debug)
+        {
+            m_debug_sphere->setPosition(m_crashes.m_item->getXYZ().toIrrVector());
             cout << "- Steering to avoid bad item." << endl;
+        }
 #endif
     }
     //If we are going to crash against a kart, avoid it if it doesn't
@@ -737,7 +755,7 @@ void FuzzyAIController::handleSteering(float dt)
         }
 
 #ifdef AI_DEBUG
-        if(debug)
+        if(m_debug)
             std::cout << "- Velocity vector crashes with kart and doesn't " <<
             "crashes with road : steer 90 degrees away from kart." << std::endl;
 #endif
@@ -745,9 +763,11 @@ void FuzzyAIController::handleSteering(float dt)
     else
     {
         m_start_kart_crash_direction = 0;
-        Vec3 straight_point(m_chosenDir->x, 0.f, m_chosenDir->z);
+        float y = QuadGraph::get()->getQuadOfNode(next).getCenter().getY()+0.1;
+        Vec3 straight_point(m_chosenDir->x, y, m_chosenDir->z);
 #ifdef AI_DEBUG
-        m_debug_sphere->setPosition(straight_point.toIrrVector());
+        if(m_debug)
+            m_debug_sphere->setPosition(straight_point.toIrrVector());
 #endif
         steer_angle = steerToPoint(straight_point);
     }
@@ -892,7 +912,8 @@ void FuzzyAIController::handleItems(const float dt)
             m_controls->m_fire  = distance < 30.0f                 || 
                                   m_time_since_last_shot > 10.0f;
             if(m_controls->m_fire)
-                m_controls->m_look_back = fire_backwards;
+                m_controls->m_look_back = false;//fire_backwards;            // Modified kinsu (DEMO)
+            
             break;
         }   // POWERUP_PLUNGER
 
@@ -1562,7 +1583,7 @@ void FuzzyAIController::tagItems(const vector<Item*>& items,
         } // if !known
         
 #ifdef AI_DEBUG
-        if(debug)
+        if(m_debug)
         {
             std::stringstream * t = new std::stringstream();
             attraction = (attraction*100 + (attraction<0? -0.5f : 0.5f))/100.0f; // round
@@ -1617,9 +1638,6 @@ void FuzzyAIController::computeForkChoices(vector<unsigned int>& output)
                 output.push_back(pathChoice);
                 nextId = pathChoice;
                 forkId++;
-#ifdef AI_DEBUG
-                cout << "path fork detected ! choice = " << pathChoice << endl;
-#endif
             } // if this fork's choice is not already in the fork choices vector
         } // if there is a fork in the look_ahead nodes
         else
@@ -1648,7 +1666,22 @@ AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
         }
     }
     
-    return attrPts[bestId];
+    bool stillHere;
+    for(unsigned int i=0 ; i<attrPts.size() ; i++)
+    {
+        if(attrPts[i] == m_chosenDir)
+        {
+            stillHere = true;
+            break;
+        }
+    }
+    
+    // This test stop the AI to change its mind too often when there are
+    // multiple objects
+    if(stillHere && bestVal < m_chosenDir->attraction + 0.7)
+        return m_chosenDir;
+    else
+        return attrPts[bestId];
 } // chooseDirection
 
 

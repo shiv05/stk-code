@@ -18,6 +18,15 @@
 #include <fstream>
 #include <limits.h>
 
+#include <stdlib.h>
+#include <string.h>
+#include <wchar.h>   
+
+#ifndef WIN32
+#define wcsicmp wcscasecmp
+#define stricmp strcasecmp
+#endif
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -127,9 +136,9 @@ FuzzyVariableBase::~FuzzyVariableBase()
 //				as one of it's sides. For example a normal trapezoid memberhip
 //				function would look like this:
 //                                       ___
-//              Normal Trapezoid:       /   \
+//              Normal Trapezoid:       /   \ .
 //                                       ___
-//              Left Ramp Trapezoid:    |   \ 
+//              Left Ramp Trapezoid:    |   \ .
 //                                       ___
 //              Right Ramp Trapezoid:   /   |  
 //

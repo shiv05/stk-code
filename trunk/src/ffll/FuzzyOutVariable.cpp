@@ -4,7 +4,7 @@
 //
 // Purpose:	This file contains  code for the FuzzyOutVariable class
 //
-// Copyright © 1999-2001 Louder Than A Bomb! Software
+// Copyright Â© 1999-2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.
@@ -320,7 +320,7 @@ int FuzzyOutVariable::init(const wchar_t* _id, bool create_unique_id /* = true *
 			counter++;
  
 			// clear message text (should say "var not unique" right now)
-			set_msg_text(NULL);
+			set_msg_text((wchar_t*)NULL);
 			
 			} // end while !unique id
 

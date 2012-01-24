@@ -239,6 +239,49 @@ set( SRCS ${SRCS} src/main.cpp
 	src/enet/include/enet/unix.h
 	src/enet/include/enet/utility.h
 	src/enet/include/enet/win32.h
+	src/ffll/COGDefuzz.h
+	src/ffll/COGDefuzzSetObj.cpp
+	src/ffll/COGDefuzzSetObj.h
+	src/ffll/COGDefuzzVarObj.cpp
+	src/ffll/COGDefuzzVarObj.h
+	src/ffll/crossPlatform.h
+	src/ffll/debug.h
+	src/ffll/DefuzzSetObj.cpp
+	src/ffll/DefuzzSetObj.h
+	src/ffll/DefuzzVarObj.cpp
+	src/ffll/DefuzzVarObj.h
+	src/ffll/FFLLAPI.cpp
+	src/ffll/FFLLAPI.h
+	src/ffll/FFLLBase.cpp
+	src/ffll/FFLLBase.h
+	src/ffll/FuzzyModelBase.cpp
+	src/ffll/FuzzyModelBase.h
+	src/ffll/FuzzyOutSet.cpp
+	src/ffll/FuzzyOutSet.h
+	src/ffll/FuzzyOutVariableBase.cpp
+	src/ffll/FuzzyOutVariableBase.h
+	src/ffll/FuzzyOutVariable.cpp
+	src/ffll/FuzzyOutVariable.h
+	src/ffll/FuzzySetBase.cpp
+	src/ffll/FuzzySetBase.h
+	src/ffll/FuzzyVariableBase.cpp
+	src/ffll/FuzzyVariableBase.h
+	src/ffll/MemberFuncBase.cpp
+	src/ffll/MemberFuncBase.h
+	src/ffll/MemberFuncSCurve.cpp
+	src/ffll/MemberFuncSCurve.h
+	src/ffll/MemberFuncSingle.cpp
+	src/ffll/MemberFuncSingle.h
+	src/ffll/MemberFuncTrap.cpp
+	src/ffll/MemberFuncTrap.h
+	src/ffll/MemberFuncTri.cpp
+	src/ffll/MemberFuncTri.h
+	src/ffll/MOMDefuzzSetObj.cpp
+	src/ffll/MOMDefuzzSetObj.h
+	src/ffll/MOMDefuzzVarObj.cpp
+	src/ffll/MOMDefuzzVarObj.h
+	src/ffll/RuleArray.cpp
+	src/ffll/RuleArray.h
 	src/graphics/camera.cpp
 	src/graphics/camera.hpp
 	src/graphics/CBatchingMesh.cpp
@@ -384,6 +427,12 @@ set( SRCS ${SRCS} src/main.cpp
 	src/karts/controller/default_ai_controller.hpp
 	src/karts/controller/end_controller.cpp
 	src/karts/controller/end_controller.hpp
+	src/karts/controller/fuzzy_ai_controller.cpp
+	src/karts/controller/fuzzy_ai_controller.hpp
+	src/karts/controller/fuzzy_ai_taggable.cpp
+	src/karts/controller/fuzzy_ai_taggable.hpp
+	src/karts/controller/fuzzy_data_manager.cpp
+	src/karts/controller/fuzzy_data_manager.hpp
 	src/karts/controller/kart_control.hpp
 	src/karts/controller/new_ai_controller.cpp
 	src/karts/controller/new_ai_controller.hpp
@@ -598,6 +647,8 @@ set( SRCS ${SRCS} src/main.cpp
 	src/tracks/check_sphere.hpp
 	src/tracks/check_structure.cpp
 	src/tracks/check_structure.hpp
+	src/tracks/fuzzy_ai_path_tree.cpp
+	src/tracks/fuzzy_ai_path_tree.hpp
 	src/tracks/graph_node.cpp
 	src/tracks/graph_node.hpp
 	src/tracks/quad.cpp

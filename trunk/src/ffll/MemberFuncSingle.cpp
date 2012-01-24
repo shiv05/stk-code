@@ -3,7 +3,7 @@
 //
 // Purpose:	Implementation of the Singelton membership function
 //
-// Copyright © 1999-2001 Louder Than A Bomb! Software
+// Copyright Â© 1999-2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.
@@ -44,7 +44,7 @@ static char THIS_FILE[]=__FILE__;
 // ------	----		------------
 //
 // 
-MemberFuncSingle::MemberFuncSingle(FuzzySetBase* _parent) : MemberFuncBase(_parent), FFLLBase(_parent)
+MemberFuncSingle::MemberFuncSingle(FuzzySetBase* _parent) : FFLLBase(_parent), MemberFuncBase(_parent)
 {
 	// create the nodes array
 	alloc_nodes( get_node_count() );

@@ -3,7 +3,7 @@
 //
 // Purpose:	Variable object for Mean of Maximum Defuzzification method
 //
-// Copyright © 2001 Louder Than A Bomb! Software
+// Copyright Â© 2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.
@@ -44,7 +44,7 @@ static char THIS_FILE[] = __FILE__;
 //
 //
 
-MOMDefuzzVarObj::MOMDefuzzVarObj(FuzzyOutVariable* _parent): DefuzzVarObj(_parent), FFLLBase(_parent)
+MOMDefuzzVarObj::MOMDefuzzVarObj(FuzzyOutVariable* _parent): FFLLBase(_parent), DefuzzVarObj(_parent)
 {
 	// nothing to do
 }
@@ -109,7 +109,6 @@ RealType MOMDefuzzVarObj::calc_value(DOMType* out_set_dom_arr  )
 	FuzzyOutSet*		set;		// set to deal with
  	DOMType				mom_max;	// max MOM from sets
 	DOMType				mom_idx;	// MOM index for the DOM
-	int					set_idx = -1;// winning set idx
 
 	parent  = get_parent();
 	assert(parent);

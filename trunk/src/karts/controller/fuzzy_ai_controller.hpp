@@ -99,7 +99,7 @@ private:
 //    int                     m_aggress;
 
     /** Number of items close to the kart */
-    int                     m_item_count; // detected items (ie. close items) count
+    unsigned int            m_item_count; // detected items (ie. close items) count
     
     /** Attraction point vector, to compare different interesting points */
     std::vector<AttrPoint*> m_attrPts;

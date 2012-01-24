@@ -5,7 +5,7 @@
 // Purpose:	Implementation of the RuleArray class.  This class represents
 //			the rules associated with a set of variables.
 //
-// Copyright © 1999-2001 Louder Than A Bomb! Software
+// Copyright Â© 1999-2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.
@@ -13,6 +13,8 @@
  
 #include "RuleArray.h"
 #include "FuzzyModelBase.h"
+
+#include <string.h>
  
 #ifdef _DEBUG  
 #undef THIS_FILE

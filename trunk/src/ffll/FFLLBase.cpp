@@ -3,7 +3,7 @@
 //
 // Purpose:	Base class for all FFLL files.
 //
-// Copyright © 1998-2001 Louder Than A Bomb! Software
+// Copyright Â© 1998-2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.
@@ -19,10 +19,13 @@ static char THIS_FILE[] = __FILE__;
 #include "debug.h"
 
 #endif
- 
+
+#include <string.h>
+#include <stdlib.h>
+
 // define literals, warning and error messages  
 
-wchar_t* literals[] = 
+const wchar_t* literals[] = 
 	{ 
 	L"New",
 	L"Variable",
@@ -31,7 +34,7 @@ wchar_t* literals[] =
 	L"Copy of"
 	};
 
-wchar_t* errors[] = 
+const wchar_t* errors[] = 
 	{ 
 	L"Variable Identifier Must Be Unique",
 	L"Set Identifier Must Be Unique Within The Variable",
@@ -350,7 +353,7 @@ const wchar_t* FFLLBase::load_string(int str_id) const
 
 		// make sure we don't go beyond the bounds...
 
-		if (str_id >= sizeof(warnings))
+		if ((unsigned int)str_id >= sizeof(warnings))
 			{
 			assert(0);
 			return L"Message Not Defined";
@@ -365,7 +368,7 @@ const wchar_t* FFLLBase::load_string(int str_id) const
 
 		// make sure we don't go beyond the bounds...
 
-		if (str_id >= sizeof(errors))
+		if ((unsigned int)str_id >= sizeof(errors))
 			{
 			assert(0);
 			return L"Message Not Defined";
@@ -380,7 +383,7 @@ const wchar_t* FFLLBase::load_string(int str_id) const
 
 		// make sure we don't go beyond the bounds...
 
-		if (str_id >= sizeof(literals))
+		if ((unsigned int)str_id >= sizeof(literals))
 			{
 			assert(0);
 			return L"Message Not Defined";
@@ -466,7 +469,6 @@ void YNodeValue::validate()
 
 
 
-static char sDecimalSeparator = '.'; // dot by default
 static char sThousantSeparator =','; // comma by default
 
 // call this to format a long to a string

@@ -3,20 +3,20 @@
 //
 // Purpose:		This file contains the common classes/structs/etc for FFLL
 //
-// Copyright © 2000-2001 Louder Than A Bomb! Software
+// Copyright Â© 2000-2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.
 //
 
-
+#ifdef WIN32
 // The debugger can't handle symbols more than 255 characters long.
 // STL often creates symbols longer than that.
 // When symbols are longer than 255 characters, the warning is disabled.
 #pragma warning(disable:4786)
 // disable "did not inline" warnings 
 #pragma warning(disable:4710) 
-
+#endif
 
 #ifndef _FFLLBASE_H
 #define _FFLLBASE_H
@@ -63,8 +63,8 @@
 // require the program using the library to be re linked.  Without inlines
 // you can just drop in the new dll and everything will work (assuming you
 // only changed the function's implementation and not it's declaration)
-// Note that we avoid inlining virtual functions cuz "it’s best not to use 
-// inline virtual functions, since they’re almost never expanded anyway." 
+// Note that we avoid inlining virtual functions cuz "itÂ’s best not to use 
+// inline virtual functions, since theyÂ’re almost never expanded anyway." 
 // according to http://msdn.microsoft.com/msdnmag/issues/0600/c/c0600.asp
 //
 // NOTE: That inlining for FFLL doesn't work when using Microsoft MSVC

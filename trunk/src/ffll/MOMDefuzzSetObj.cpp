@@ -3,7 +3,7 @@
 //
 // Purpose:	Set object for Mean of Maximum Defuzzification method
 //
-// Copyright © 2001 Louder Than A Bomb! Software
+// Copyright Â© 2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.
@@ -46,7 +46,7 @@ static char THIS_FILE[] = __FILE__;
 //
 
 MOMDefuzzSetObj::MOMDefuzzSetObj(FuzzyOutSet* par)
-: DefuzzSetObj(par), FFLLBase(par)
+  : FFLLBase(par), DefuzzSetObj(par)
 {
 	mean_value = -1.0;
 
@@ -106,7 +106,6 @@ MOMDefuzzSetObj::~MOMDefuzzSetObj()
 void MOMDefuzzSetObj::calc()
 {
 	int		i;				// counters
-  	int		x_sum = 0;		// sum of the x values for the nodes with the max 'y'
  	int		max_y = -1;		// max y position
  
 	// get the min val and idx_multiplier for the var...

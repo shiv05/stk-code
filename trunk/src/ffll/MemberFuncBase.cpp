@@ -3,7 +3,7 @@
 //
 // Purpose:	This is the base class for the membership functions
 //
-// Copyright © 1999-2001 Louder Than A Bomb! Software
+// Copyright Â© 1999-2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.
@@ -14,6 +14,8 @@
 #include "MemberFuncBase.h"
 #include "FuzzyModelBase.h"
 #include "FuzzyVariableBase.h"
+
+#include <string.h>
 
 #ifdef  _DEBUG 
 #undef THIS_FILE
@@ -137,9 +139,9 @@ MemberFuncBase::~MemberFuncBase(void)
 //				as one of it's sides. For example a normal trapezoid memberhip
 //				function would look like this:
 //                                       ___
-//              Normal Trapezoid:       /   \
+//              Normal Trapezoid:       /   \ .
 //                                       ___
-//              Left Ramp Trapezoid:    |   \ 
+//              Left Ramp Trapezoid:    |   \  .
 //                                       ___
 //              Right Ramp Trapezoid:   /   |  
 //

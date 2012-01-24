@@ -206,6 +206,8 @@ supertuxkart_SOURCES = \
  karts/controller/default_ai_controller.hpp \
  karts/controller/end_controller.cpp \
  karts/controller/end_controller.hpp \
+ karts/controller/fuzzy_ai_controller.cpp \
+ karts/controller/fuzzy_ai_controller.hpp \
  karts/controller/kart_control.hpp \
  karts/controller/new_ai_controller.cpp \
  karts/controller/new_ai_controller.hpp \

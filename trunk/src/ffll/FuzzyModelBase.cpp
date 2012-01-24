@@ -20,6 +20,9 @@
 //#include <fstream> // ??? moved to .h
 #include <time.h>
 #include <math.h>
+#include <string.h>
+#include <stdlib.h>
+#include <wchar.h>
 
 #ifdef _DEBUG  
 #undef THIS_FILE
@@ -791,7 +794,11 @@ bool FuzzyModelBase::is_var_id_unique(const wchar_t* _id, int _var_idx) const
 		var = get_var(i);
 
 		// do a case insensitive comparison
+#ifdef WIN32
 		if (wcsicmp(var->get_id(), _id) == 0)
+#else
+		if (wcscasecmp(var->get_id(), _id) == 0)
+#endif
 			{
 			// NOT unique
 			set_msg_text( load_string(ERR_VAR_NON_UNIQUE_ID));
@@ -806,7 +813,11 @@ bool FuzzyModelBase::is_var_id_unique(const wchar_t* _id, int _var_idx) const
 		var = get_var(OUTPUT_IDX);
 
 		// do a case insensitive comparison
+#ifdef WIN32
 		if (wcsicmp(var->get_id(), _id) == 0)
+#else
+		if (wcscasecmp(var->get_id(), _id) == 0)
+#endif
 			{
 			// NOT unique
 			set_msg_text(ERR_VAR_NON_UNIQUE_ID);

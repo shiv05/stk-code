@@ -5,7 +5,7 @@
 // Purpose:	This is the base class for the Fuzzy sets.  It is the ancestor of
 //			all set classes
 //
-// Copyright © 1999-2001 Louder Than A Bomb! Software
+// Copyright Â© 1999-2001 Louder Than A Bomb! Software
 //
 // This file is part of the FFLL (Free Fuzzy Logic Library) project (http://ffll.sourceforge.net)
 // It is released under the BSD license, see http://ffll.sourceforge.net/license.txt for the full text.
@@ -75,7 +75,7 @@ class   FuzzySetBase : virtual  public FFLLBase
 		// misc funcs
 
 		bool is_output() const ;
-		RealType FuzzySetBase::convert_idx_to_value(int idx) const;
+		RealType convert_idx_to_value(int idx) const;
 		virtual int new_member_func(int type, int start_x, int width);
  		virtual int new_member_func(int type);
  		void move_node(int anchor_idx, _point pt);

@@ -127,6 +127,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
 //    m_aggress               = 1;
     m_attrPts               = vector<AttrPoint*>();
     m_item_count            = 0;
+    m_chosenDir             = NULL;
     
     computeForkChoices(m_fork_choices);
     computePath();
@@ -1678,7 +1679,7 @@ AttrPoint* FuzzyAIController::chooseDirection(vector<AttrPoint*> &attrPts)
     
     // This test stop the AI to change its mind too often when there are
     // multiple objects
-    if(stillHere && bestVal < m_chosenDir->attraction + 0.7)
+    if(stillHere && m_chosenDir && bestVal < m_chosenDir->attraction + 0.7f)
         return m_chosenDir;
     else
         return attrPts[bestId];

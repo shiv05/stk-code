@@ -445,24 +445,37 @@ void FuzzyAIController::update(float dt)
  *  TODO : make this comment doxygen compliant
  */
 
-int FuzzyAIController::computeCompetitiveness(int           player_level,
-                                              unsigned int  current_ranking)
+int FuzzyAIController::computeCompetitiveness(int           playerEval,
+                                              unsigned int  currentRanking)
 {
-    const std::string& file_name = "driving_style_competitiveness.fcl";
+//    const std::string& file_name = "driving_style_competitiveness.fcl";
     
-	//The rank needs to be normalized before computing
-    float normalized_current_ranking;
-    unsigned int kartCount = World::getWorld()->getNumKarts();
-    normalized_current_ranking = (current_ranking*10.0f)/kartCount;
+	// Normalize rank (0 <= rank <= 10)
+    float normRank = ((currentRanking-1)*10) /
+                                           (World::getWorld()->getNumKarts()-1);
 
-    vector<float> evaluationParameters;
-    evaluationParameters.push_back((float)player_level);
-    evaluationParameters.push_back(normalized_current_ranking);
-
-    return  (int) computeFuzzyModel(file_name, evaluationParameters);
+//    vector<float> evaluationParameters;
+//    evaluationParameters.push_back((float)player_level);
+//    evaluationParameters.push_back(normalized_current_ranking);
+    int compet;
+    
+    // -- Compute competitiveness --
+    if(playerEval == 3)         // Bad player
+        compet = 0;             //     => not competitive
+    else if(playerEval == 2)    // Average player...
+    {                           // and
+        if(normRank >= 7.5)     // bad ranking
+            compet = 0;         //     => not competitive
+        else                    // medium or good ranking
+            compet = 1;         //     => competitive
+    }
+    else if(playerEval == 1)    // Good player
+        compet = 1;             //     => competitive
+    
+    return compet; // (int) computeFuzzyModel(file_name, evaluationParameters);
 }
 
-
+/*
 int FuzzyAIController::computeAggressiveness(unsigned int  kart_class,
                                              unsigned int  current_ranking)
 {
@@ -477,23 +490,25 @@ int FuzzyAIController::computeAggressiveness(unsigned int  kart_class,
     evaluationParameters.push_back(normalized_current_ranking);
     evaluationParameters.push_back((float)kart_class);
 
-    return  (int) computeFuzzyModel(file_name, evaluationParameters);
-}
+    return  (int) 0; // computeFuzzyModel(file_name, evaluationParameters);
+}*/
 
 //------------------------------------------------------------------------------
 /** Path choice computation method, used when there are multiple paths.
- *  This methode evaluates each one of the given paths, and returns the best
+ *  This method evaluates each one of the given paths, and returns the best
  *  path depending on the situation. The evaluation is based on data about the
  *  paths, computed by the FuzzyAIPathTree class.
 
  *  TODO : Make this comment Doxygen compliant
- *         Improvement for later : Use the number of turns and the kart class.
+ *         Improvement for later : Use the number of turns and the kart class
+ *         and the item count.
  */
 int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
                                   float competitiveness)
 {
-    const std::string& file_name = "path_chooser.fcl";  // Fcl file
-    vector<float> pathParameters;
+//    const std::string& file_name = "path_chooser.fcl";  // Fcl file
+//    vector<float> pathParameters;
+
     float         bonusCount, length, interest;
     float         bestInterest = 0;
     unsigned int  bestChoice;
@@ -510,13 +525,13 @@ int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
             length = (float)pathData->at(i)->at(j)->pathLength;
             bonusCount = (float)(pathData->at(i)->at(j)->bonusCount);
 
-            pathParameters.push_back(length);
-            pathParameters.push_back(bonusCount);
-            pathParameters.push_back(competitiveness);
+//            pathParameters.push_back(length);
+//            pathParameters.push_back(bonusCount);
+//            pathParameters.push_back(competitiveness);
 
             // Compute the interest of the path
-            interest = computeFuzzyModel(file_name, pathParameters);
-            pathParameters.clear();
+            interest = (competitiveness==1 ? -1 : 1)*length; // computeFuzzyModel(file_name, pathParameters);
+//            pathParameters.clear();
 
             // Compare the computed interest with the best interest so far
             if(interest > bestInterest)
@@ -551,24 +566,43 @@ int FuzzyAIController::choosePath(const vector<vector<PathData*>*>* pathData,
  *  Simply calls computeFuzzyModel with the right parameters.
  *  TODO : make this comment doxygen compliant
  */
-float FuzzyAIController::computeDifficultyTag(float        angle,
+float FuzzyAIController::computeDifficultyTag(float        angle,   // degrees
                                               int          direction,
                                               float        distance)
 {
-    const std::string file_name = "difficulty_tagging1.fcl";
+//    const std::string file_name = "difficulty_tagging1.fcl";
     
     // Normalize direction so that it's between -999(%) and 999(%)
-    if(direction > 999)
-        direction = 999;
-    else if(direction < -999)
-        direction = -999;
+    if(direction > 999)         direction = 999;
+    else if(direction < -999)   direction = -999;
 
-    vector<float> objectParameters;
-    objectParameters.push_back(angle);
-    objectParameters.push_back((float)direction);
-    objectParameters.push_back(distance);
+//    vector<float> objectParameters;
+//    objectParameters.push_back(angle);
+//    objectParameters.push_back((float)direction);
+//    objectParameters.push_back(distance);
 
-    return computeFuzzyModel(file_name, objectParameters);
+    // -- Compute difficulty --
+    int diff;
+    float distFactor = (distance / 12.5) - 1; // how distance will affect diff
+    if(angle <= 22.5)                       // Small angle
+        diff = 1 + distFactor;              //     => very easy
+    else if(angle <= 62.5)                  // Medium angle...
+    {                                       // and
+        if(direction <= 0)                  // target (next waypoint) side
+            diff = 9 - distFactor;          //     => very difficult
+        else if(direction <= 35)            // towards target
+            diff = 7.5 - distFactor;        //     => difficult
+        else if(direction <= 65)            // in between
+            diff = 5 - distFactor*2;        //     => avg. but depends on dist.
+        else if(direction <= 100)           // towards item
+            diff = 2 + distFactor*2;        //     => easy but depends on dist.
+        else //if(direction > 100)          // item side
+            diff = 3 + distFactor*2;        //     => easy but depends on dist.
+    }
+    else // if(angle > 62.5)                // Big angle
+        diff = 9.5 + distFactor/2;
+    
+    return diff; // computeFuzzyModel(file_name, objectParameters);
 }
 
 //-----------------------------------------------------------------------------
@@ -673,7 +707,7 @@ void FuzzyAIController::handleSteering(float dt)
         {
             m_debug_sphere->setPosition(QuadGraph::get()->getQuadOfNode(next)
                        .getCenter().toIrrVector());
-            std::cout << "- Outside of road: steer to center point."<<std::endl;
+           // TODO uncomment std::cout << "- Outside of road: steer to center point."<<std::endl;
         }
 #endif
     }
@@ -681,7 +715,8 @@ void FuzzyAIController::handleSteering(float dt)
     else if( m_crashes.m_item != NULL )
     {
         float dist = (m_crashes.m_item->getXYZ() - m_kart->getXYZ()).length();
-        float steerOffset = (dist > 7.5f)? M_PI*0.97f : M_PI*0.85f;
+        float steerOffset = M_PI*0.9f;
+//        float steerOffset = (dist > 7.5f)? M_PI*0.97f : M_PI*0.85f;
         if(m_start_bad_item_crash_direction == 1)
         {
             steer_angle = steerToAngle(x, z, -steerOffset);
@@ -701,6 +736,7 @@ void FuzzyAIController::handleSteering(float dt)
                    m_kart->getXYZ().getZ() - m_crashes.m_item->getXYZ().getZ());
             kartToTarget = vector2d<float>(m_kart->getXYZ().getX() - x,
                                            m_kart->getXYZ().getZ() - z);
+            // (Target, Kart, Item) angle
             angle = (float)kartToTarget.getAngleTrig() - (float)kartToItem.getAngleTrig();
             angle = (angle > 180) ? 360 - angle : angle;
 
@@ -1242,7 +1278,7 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
     unsigned int  closestId    = 99999;
     
     // Get close items
-    item_manager->getCloseItems(closeItems, m_kart, 15.f);
+    item_manager->getCloseItems(closeItems, m_kart, 7.5f);
     // Get the closest bad item
     for(unsigned int i=0; i<closeItems.size(); i++)
     {
@@ -1261,7 +1297,7 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
     {
         crashItem = closeItems[closestId];
         diff = estimateDifficultyToReach(crashItem->getXYZ());
-        if(diff >= 0 && diff < 1.f)       // crash
+        if(diff >= 0 && diff < 0.75f)       // crash
             m_crashes.m_item = crashItem;
         else                            // no crash
             m_crashes.m_item = NULL;

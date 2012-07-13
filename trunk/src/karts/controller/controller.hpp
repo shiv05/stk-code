@@ -82,8 +82,10 @@ public:
 
     
     // Fuzzy logic call method, used by fuzzyAIController & playerController
-    float    computeFuzzyModel(const std::string& file_name,
-                               std::vector<float> parameters );
+    // Deactivated to avoid using ffll
+//    float    computeFuzzyModel(const std::string& file_name,
+//                               std::vector<float> parameters );
+
 //     -- Getters for Fuzzy AI (Only overidden in player_controller) --
 //     The average rank is updated every 5secs
 //    float          getAverageRank()    {return 0;}

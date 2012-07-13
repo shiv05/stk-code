@@ -9,32 +9,6 @@
 /* Begin PBXBuildFile section */
 		5610F3561471868600DAD96F /* fuzzy_ai_controller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5610F3541471868600DAD96F /* fuzzy_ai_controller.cpp */; };
 		566E370C147D071400A75C28 /* fuzzy_data_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 566E370A147D071400A75C28 /* fuzzy_data_manager.cpp */; };
-		56887DC314759AFC00800478 /* COGDefuzzSetObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D8B14759AFC00800478 /* COGDefuzzSetObj.cpp */; };
-		56887DC414759AFC00800478 /* COGDefuzzVarObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D8D14759AFC00800478 /* COGDefuzzVarObj.cpp */; };
-		56887DC514759AFC00800478 /* DefuzzSetObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D9014759AFC00800478 /* DefuzzSetObj.cpp */; };
-		56887DC614759AFC00800478 /* DefuzzVarObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D9214759AFC00800478 /* DefuzzVarObj.cpp */; };
-		56887DC714759AFC00800478 /* FFLLAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D9414759AFC00800478 /* FFLLAPI.cpp */; };
-		56887DC814759AFC00800478 /* FFLLAPI.def in Resources */ = {isa = PBXBuildFile; fileRef = 56887D9514759AFC00800478 /* FFLLAPI.def */; };
-		56887DC914759AFC00800478 /* FFLLBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D9714759AFC00800478 /* FFLLBase.cpp */; };
-		56887DCA14759AFC00800478 /* FuzzyModelBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D9914759AFC00800478 /* FuzzyModelBase.cpp */; };
-		56887DCB14759AFC00800478 /* FuzzyOutSet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D9B14759AFC00800478 /* FuzzyOutSet.cpp */; };
-		56887DCC14759AFC00800478 /* FuzzyOutVariable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887D9D14759AFC00800478 /* FuzzyOutVariable.cpp */; };
-		56887DCE14759AFC00800478 /* FuzzySetBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DA114759AFC00800478 /* FuzzySetBase.cpp */; };
-		56887DCF14759AFC00800478 /* FuzzyVariableBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DA314759AFC00800478 /* FuzzyVariableBase.cpp */; };
-		56887DD014759AFC00800478 /* ffll_gcc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 56887DA614759AFC00800478 /* ffll_gcc.a */; };
-		56887DD114759AFD00800478 /* ffll_gcc.dev in Resources */ = {isa = PBXBuildFile; fileRef = 56887DA714759AFC00800478 /* ffll_gcc.dev */; };
-		56887DD214759AFD00800478 /* Makefile.win in Resources */ = {isa = PBXBuildFile; fileRef = 56887DA814759AFC00800478 /* Makefile.win */; };
-		56887DD314759AFD00800478 /* readme.txt in Resources */ = {isa = PBXBuildFile; fileRef = 56887DA914759AFC00800478 /* readme.txt */; };
-		56887DD414759AFD00800478 /* license.txt in Resources */ = {isa = PBXBuildFile; fileRef = 56887DAA14759AFC00800478 /* license.txt */; };
-		56887DD514759AFD00800478 /* MemberFuncBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DAB14759AFC00800478 /* MemberFuncBase.cpp */; };
-		56887DD614759AFD00800478 /* MemberFuncSCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DAD14759AFC00800478 /* MemberFuncSCurve.cpp */; };
-		56887DD714759AFD00800478 /* MemberFuncSingle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DAF14759AFC00800478 /* MemberFuncSingle.cpp */; };
-		56887DD814759AFD00800478 /* MemberFuncTrap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DB114759AFC00800478 /* MemberFuncTrap.cpp */; };
-		56887DD914759AFD00800478 /* MemberFuncTri.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DB314759AFC00800478 /* MemberFuncTri.cpp */; };
-		56887DDA14759AFD00800478 /* MOMDefuzzSetObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DB514759AFC00800478 /* MOMDefuzzSetObj.cpp */; };
-		56887DDB14759AFD00800478 /* MOMDefuzzVarObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DB714759AFC00800478 /* MOMDefuzzVarObj.cpp */; };
-		56887DE014759AFD00800478 /* readme.txt in Resources */ = {isa = PBXBuildFile; fileRef = 56887DBF14759AFC00800478 /* readme.txt */; };
-		56887DE114759AFD00800478 /* RuleArray.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56887DC014759AFC00800478 /* RuleArray.cpp */; };
 		56CCECCC1481827E00AEF420 /* fuzzy_ai_path_tree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56CCECCB1481827E00AEF420 /* fuzzy_ai_path_tree.cpp */; };
 		56E4F5AC1498BD430030AB50 /* fuzzy_ai_taggable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 56E4F5AB1498BD430030AB50 /* fuzzy_ai_taggable.cpp */; };
 		95017B41124698C400C90D56 /* help_screen_4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95017B3F124698C400C90D56 /* help_screen_4.cpp */; };
@@ -419,56 +393,8 @@
 /* Begin PBXFileReference section */
 		5610F3541471868600DAD96F /* fuzzy_ai_controller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fuzzy_ai_controller.cpp; sourceTree = "<group>"; };
 		5610F3551471868600DAD96F /* fuzzy_ai_controller.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fuzzy_ai_controller.hpp; sourceTree = "<group>"; };
-		56404A4C147ABFB700CC41CC /* crossPlatform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crossPlatform.h; sourceTree = "<group>"; };
 		566E370A147D071400A75C28 /* fuzzy_data_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fuzzy_data_manager.cpp; sourceTree = "<group>"; };
 		566E370B147D071400A75C28 /* fuzzy_data_manager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fuzzy_data_manager.hpp; sourceTree = "<group>"; };
-		56887D8B14759AFC00800478 /* COGDefuzzSetObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = COGDefuzzSetObj.cpp; sourceTree = "<group>"; };
-		56887D8C14759AFC00800478 /* COGDefuzzSetObj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = COGDefuzzSetObj.h; sourceTree = "<group>"; };
-		56887D8D14759AFC00800478 /* COGDefuzzVarObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = COGDefuzzVarObj.cpp; sourceTree = "<group>"; };
-		56887D8E14759AFC00800478 /* COGDefuzzVarObj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = COGDefuzzVarObj.h; sourceTree = "<group>"; };
-		56887D8F14759AFC00800478 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
-		56887D9014759AFC00800478 /* DefuzzSetObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DefuzzSetObj.cpp; sourceTree = "<group>"; };
-		56887D9114759AFC00800478 /* DefuzzSetObj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DefuzzSetObj.h; sourceTree = "<group>"; };
-		56887D9214759AFC00800478 /* DefuzzVarObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DefuzzVarObj.cpp; sourceTree = "<group>"; };
-		56887D9314759AFC00800478 /* DefuzzVarObj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DefuzzVarObj.h; sourceTree = "<group>"; };
-		56887D9414759AFC00800478 /* FFLLAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FFLLAPI.cpp; sourceTree = "<group>"; };
-		56887D9514759AFC00800478 /* FFLLAPI.def */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = FFLLAPI.def; sourceTree = "<group>"; };
-		56887D9614759AFC00800478 /* FFLLAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFLLAPI.h; sourceTree = "<group>"; };
-		56887D9714759AFC00800478 /* FFLLBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FFLLBase.cpp; sourceTree = "<group>"; };
-		56887D9814759AFC00800478 /* FFLLBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFLLBase.h; sourceTree = "<group>"; };
-		56887D9914759AFC00800478 /* FuzzyModelBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FuzzyModelBase.cpp; sourceTree = "<group>"; };
-		56887D9A14759AFC00800478 /* FuzzyModelBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FuzzyModelBase.h; sourceTree = "<group>"; };
-		56887D9B14759AFC00800478 /* FuzzyOutSet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FuzzyOutSet.cpp; sourceTree = "<group>"; };
-		56887D9C14759AFC00800478 /* FuzzyOutSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FuzzyOutSet.h; sourceTree = "<group>"; };
-		56887D9D14759AFC00800478 /* FuzzyOutVariable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FuzzyOutVariable.cpp; sourceTree = "<group>"; };
-		56887D9E14759AFC00800478 /* FuzzyOutVariable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FuzzyOutVariable.h; sourceTree = "<group>"; };
-		56887DA114759AFC00800478 /* FuzzySetBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FuzzySetBase.cpp; sourceTree = "<group>"; };
-		56887DA214759AFC00800478 /* FuzzySetBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FuzzySetBase.h; sourceTree = "<group>"; };
-		56887DA314759AFC00800478 /* FuzzyVariableBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FuzzyVariableBase.cpp; sourceTree = "<group>"; };
-		56887DA414759AFC00800478 /* FuzzyVariableBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FuzzyVariableBase.h; sourceTree = "<group>"; };
-		56887DA614759AFC00800478 /* ffll_gcc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = ffll_gcc.a; sourceTree = "<group>"; };
-		56887DA714759AFC00800478 /* ffll_gcc.dev */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ffll_gcc.dev; sourceTree = "<group>"; };
-		56887DA814759AFC00800478 /* Makefile.win */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.win; sourceTree = "<group>"; };
-		56887DA914759AFC00800478 /* readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = readme.txt; sourceTree = "<group>"; };
-		56887DAA14759AFC00800478 /* license.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = license.txt; sourceTree = "<group>"; };
-		56887DAB14759AFC00800478 /* MemberFuncBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemberFuncBase.cpp; sourceTree = "<group>"; };
-		56887DAC14759AFC00800478 /* MemberFuncBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberFuncBase.h; sourceTree = "<group>"; };
-		56887DAD14759AFC00800478 /* MemberFuncSCurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemberFuncSCurve.cpp; sourceTree = "<group>"; };
-		56887DAE14759AFC00800478 /* MemberFuncSCurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberFuncSCurve.h; sourceTree = "<group>"; };
-		56887DAF14759AFC00800478 /* MemberFuncSingle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemberFuncSingle.cpp; sourceTree = "<group>"; };
-		56887DB014759AFC00800478 /* MemberFuncSingle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberFuncSingle.h; sourceTree = "<group>"; };
-		56887DB114759AFC00800478 /* MemberFuncTrap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemberFuncTrap.cpp; sourceTree = "<group>"; };
-		56887DB214759AFC00800478 /* MemberFuncTrap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberFuncTrap.h; sourceTree = "<group>"; };
-		56887DB314759AFC00800478 /* MemberFuncTri.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemberFuncTri.cpp; sourceTree = "<group>"; };
-		56887DB414759AFC00800478 /* MemberFuncTri.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemberFuncTri.h; sourceTree = "<group>"; };
-		56887DB514759AFC00800478 /* MOMDefuzzSetObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MOMDefuzzSetObj.cpp; sourceTree = "<group>"; };
-		56887DB614759AFC00800478 /* MOMDefuzzSetObj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MOMDefuzzSetObj.h; sourceTree = "<group>"; };
-		56887DB714759AFC00800478 /* MOMDefuzzVarObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MOMDefuzzVarObj.cpp; sourceTree = "<group>"; };
-		56887DB814759AFC00800478 /* MOMDefuzzVarObj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MOMDefuzzVarObj.h; sourceTree = "<group>"; };
-		56887DBF14759AFC00800478 /* readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = readme.txt; sourceTree = "<group>"; };
-		56887DC014759AFC00800478 /* RuleArray.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RuleArray.cpp; sourceTree = "<group>"; };
-		56887DC114759AFC00800478 /* RuleArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuleArray.h; sourceTree = "<group>"; };
-		56887E2414759BE800800478 /* COGDefuzz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = COGDefuzz.h; sourceTree = "<group>"; };
 		56CCECC91481826400AEF420 /* fuzzy_ai_path_tree.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fuzzy_ai_path_tree.hpp; sourceTree = "<group>"; };
 		56CCECCB1481827E00AEF420 /* fuzzy_ai_path_tree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fuzzy_ai_path_tree.cpp; sourceTree = "<group>"; };
 		56E4F5AB1498BD430030AB50 /* fuzzy_ai_taggable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fuzzy_ai_taggable.cpp; sourceTree = "<group>"; };
@@ -1452,7 +1378,6 @@
 				9551C9F30FC1B7EE00DB481B /* Vorbis.framework in Frameworks */,
 				954E486A11B19C4100B1DF63 /* fribidi.framework in Frameworks */,
 				9538E2E912C2682B00172896 /* IrrFramework.framework in Frameworks */,
-				56887DD014759AFC00800478 /* ffll_gcc.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1479,69 +1404,6 @@
 				9551C8210FC1B6FF00DB481B /* SuperTuxKart.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		56887D8914759AFC00800478 /* ffll */ = {
-			isa = PBXGroup;
-			children = (
-				56887E2414759BE800800478 /* COGDefuzz.h */,
-				56887D8B14759AFC00800478 /* COGDefuzzSetObj.cpp */,
-				56887D8C14759AFC00800478 /* COGDefuzzSetObj.h */,
-				56404A4C147ABFB700CC41CC /* crossPlatform.h */,
-				56887D8D14759AFC00800478 /* COGDefuzzVarObj.cpp */,
-				56887D8E14759AFC00800478 /* COGDefuzzVarObj.h */,
-				56887D8F14759AFC00800478 /* debug.h */,
-				56887D9014759AFC00800478 /* DefuzzSetObj.cpp */,
-				56887D9114759AFC00800478 /* DefuzzSetObj.h */,
-				56887D9214759AFC00800478 /* DefuzzVarObj.cpp */,
-				56887D9314759AFC00800478 /* DefuzzVarObj.h */,
-				56887D9414759AFC00800478 /* FFLLAPI.cpp */,
-				56887D9514759AFC00800478 /* FFLLAPI.def */,
-				56887D9614759AFC00800478 /* FFLLAPI.h */,
-				56887D9714759AFC00800478 /* FFLLBase.cpp */,
-				56887D9814759AFC00800478 /* FFLLBase.h */,
-				56887D9914759AFC00800478 /* FuzzyModelBase.cpp */,
-				56887D9A14759AFC00800478 /* FuzzyModelBase.h */,
-				56887D9B14759AFC00800478 /* FuzzyOutSet.cpp */,
-				56887D9C14759AFC00800478 /* FuzzyOutSet.h */,
-				56887D9D14759AFC00800478 /* FuzzyOutVariable.cpp */,
-				56887D9E14759AFC00800478 /* FuzzyOutVariable.h */,
-				56887DA114759AFC00800478 /* FuzzySetBase.cpp */,
-				56887DA214759AFC00800478 /* FuzzySetBase.h */,
-				56887DA314759AFC00800478 /* FuzzyVariableBase.cpp */,
-				56887DA414759AFC00800478 /* FuzzyVariableBase.h */,
-				56887DA514759AFC00800478 /* GCC */,
-				56887DAA14759AFC00800478 /* license.txt */,
-				56887DAB14759AFC00800478 /* MemberFuncBase.cpp */,
-				56887DAC14759AFC00800478 /* MemberFuncBase.h */,
-				56887DAD14759AFC00800478 /* MemberFuncSCurve.cpp */,
-				56887DAE14759AFC00800478 /* MemberFuncSCurve.h */,
-				56887DAF14759AFC00800478 /* MemberFuncSingle.cpp */,
-				56887DB014759AFC00800478 /* MemberFuncSingle.h */,
-				56887DB114759AFC00800478 /* MemberFuncTrap.cpp */,
-				56887DB214759AFC00800478 /* MemberFuncTrap.h */,
-				56887DB314759AFC00800478 /* MemberFuncTri.cpp */,
-				56887DB414759AFC00800478 /* MemberFuncTri.h */,
-				56887DB514759AFC00800478 /* MOMDefuzzSetObj.cpp */,
-				56887DB614759AFC00800478 /* MOMDefuzzSetObj.h */,
-				56887DB714759AFC00800478 /* MOMDefuzzVarObj.cpp */,
-				56887DB814759AFC00800478 /* MOMDefuzzVarObj.h */,
-				56887DBF14759AFC00800478 /* readme.txt */,
-				56887DC014759AFC00800478 /* RuleArray.cpp */,
-				56887DC114759AFC00800478 /* RuleArray.h */,
-			);
-			path = ffll;
-			sourceTree = "<group>";
-		};
-		56887DA514759AFC00800478 /* GCC */ = {
-			isa = PBXGroup;
-			children = (
-				56887DA614759AFC00800478 /* ffll_gcc.a */,
-				56887DA714759AFC00800478 /* ffll_gcc.dev */,
-				56887DA814759AFC00800478 /* Makefile.win */,
-				56887DA914759AFC00800478 /* readme.txt */,
-			);
-			path = GCC;
 			sourceTree = "<group>";
 		};
 		9513B40E0F0EDE80005D29F6 /* Frameworks */ = {
@@ -2498,7 +2360,6 @@
 				95C2AE250F296541000D3E5D /* challenges */,
 				95D950CC0FE473CA002E10AD /* config */,
 				95C2AE370F296541000D3E5D /* enet */,
-				56887D8914759AFC00800478 /* ffll */,
 				952A152C103F66D600B1895D /* graphics */,
 				958330B110122B4A00C5137E /* guiengine */,
 				95C65D750F532F7D00BE7BA7 /* io */,
@@ -2919,7 +2780,6 @@
 				9551C81D0FC1B6FF00DB481B /* Resources */,
 				9551C81E0FC1B6FF00DB481B /* Sources */,
 				9551C81F0FC1B6FF00DB481B /* Frameworks */,
-				9507E9C60FC1CD1C00BD2B92 /* Copy data files */,
 				9507E9E70FC1CDDF00BD2B92 /* Copy frameworks */,
 			);
 			buildRules = (
@@ -2960,33 +2820,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				9507E9B70FC1CCE900BD2B92 /* stk.icns in Resources */,
-				56887DC814759AFC00800478 /* FFLLAPI.def in Resources */,
-				56887DD114759AFD00800478 /* ffll_gcc.dev in Resources */,
-				56887DD214759AFD00800478 /* Makefile.win in Resources */,
-				56887DD314759AFD00800478 /* readme.txt in Resources */,
-				56887DD414759AFD00800478 /* license.txt in Resources */,
-				56887DE014759AFD00800478 /* readme.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		9507E9C60FC1CD1C00BD2B92 /* Copy data files */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Copy data files";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# copy data files\n\necho \"Copying Data Files\"\n\nif [ \"${CONFIGURATION}\" = \"Release\" ]\nthen\n\nmkdir -p \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/data\"\ncp -rf \"${PROJECT_DIR}/../../../data\" \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/\"\n\"${PROJECT_DIR}/cleanupRelease.sh\"\n\nelse\n\nmkdir -p \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/\"\nln -sFhf \"${PROJECT_DIR}/../../../data\" \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/\"\ncp -rf \"${PROJECT_DIR}/../../ffll/fcl/\" \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/data/ai/fcl\"\nrm -rf \"${CONFIGURATION_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Resources/data/ai/fcl/.svn\"\nfi";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9551C81E0FC1B6FF00DB481B /* Sources */ = {
@@ -3334,25 +3171,6 @@
 				95703D1C1468C63F006334D7 /* btQuickprof.cpp in Sources */,
 				95703D1D1468C63F006334D7 /* btSerializer.cpp in Sources */,
 				5610F3561471868600DAD96F /* fuzzy_ai_controller.cpp in Sources */,
-				56887DC314759AFC00800478 /* COGDefuzzSetObj.cpp in Sources */,
-				56887DC414759AFC00800478 /* COGDefuzzVarObj.cpp in Sources */,
-				56887DC514759AFC00800478 /* DefuzzSetObj.cpp in Sources */,
-				56887DC614759AFC00800478 /* DefuzzVarObj.cpp in Sources */,
-				56887DC714759AFC00800478 /* FFLLAPI.cpp in Sources */,
-				56887DC914759AFC00800478 /* FFLLBase.cpp in Sources */,
-				56887DCA14759AFC00800478 /* FuzzyModelBase.cpp in Sources */,
-				56887DCB14759AFC00800478 /* FuzzyOutSet.cpp in Sources */,
-				56887DCC14759AFC00800478 /* FuzzyOutVariable.cpp in Sources */,
-				56887DCE14759AFC00800478 /* FuzzySetBase.cpp in Sources */,
-				56887DCF14759AFC00800478 /* FuzzyVariableBase.cpp in Sources */,
-				56887DD514759AFD00800478 /* MemberFuncBase.cpp in Sources */,
-				56887DD614759AFD00800478 /* MemberFuncSCurve.cpp in Sources */,
-				56887DD714759AFD00800478 /* MemberFuncSingle.cpp in Sources */,
-				56887DD814759AFD00800478 /* MemberFuncTrap.cpp in Sources */,
-				56887DD914759AFD00800478 /* MemberFuncTri.cpp in Sources */,
-				56887DDA14759AFD00800478 /* MOMDefuzzSetObj.cpp in Sources */,
-				56887DDB14759AFD00800478 /* MOMDefuzzVarObj.cpp in Sources */,
-				56887DE114759AFD00800478 /* RuleArray.cpp in Sources */,
 				566E370C147D071400A75C28 /* fuzzy_data_manager.cpp in Sources */,
 				56CCECCC1481827E00AEF420 /* fuzzy_ai_path_tree.cpp in Sources */,
 				56E4F5AC1498BD430030AB50 /* fuzzy_ai_taggable.cpp in Sources */,

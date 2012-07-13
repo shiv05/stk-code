@@ -494,24 +494,41 @@ void PlayerController::collectedItem(const Item &item, int add_info, float old_e
 }   // collectedItem
 
 //------------------------------------------------------------------------------
-/** Player evaluation computation method. Simply call computeFuzzyModel with the
- *  right parameters.
+/** Player evaluation computation method.
  *  TODO : make this comment doxygen compliant
  */
 int PlayerController::computePlayerEvaluation(float playerAverageRank,
                                                float playerCrashCount)
 {
-    const std::string &fileName = "player_evaluation.fcl";
+//    const std::string &fileName = "player_evaluation.fcl";
 
-	// The rank of the player need to be normalized before computing
-    float normalized_player_average_rank;
-    unsigned int kartCount = World::getWorld()->getNumKarts();
-    normalized_player_average_rank = (playerAverageRank*10)/kartCount;
+	// Normalize rank (0 <= rank <= 10)
+    float normRank = ((playerAverageRank-1)*10) /
+                                           (World::getWorld()->getNumKarts()-1);
     
     //cout << "Kartn = " << kartCount << ", Av" << playerAverageRank << ", NAvRk = " << normalized_player_average_rank << ", CC = " << playerCrashCount << endl;
-    vector<float> evaluationParameters;
-    evaluationParameters.push_back(normalized_player_average_rank);
-    evaluationParameters.push_back(playerCrashCount);
+//    vector<float> evaluationParameters;
+//    evaluationParameters.push_back(normalized_player_average_rank);
+//    evaluationParameters.push_back(playerCrashCount);
 
-    return  (int) computeFuzzyModel(fileName, evaluationParameters);
+    // -- player evaluation --
+    int eval;
+    if(normRank >= 7.65)                // Bad rank
+        eval = 3;                       //     => bad player.
+    else if(normRank >= 2.75)           // Average Rank...
+    {                                   // and
+        if(playerCrashCount >= 3.25)    // lots of crashes recently
+            eval = 3;                   //     => bad player.
+        else                            // few crashes
+            eval = 2;                   //     => average player.
+    }
+    else //if(playerAverageRank >= 0)   // Good Rank...
+    {                                   // and
+        if(playerCrashCount >= 3.25)    // lots of crashes recently
+            eval = 2;                   //     => average player.
+        else                            // few crashes
+            eval = 1;                   //     => good player.
+    }
+    
+    return eval;// (int) computeFuzzyModel(fileName, evaluationParameters);
 }

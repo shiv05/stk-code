@@ -45,7 +45,7 @@ namespace irr
   */
 
 /**-------------------------------------------------------------------------
- * Attraction point structure, used for bonus items gathering
+ * "Attraction point" structure, used for bonus items gathering
  */
 struct AttrPoint
 {
@@ -61,6 +61,9 @@ struct AttrPoint
                                                 object(NULL)    {}
 };
 
+/**-------------------------------------------------------------------------
+ * FuzzyAIController
+ */
 class FuzzyAIController : public AIBaseController
 {
 private:
@@ -202,11 +205,11 @@ private:
     //--------------------------------------------------------------------------
     // Fuzzy AI methods
 
-    int   computeCompetitiveness  (int          player_level,
-                                   unsigned int current_ranking );
+    int   computeCompetitiveness  (int          playerEval,
+                                   unsigned int currentRanking );
 
-    int   computeAggressiveness   (unsigned int kart_class,
-                                   unsigned int current_ranking );
+//    int   computeAggressiveness   (unsigned int kart_class,
+//                                   unsigned int current_ranking );
 
     float computeDifficultyTag    (float        angle,
                                    int          direction,

@@ -85,6 +85,7 @@ void FuzzyDataManager::createPathTrees()
         curNode ++;
     } // while
     
+    // Debug output. TODO add "if debug"
     cout << "create Trees debug " << endl;
     for(unsigned int i=0; i<m_pathTrees.size() ; i++)
     {

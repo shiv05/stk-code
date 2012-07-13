@@ -28,8 +28,9 @@ class  FuzzyAIPathTree;
 struct PathData;
 struct TreeNode;
 
-/** The FuzzyDataManager is used by multiple instances of the FuzzyAIController,
- *  to store and retrieve common data used for the AI modules' computation.
+/**----------------------------------------------------------------------------- 
+ * The FuzzyDataManager is used by multiple instances of the FuzzyAIController,
+ *  to store and retrieve common data :
  *  - Player data (currently 1 player supported)
  *      - player crash count, updated by the PlayerController,
  *      - player average rank, updated by the PlayerController,
@@ -68,8 +69,9 @@ public :
     // -- Getters --
     int         getPlayerEvaluation()         { return m_player_eval; }
     
-    const std::vector<std::vector<PathData*>*>* getPathData(
-                                                    unsigned int nodeId ) const;
+    const std::vector<std::vector<PathData*>*>*
+                getPathData(unsigned int nodeId ) const;
+
     // Todo comment
     void        createPathTrees();    
 };

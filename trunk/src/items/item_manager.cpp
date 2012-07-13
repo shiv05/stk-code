@@ -296,7 +296,7 @@ void ItemManager::getCloseItems(std::vector<Item*>& items,
     // Only do this on the server
     //if(network_manager->getMode()==NetworkManager::NW_CLIENT) return NULL;
         
-    // for each item of the given type, keep it if it is close to the kart
+    // for each item of the given type, keep it if it's close to the kart
     for(AllItemTypes::iterator i=m_all_items.begin(); i!=m_all_items.end(); i++)
     {
         // Don't take in account collected items

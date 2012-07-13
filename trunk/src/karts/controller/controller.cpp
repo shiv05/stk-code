@@ -58,7 +58,7 @@ const irr::core::stringw& Controller::getNamePostfix() const
  *  TODO : better handling of fcl file opening errors (see FuzzyModelBase->load_from_fcl_file())
  *  TODO : make this comment doxygen compliant
  */
-
+/*
 float Controller::computeFuzzyModel(const std::string&  file_name,
                                            std::vector<float> parameters )
 {
@@ -86,3 +86,4 @@ float Controller::computeFuzzyModel(const std::string&  file_name,
     // Compute and return output
 	return (float) ffll_get_output_value(model, child);
 }
+*/

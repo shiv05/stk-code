@@ -135,7 +135,7 @@ FuzzyAIController::FuzzyAIController(Kart *kart) :
     const Vec3 v=QuadGraph::get()->getQuadOfNode(m_next_node_index[m_track_node]).getCenter();
     m_mainAPt.x = v.getX();
     m_mainAPt.z = v.getZ();
-    m_mainAPt.attraction = 6.4f;//6.4 is an "upper medium" value (see fcl files)
+    m_mainAPt.attraction = 6.4f;//6.4 is an "upper medium" value (see difficulty tagging)
 
     m_attrPts.push_back(&m_mainAPt);
     
@@ -180,7 +180,7 @@ void FuzzyAIController::reset()
     m_kart_behind                = NULL;
     m_distance_behind            = 0.0f;
     
-    FuzzyAIController::instanceCount = 0;
+//    FuzzyAIController::instanceCount = 0;
 
     AIBaseController::reset();
     m_track_node               = QuadGraph::UNKNOWN_SECTOR;
@@ -310,7 +310,7 @@ void FuzzyAIController::update(float dt)
     }
 
     vector<Item*> closeItems;
-    item_manager->getCloseItems(closeItems, m_kart, 17.f);
+    item_manager->getCloseItems(closeItems, m_kart, 24.f);
     // If item count has changed, recompute attraction
     if(m_item_count != closeItems.size())
     {
@@ -451,8 +451,9 @@ int FuzzyAIController::computeCompetitiveness(int           playerEval,
 //    const std::string& file_name = "driving_style_competitiveness.fcl";
     
 	// Normalize rank (0 <= rank <= 10)
-    float normRank = ((currentRanking-1)*10) /
-                                           (World::getWorld()->getNumKarts()-1);
+	int kartCount = World::getWorld()->getNumKarts();
+	if(kartCount == 1) kartCount++; // to avoid dividing by 0
+    float normRank = ((currentRanking-1)*10) / (kartCount - 1);
 
 //    vector<float> evaluationParameters;
 //    evaluationParameters.push_back((float)player_level);
@@ -582,10 +583,10 @@ float FuzzyAIController::computeDifficultyTag(float        angle,   // degrees
 //    objectParameters.push_back(distance);
 
     // -- Compute difficulty --
-    int diff;
+    float diff;
     float distFactor = (distance / 12.5) - 1; // how distance will affect diff
-    if(angle <= 22.5)                       // Small angle
-        diff = 1 + distFactor;              //     => very easy
+    if(angle <= 20)                         // Small angle
+        diff = 0.75 + distFactor/2;         //     => very easy
     else if(angle <= 62.5)                  // Medium angle...
     {                                       // and
         if(direction <= 0)                  // target (next waypoint) side
@@ -600,7 +601,7 @@ float FuzzyAIController::computeDifficultyTag(float        angle,   // degrees
             diff = 3 + distFactor*2;        //     => easy but depends on dist.
     }
     else // if(angle > 62.5)                // Big angle
-        diff = 9.5 + distFactor/2;
+        diff = 10; //9.5 + distFactor/2;
     
     return diff; // computeFuzzyModel(file_name, objectParameters);
 }
@@ -707,7 +708,7 @@ void FuzzyAIController::handleSteering(float dt)
         {
             m_debug_sphere->setPosition(QuadGraph::get()->getQuadOfNode(next)
                        .getCenter().toIrrVector());
-           // TODO uncomment std::cout << "- Outside of road: steer to center point."<<std::endl;
+            std::cout << "- Outside of road: steer to center point."<<std::endl;
         }
 #endif
     }
@@ -1277,7 +1278,7 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
     float         smallestDist = 99999.f;
     unsigned int  closestId    = 99999;
     
-    // Get close items
+    // Get (very) close items
     item_manager->getCloseItems(closeItems, m_kart, 7.5f);
     // Get the closest bad item
     for(unsigned int i=0; i<closeItems.size(); i++)
@@ -1285,23 +1286,33 @@ void FuzzyAIController::checkCrashes(int steps, const Vec3& pos )
         if(closeItems[i]->getType() == Item::ITEM_BANANA ||
            closeItems[i]->getType() == Item::ITEM_BUBBLEGUM )
         {
+            // -- Method 1 : look at the closest item --
             dist = (closeItems[i]->getXYZ() - m_kart->getXYZ()).length();
             if(dist < smallestDist)
             {
                 smallestDist = dist;
                 closestId = i;
-            } // if it is closest than the currently known closest
+            } // if it's closest than the currently known closest
+            
+            // -- Method 2 : look at the easiest to reach item --
+//            diff = estimateDifficultyToReach(closeItems[i]->getXYZ());
+//            if(diff < smallestDiff)
+//            {
+//                smallestDiff = diff;
+//                easiestId = i;
+//            }
+            
         } // if this is a bad item
     } // for each close item
-    if(closestId < 99999)
+    if(closestId != 99999)
     {
         crashItem = closeItems[closestId];
         diff = estimateDifficultyToReach(crashItem->getXYZ());
-        if(diff >= 0 && diff < 0.75f)       // crash
+        if(/*diff >= 0 && */diff < 1.5f)       // crash
             m_crashes.m_item = crashItem;
         else                            // no crash
             m_crashes.m_item = NULL;
-    } // if there is bad items around
+    } // if there are bad items around
     else
         m_crashes.m_item = NULL;
     
@@ -1491,14 +1502,19 @@ float FuzzyAIController::estimateDifficultyToReach(const Vec3& point)
     float           kartX = m_kart->getXYZ().getX();
     float           kartZ = m_kart->getXYZ().getZ();
     
+//    const int next = m_next_node_index[m_track_node]; TODODO
+
     // Get the distance between the given point and the kart
     dist = (m_kart->getXYZ() - point).length();
     
     // Kart to point vector
     kartToPoint = vector2d<float>(point.getX()-kartX, point.getZ()-kartZ);
     
-    // Kart to next node vector
-    kartToNextNode = vector2d<float>(m_mainAPt.x-kartX, m_mainAPt.z-kartZ);
+    // Kart to next node vector --  method 1
+//    kartToNextNode = vector2d<float>(m_mainAPt.x-kartX, m_mainAPt.z-kartZ);
+    //                              method 2
+    core::vector3df nextNode = QuadGraph::get()->getQuadOfNode(m_next_node_index[m_next_node_index[m_track_node]]).getCenter().toIrrVector();
+    kartToNextNode = vector2d<float>(nextNode.X-kartX, nextNode.Z-kartZ);
     
     // (KartToNextNode, kartToPoint) angle
     angle = (float)kartToNextNode.getAngleTrig() - (float)kartToPoint.getAngleTrig();

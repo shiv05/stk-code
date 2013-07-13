@@ -34,67 +34,106 @@ GameSetup::~GameSetup()
 
 //-----------------------------------------------------------------------------
 
-void GameSetup::addPlayer(NetworkPlayerProfile profile)
+void GameSetup::addPlayer(NetworkPlayerProfile* profile)
 {
     m_players.push_back(profile);
+    Log::verbose("GameSetup", "New player in the game setup. Global id : %u, "
+        "Race id : %d.", profile->user_profile->getUserID(), profile->race_id);
 }
 
 //-----------------------------------------------------------------------------
- 
-void GameSetup::removePlayer(uint32_t id)
+
+bool GameSetup::removePlayer(uint32_t id)
 {
     for (unsigned int i = 0; i < m_players.size(); i++)
     {
-        if (m_players[i].user_profile->getUserID() == id)
+        if (m_players[i]->user_profile->getUserID() == id)
         {
+            delete m_players[i];
             m_players.erase(m_players.begin()+i, m_players.begin()+i+1);
-            Log::verbose("GameSetup", "Removed a player from the game setup.");
-            return;
+            Log::verbose("GameSetup", "Removed a player from the game setup. "
+                        "Remains %u.", m_players.size());
+            return true;
         }
+    }
+    return false;
+}
+
+//-----------------------------------------------------------------------------
+
+bool GameSetup::removePlayer(uint8_t id)
+{
+    for (unsigned int i = 0; i < m_players.size(); i++)
+    {
+        if (m_players[i]->race_id == id) // check the given id
+        {
+            delete m_players[i];
+            m_players.erase(m_players.begin()+i, m_players.begin()+i+1);
+            Log::verbose("GameSetup", "Removed a player from the game setup. "
+                        "Remains %u.", m_players.size());
+            return true;
+        }
+    }
+    return false;
+}
+
+//-----------------------------------------------------------------------------
+
+void GameSetup::setPlayerKart(uint8_t id, std::string kart_name)
+{
+    bool found = false;
+    for (unsigned int i = 0; i < m_players.size(); i++)
+    {
+        if (m_players[i]->race_id == id)
+        {
+            m_players[i]->kart_name = kart_name;
+            Log::info("GameSetup::setPlayerKart", "Player %d took kart %s", 
+                        id, kart_name.c_str());
+            found = true;
+        }
+    }
+    if (!found)
+    {
+        Log::info("GameSetup::setPlayerKart", "The player %d was unknown.", id);
     }
 }
 
 //-----------------------------------------------------------------------------
- 
-void GameSetup::removePlayer(uint8_t id)
-{
-    for (unsigned int i = 0; i < m_players.size(); i++)
-    {
-        if (m_players[i].race_id == id) // check the given id
-        {
-            m_players.erase(m_players.begin()+i, m_players.begin()+i+1);
-            Log::verbose("GameSetup", "Removed a player from the game setup.");
-            return;
-        }
-    }
-}
 
-//-----------------------------------------------------------------------------
-        
 const NetworkPlayerProfile* GameSetup::getProfile(uint32_t id)
 {
     for (unsigned int i = 0; i < m_players.size(); i++)
     {
-        if (m_players[i].user_profile->getUserID() == id)
+        if (m_players[i]->user_profile->getUserID() == id)
         {
-            return &m_players[i];
+            return m_players[i];
         }
     }
     return NULL;
 }
 
 //-----------------------------------------------------------------------------
- 
+
 const NetworkPlayerProfile* GameSetup::getProfile(uint8_t id)
 {
     for (unsigned int i = 0; i < m_players.size(); i++)
     {
-        if (m_players[i].race_id == id)
+        if (m_players[i]->race_id == id)
         {
-            return &m_players[i];
+            return m_players[i];
         }
     }
     return NULL;
 }
 
 //-----------------------------------------------------------------------------
+
+bool GameSetup::isKartAvailable(std::string kart_name)
+{
+    for (unsigned int i = 0; i < m_players.size(); i++)
+    {
+        if (m_players[i]->kart_name == kart_name)
+            return false;
+    }
+    return true;
+}

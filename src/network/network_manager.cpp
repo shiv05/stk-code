@@ -43,12 +43,12 @@ NetworkManager::NetworkManager()
 
 //-----------------------------------------------------------------------------
 
-NetworkManager::~NetworkManager() 
+NetworkManager::~NetworkManager()
 {
     ProtocolManager::kill();
-       
+
     if (m_localhost)
-        delete m_localhost; 
+        delete m_localhost;
     while(!m_peers.empty())
     {
         delete m_peers.back();
@@ -59,7 +59,7 @@ NetworkManager::~NetworkManager()
 //-----------------------------------------------------------------------------
 
 void NetworkManager::run()
-{ 
+{
     // create the protocol manager
     ProtocolManager::getInstance<ProtocolManager>();
 }
@@ -70,7 +70,7 @@ bool NetworkManager::connect(TransportAddress peer)
 {
     if (peerExists(peer))
         return isConnectedTo(peer);
-    
+
     return STKPeer::connectToHost(m_localhost, peer, 2, 0);
 }
 
@@ -88,42 +88,26 @@ void NetworkManager::setManualSocketsMode(bool manual)
 
 void NetworkManager::notifyEvent(Event* event)
 {
-    Log::info("NetworkManager", "EVENT received");
-    switch (event->type) 
+    Log::info("NetworkManager", "EVENT received of type %d", (int)(event->type));
+    STKPeer* peer = *event->peer;
+    if (event->type == EVENT_TYPE_CONNECTED)
     {
-        case EVENT_TYPE_MESSAGE:
-            Log::info("NetworkManager", "Message, Sender : %u, message = \"%s\"", event->peer->getAddress(), event->data.c_str());
-            break;
-        case EVENT_TYPE_DISCONNECTED:
-        {
-            Log::info("NetworkManager", "Somebody is now disconnected. There are now %lu peers.", m_peers.size());
-            Log::info("NetworkManager", "Disconnected host: %i.%i.%i.%i:%i", event->peer->getAddress()>>24&0xff, event->peer->getAddress()>>16&0xff, event->peer->getAddress()>>8&0xff, event->peer->getAddress()&0xff,event->peer->getPort());
-            // remove the peer:
-            bool removed = false; 
-            for (unsigned int i = 0; i < m_peers.size(); i++)
-            {
-                if (m_peers[i] == event->peer && !removed) // remove only one
-                {
-                    delete m_peers[i];
-                    m_peers.erase(m_peers.begin()+i, m_peers.begin()+i+1);
-                    Log::info("NetworkManager", "The peer has been removed from the Network Manager.");
-                    removed = true;
-                }
-                else if (m_peers[i] == event->peer)
-                {
-                    Log::fatal("NetworkManager", "Multiple peers match the disconnected one.");
-                }
-            }
-            if (!removed)
-                Log::fatal("NetworkManager", "The peer that has been disconnected was not registered by the Network Manager.");
-            break;
-        }
-        case EVENT_TYPE_CONNECTED:
-            Log::info("NetworkManager", "A client has just connected. There are now %lu peers.", m_peers.size() + 1);
-            // create the new peer:
-            m_peers.push_back(event->peer);
-            break;
+        Log::info("NetworkManager", "A client has just connected. There are now %lu peers.", m_peers.size() + 1);
+        // create the new peer:
+        m_peers.push_back(peer);
     }
+    if (event->type == EVENT_TYPE_MESSAGE)
+    {
+        uint32_t addr = peer->getAddress();
+        Log::info("NetworkManager", "Message, Sender : %i.%i.%i.%i, message = \"%s\"",
+                  ((addr>>24)&0xff),
+                  ((addr>>16)&0xff),
+                  ((addr>>8)&0xff),
+                  (addr&0xff), event->data.c_str());
+
+    }
+
+    // notify for the event now.
     ProtocolManager::getInstance()->notifyEvent(event);
 }
 
@@ -141,8 +125,10 @@ void NetworkManager::sendPacketExcept(STKPeer* peer, const NetworkString& data)
 {
     for (unsigned int i = 0; i < m_peers.size(); i++)
     {
-        if (m_peers[i] != peer)
+        if (!m_peers[i]->isSamePeer(peer))
+        {
             m_peers[i]->sendPacket(data);
+        }
     }
 }
 
@@ -170,6 +156,37 @@ void NetworkManager::setLogin(std::string username, std::string password)
 void NetworkManager::setPublicAddress(TransportAddress addr)
 {
     m_public_address = addr;
+}
+//-----------------------------------------------------------------------------
+
+void NetworkManager::removePeer(STKPeer* peer)
+{
+    Log::debug("NetworkManager", "Disconnected host: %i.%i.%i.%i:%i",
+               peer->getAddress()>>24&0xff,
+               peer->getAddress()>>16&0xff,
+               peer->getAddress()>>8&0xff,
+               peer->getAddress()&0xff,
+               peer->getPort());
+    // remove the peer:
+    bool removed = false;
+    for (unsigned int i = 0; i < m_peers.size(); i++)
+    {
+        if (m_peers[i]->isSamePeer(peer) && !removed) // remove only one
+        {
+            delete m_peers[i];
+            m_peers.erase(m_peers.begin()+i, m_peers.begin()+i+1);
+            Log::verbose("NetworkManager", "The peer has been removed from the Network Manager.");
+            removed = true;
+        }
+        else if (m_peers[i]->isSamePeer(peer))
+        {
+            Log::fatal("NetworkManager", "Multiple peers match the disconnected one.");
+        }
+    }
+    if (!removed)
+        Log::warn("NetworkManager", "The peer that has been disconnected was not registered by the Network Manager.");
+
+    Log::info("NetworkManager", "Somebody is now disconnected. There are now %lu peers.", m_peers.size());
 }
 
 //-----------------------------------------------------------------------------

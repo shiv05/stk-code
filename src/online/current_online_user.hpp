@@ -22,6 +22,8 @@
 #include "online/online_user.hpp"
 
 #include <irrString.h>
+#include "utils/types.hpp"
+#include "online/server.hpp"
 
 #include <string>
 
@@ -58,7 +60,15 @@ class CurrentOnlineUser : public OnlineUser
                         bool terms,
                         irr::core::stringw &info);
         // Logout - Best to be followed by CurrentOnlineUser::deallocate
-        bool signOut();
+        bool signOut(   irr::core::stringw &info);
+        bool requestJoin(   uint32_t server_id,
+                            irr::core::stringw &info);
+
+
+        bool createServer(  const irr::core::stringw &name,
+                            int max_players,
+                            irr::core::stringw &info);
+
         /** Returns the username if signed in. */
         irr::core::stringw getUserName() const;
         std::string getToken() const    { return m_token;           }

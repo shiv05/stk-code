@@ -28,9 +28,9 @@
 #include <string>
 
 /*! \class PlayerProfile
- *  \brief Contains the profile of a player. 
+ *  \brief Contains the profile of a player.
  */
-class NetworkPlayerProfile 
+class NetworkPlayerProfile
 {
     public:
         NetworkPlayerProfile() { race_id = 0; user_profile = NULL; }
@@ -50,17 +50,22 @@ class GameSetup
     public:
         GameSetup();
         virtual ~GameSetup();
-        
-        void addPlayer(NetworkPlayerProfile profile); //!< Add a player.
-        void removePlayer(uint32_t id); //!< Remove a player by id.
-        void removePlayer(uint8_t id); //!< Remove a player by local id.
-        
+
+        void addPlayer(NetworkPlayerProfile* profile); //!< Add a player.
+        bool removePlayer(uint32_t id); //!< Remove a player by id.
+        bool removePlayer(uint8_t id); //!< Remove a player by local id.
+        void setPlayerKart(uint8_t id, std::string kart_name); //!< Set the kart of a player
+
+        std::vector<NetworkPlayerProfile*> getPlayers() { return m_players; }
         int getPlayerCount() { return m_players.size(); }
         const NetworkPlayerProfile* getProfile(uint32_t id); //!< Get a profile by database id
         const NetworkPlayerProfile* getProfile(uint8_t id); //!< Get the profile by the lobby id
         
+        bool isKartAvailable(std::string kart_name);
+        bool isKartAllowed(std::string kart_name) {return true; }
+
     protected:
-        std::vector<NetworkPlayerProfile> m_players; //!< Information about players
+        std::vector<NetworkPlayerProfile*> m_players; //!< Information about players
         NetworkPlayerProfile m_self_profile; //!< Information about self (client only)
 };
 

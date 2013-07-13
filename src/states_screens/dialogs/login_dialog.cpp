@@ -160,7 +160,7 @@ void LoginDialog::onUpdate(float dt)
     {
         ModalDialog::dismiss();
         if (m_open_registration_dialog)
-            new RegistrationDialog(0.8f, 0.9f);
+            new RegistrationDialog();
 
     }
 

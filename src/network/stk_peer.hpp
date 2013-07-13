@@ -21,6 +21,7 @@
 
 #include "network/stk_host.hpp"
 #include "network/network_string.hpp"
+#include "network/game_setup.hpp"
 #include <enet/enet.h>
 
 class STKPeer
@@ -28,27 +29,32 @@ class STKPeer
     friend class Event;
     public:
         STKPeer();
+        STKPeer(const STKPeer& peer);
         virtual ~STKPeer();
-        
+
         virtual void sendPacket(const NetworkString& data);
-        
         static bool connectToHost(STKHost* localhost, TransportAddress host, uint32_t channel_count, uint32_t data);
+        void disconnect();
         
+        void setClientServerToken(const uint32_t& token) { *m_client_server_token = token; *m_token_set = true; }
+        void unsetClientServerToken() { *m_token_set = false; }
+        void setPlayerProfile(NetworkPlayerProfile* profile) { *m_player_profile = profile; }
+        void setPlayerProfilePtr(NetworkPlayerProfile** profile) { m_player_profile = profile; }
+
         bool isConnected() const;
-        void setClientServerToken(const uint32_t& token) { m_client_server_token = token; m_token_set = true; }
-        void unsetClientServerToken() { m_token_set = false; }
-        
         uint32_t getAddress() const;
         uint16_t getPort() const;
-        uint32_t getClientServerToken() const;
-        bool     isClientServerTokenSet() const { return m_token_set; }
-        
-        bool operator==(const ENetPeer* peer) const;
-        
+        NetworkPlayerProfile* getPlayerProfile() { return *m_player_profile; }
+        uint32_t getClientServerToken() const   { return *m_client_server_token; }
+        bool     isClientServerTokenSet() const { return *m_token_set; }
+
+        bool isSamePeer(const STKPeer* peer) const;
+
     protected:
         ENetPeer* m_peer;
-        uint32_t m_client_server_token;
-        bool m_token_set;
+        NetworkPlayerProfile** m_player_profile;
+        uint32_t *m_client_server_token;
+        bool *m_token_set;
 };
 
 #endif // STK_PEER_HPP

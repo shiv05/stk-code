@@ -23,6 +23,7 @@
 #include "network/protocols/show_public_address.hpp"
 #include "network/protocols/get_peer_address.hpp"
 #include "network/protocols/connect_to_server.hpp"
+#include "network/protocols/client_lobby_room_protocol.hpp"
 
 #include "utils/log.hpp"
 
@@ -34,38 +35,62 @@ void* waitInput(void* data)
 {
     std::string str = "";
     bool stop = false;
+    int n = 0;
+
     while(!stop)
     {
         getline(std::cin, str);
-        if (str == "connect=")
-        {
-            int id = 0;
-            std::cin >> id;
-            ProtocolManager::getInstance()->requestStart(new ConnectToServer(id));
-        }
         if (str == "quit")
         {
             stop = true;
         }
+        else if (str == "disconnect")
+        {
+            NetworkManager::getInstance()->getPeers()[0]->disconnect();
+        }
+        else if (str == "connect")
+        {
+            ProtocolManager::getInstance()->requestStart(new ConnectToServer());
+        }
+        else if (sscanf(str.c_str(), "connect=%d", &n))
+        {
+            ProtocolManager::getInstance()->requestStart(new ConnectToServer(n));
+        }
+        else if (str == "select")
+        {
+            std::string str2;
+            getline(std::cin, str2);
+            Protocol* protocol = ProtocolManager::getInstance()->getProtocol(PROTOCOL_LOBBY_ROOM);
+            ClientLobbyRoomProtocol* clrp = static_cast<ClientLobbyRoomProtocol*>(protocol);
+            clrp->requestKartSelection(str2);
+        }
+        else if (NetworkManager::getInstance()->getPeers().size() > 0)
+        {
+            NetworkString msg;
+            msg.ai8(0);
+            msg += str;
+            NetworkManager::getInstance()->getPeers()[0]->sendPacket(msg);
+        }
     }
 
     exit(0);
-    
+
     return NULL;
 }
 
 ClientNetworkManager::ClientNetworkManager()
 {
     m_thread_keyboard = NULL;
+    m_connected = false;
 }
 
 ClientNetworkManager::~ClientNetworkManager()
 {
 }
 
-void ClientNetworkManager::run() 
+void ClientNetworkManager::run()
 {
-    if (enet_initialize() != 0) 
+    if (enet_initialize() != 0)
     {
         Log::error("ClientNetworkManager", "Could not initialize enet.\n");
         return;
@@ -73,11 +98,11 @@ void ClientNetworkManager::run()
     m_localhost = new STKHost();
     m_localhost->setupClient(1, 2, 0, 0);
     m_localhost->startListening();
-    
+
     // listen keyboard console input
     m_thread_keyboard = (pthread_t*)(malloc(sizeof(pthread_t)));
     pthread_create(m_thread_keyboard, NULL, waitInput, NULL);
-    
+
     NetworkManager::run();
 }
 

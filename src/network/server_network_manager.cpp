@@ -45,6 +45,10 @@ void* waitInput2(void* data)
         {
             stop = true;
         }
+        else if (str == "kickall")
+        {
+            ServerNetworkManager::getInstance()->kickAllPlayers();
+        }
     }
     
     uint32_t id = ProtocolManager::getInstance()->requestStart(new StopServer());
@@ -88,9 +92,12 @@ void ServerNetworkManager::run()
     NetworkManager::run();
 }
 
-void ServerNetworkManager::start()
+void ServerNetworkManager::kickAllPlayers()
 {
-
+    for (unsigned int i = 0; i < m_peers.size(); i++)
+    {
+        m_peers[i]->disconnect();
+    }
 }
 
 void ServerNetworkManager::sendPacket(const NetworkString& data)

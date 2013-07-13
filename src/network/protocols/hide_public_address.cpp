@@ -18,6 +18,7 @@
 
 #include "network/protocols/hide_public_address.hpp"
 
+#include "network/protocol_manager.hpp"
 #include "online/http_connector.hpp"
 #include "online/current_online_user.hpp"
 #include "config/user_config.hpp"
@@ -44,19 +45,19 @@ void HidePublicAddress::update()
 {
     if (m_state == NONE)
     {
-        HTTPConnector * connector = new HTTPConnector((std::string)UserConfigParams::m_server_multiplayer + "address-management.php");
-        connector->setParameter("id",CurrentOnlineUser::get()->getUserID());
-        connector->setParameter("token",CurrentOnlineUser::get()->getToken());
-        connector->setParameter("action","unset");
+        HTTPConnector connector((std::string)UserConfigParams::m_server_multiplayer + "address-management.php");
+        connector.setParameter("id",CurrentOnlineUser::get()->getUserID());
+        connector.setParameter("token",CurrentOnlineUser::get()->getToken());
+        connector.setParameter("action","unset");
 
-        const XMLNode * result = connector->getXMLFromPage();
+        const XMLNode * result = connector.getXMLFromPage();
         std::string rec_success;
 
         if(result->get("success", &rec_success))
         {
             if(rec_success == "yes")
             {
-                Log::info("ShowPublicAddress", "Address hidden successfully.");
+                Log::debug("ShowPublicAddress", "Address hidden successfully.");
             }
             else
             {

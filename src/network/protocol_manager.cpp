@@ -21,10 +21,12 @@
 #include "network/protocol.hpp"
 #include "network/network_manager.hpp"
 #include "utils/log.hpp"
+#include "graphics/irr_driver.hpp"
 
 #include <assert.h>
 #include <cstdlib>
 #include <errno.h>
+#include <typeinfo>
 
 void* protocolManagerUpdate(void* data)
 {
@@ -32,11 +34,12 @@ void* protocolManagerUpdate(void* data)
     while(!manager->exit())
     {
         manager->update();
+        irr_driver->getDevice()->sleep(20);
     }
     return NULL;
 }
 
-ProtocolManager::ProtocolManager() 
+ProtocolManager::ProtocolManager()
 {
     pthread_mutex_init(&m_events_mutex, NULL);
     pthread_mutex_init(&m_protocols_mutex, NULL);
@@ -44,8 +47,8 @@ ProtocolManager::ProtocolManager()
     pthread_mutex_init(&m_id_mutex, NULL);
     pthread_mutex_init(&m_exit_mutex, NULL);
     m_next_protocol_id = 0;
-    
-    
+
+
     pthread_mutex_lock(&m_exit_mutex); // will let the update function run
     m_update_thread = (pthread_t*)(malloc(sizeof(pthread_t)));
     pthread_create(m_update_thread, NULL, protocolManagerUpdate, this);
@@ -69,7 +72,7 @@ ProtocolManager::~ProtocolManager()
     pthread_mutex_unlock(&m_protocols_mutex);
     pthread_mutex_unlock(&m_requests_mutex);
     pthread_mutex_unlock(&m_id_mutex);
-    
+
     pthread_mutex_destroy(&m_events_mutex);
     pthread_mutex_destroy(&m_protocols_mutex);
     pthread_mutex_destroy(&m_requests_mutex);
@@ -79,8 +82,9 @@ ProtocolManager::~ProtocolManager()
 
 void ProtocolManager::notifyEvent(Event* event)
 {
+    Event* event2 = new Event(*event);
     pthread_mutex_lock(&m_events_mutex);
-    m_events_to_process.push_back(event); // add the event to the queue
+    m_events_to_process.push_back(event2); // add the event to the queue
     pthread_mutex_unlock(&m_events_mutex);
 }
 
@@ -88,7 +92,7 @@ void ProtocolManager::sendMessage(Protocol* sender, const NetworkString& message
 {
     NetworkString newMessage;
     newMessage.ai8(sender->getProtocolType()); // add one byte to add protocol type
-    newMessage += message; 
+    newMessage += message;
     NetworkManager::getInstance()->sendPacket(newMessage);
 }
 
@@ -96,14 +100,14 @@ void ProtocolManager::sendMessage(Protocol* sender, STKPeer* peer, const Network
 {
     NetworkString newMessage;
     newMessage.ai8(sender->getProtocolType()); // add one byte to add protocol type
-    newMessage += message; 
+    newMessage += message;
     NetworkManager::getInstance()->sendPacket(peer, newMessage);
 }
 void ProtocolManager::sendMessageExcept(Protocol* sender, STKPeer* peer, const NetworkString& message)
 {
     NetworkString newMessage;
     newMessage.ai8(sender->getProtocolType()); // add one byte to add protocol type
-    newMessage += message; 
+    newMessage += message;
     NetworkManager::getInstance()->sendPacketExcept(peer, newMessage);
 }
 
@@ -121,7 +125,7 @@ uint32_t ProtocolManager::requestStart(Protocol* protocol)
     pthread_mutex_lock(&m_requests_mutex);
     m_requests.push_back(req);
     pthread_mutex_unlock(&m_requests_mutex);
-    
+
     return info.id;
 }
 
@@ -175,7 +179,7 @@ void ProtocolManager::requestTerminate(Protocol* protocol)
 
 void ProtocolManager::startProtocol(ProtocolInfo protocol)
 {
-    Log::info("ProtocolManager", "A new protocol with id=%u has been started. There are %ld protocols running.", protocol.id, m_protocols.size()+1);
+    Log::info("ProtocolManager", "A %s protocol with id=%u has been started. There are %ld protocols running.", typeid(*protocol.protocol).name(), protocol.id, m_protocols.size()+1);
     // add the protocol to the protocol vector so that it's updated
     pthread_mutex_lock(&m_protocols_mutex);
     m_protocols.push_back(protocol);
@@ -186,7 +190,7 @@ void ProtocolManager::startProtocol(ProtocolInfo protocol)
 }
 void ProtocolManager::stopProtocol(ProtocolInfo protocol)
 {
-    
+
 }
 void ProtocolManager::pauseProtocol(ProtocolInfo protocol)
 {
@@ -214,6 +218,7 @@ void ProtocolManager::protocolTerminated(ProtocolInfo protocol)
 {
     pthread_mutex_lock(&m_protocols_mutex); // be sure that noone accesses the protocols vector while we erase a protocol
     int offset = 0;
+    std::string protocol_type = typeid(*protocol.protocol).name();
     for (unsigned int i = 0; i < m_protocols.size(); i++)
     {
         if (m_protocols[i-offset].protocol == protocol.protocol)
@@ -223,25 +228,26 @@ void ProtocolManager::protocolTerminated(ProtocolInfo protocol)
             offset++;
         }
     }
-    Log::info("ProtocolManager", "A protocol has been terminated. There are %ld protocols running.", m_protocols.size());
+    Log::info("ProtocolManager", "A %s protocol has been terminated. There are %ld protocols running.", protocol_type.c_str(), m_protocols.size());
     pthread_mutex_unlock(&m_protocols_mutex);
 }
 
 void ProtocolManager::update()
 {
     // before updating, notice protocols that they have received information
-    pthread_mutex_lock(&m_events_mutex); // secure threads
     int size = m_events_to_process.size();
     for (int i = 0; i < size; i++)
     {
+        pthread_mutex_lock(&m_events_mutex); // secure threads
         Event* event = m_events_to_process.back();
-        
+        m_events_to_process.pop_back();
+        pthread_mutex_unlock(&m_events_mutex); // release the mutex
+
         PROTOCOL_TYPE searchedProtocol = PROTOCOL_NONE;
         if (event->type == EVENT_TYPE_MESSAGE)
         {
             if (event->data.size() > 0)
-                searchedProtocol = (PROTOCOL_TYPE)(event->data.getUInt8(0));
-            event->removeFront(1); // remove the first byte which indicates the protocol
+                searchedProtocol = (PROTOCOL_TYPE)(event->data.getAndRemoveUInt8());
         }
         if (event->type == EVENT_TYPE_CONNECTED)
         {
@@ -252,11 +258,16 @@ void ProtocolManager::update()
             if (m_protocols[i].protocol->getProtocolType() == searchedProtocol || event->type == EVENT_TYPE_DISCONNECTED) // pass data to protocols even when paused
                 m_protocols[i].protocol->notifyEvent(event);
         }
+        if (searchedProtocol == PROTOCOL_NONE) // no protocol was aimed, show the msg to debug
+        {
+            Log::debug("ProtocolManager", "Message is \"%s\"", event->data.c_str());
+        }
+
+        // because we made a copy of the event
+        delete event->peer; // no more need of that
         delete event;
-        m_events_to_process.pop_back();
     }
-    pthread_mutex_unlock(&m_events_mutex); // release the mutex
-    
+
     // now update all protocols
     pthread_mutex_lock(&m_protocols_mutex);
     for (unsigned int i = 0; i < m_protocols.size(); i++)
@@ -264,8 +275,8 @@ void ProtocolManager::update()
         if (m_protocols[i].state == PROTOCOL_STATE_RUNNING)
             m_protocols[i].protocol->update();
     }
-    pthread_mutex_unlock(&m_protocols_mutex); 
-    
+    pthread_mutex_unlock(&m_protocols_mutex);
+
     // process queued events for protocols
     pthread_mutex_lock(&m_requests_mutex);
     for (unsigned int i = 0; i < m_requests.size(); i++)
@@ -311,7 +322,7 @@ PROTOCOL_STATE ProtocolManager::getProtocolState(uint32_t id)
         if (m_requests[i].protocol_info.id == id) // the protocol is going to be started
             return PROTOCOL_STATE_RUNNING; // we can say it's running
     }
-    return PROTOCOL_STATE_TERMINATED; // else, it's already finished 
+    return PROTOCOL_STATE_TERMINATED; // else, it's already finished
 }
 
 PROTOCOL_STATE ProtocolManager::getProtocolState(Protocol* protocol)
@@ -344,6 +355,16 @@ Protocol* ProtocolManager::getProtocol(uint32_t id)
     for (unsigned int i = 0; i < m_protocols.size(); i++)
     {
         if (m_protocols[i].id == id)
+            return m_protocols[i].protocol;
+    }
+    return NULL;
+}
+
+Protocol* ProtocolManager::getProtocol(PROTOCOL_TYPE type)
+{
+    for (unsigned int i = 0; i < m_protocols.size(); i++)
+    {
+        if (m_protocols[i].protocol->getProtocolType() == type)
             return m_protocols[i].protocol;
     }
     return NULL;

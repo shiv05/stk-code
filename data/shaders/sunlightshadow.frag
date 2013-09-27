@@ -101,6 +101,6 @@ void main() {
 /*	outcol.r = (shadowcoord.z - shadowmapz) * 50.0;
 	outcol.g = moved;*/
 
-	gl_FragData[0] = vec4(outcol, 1.0);
+	gl_FragData[0] = vec4(outcol, 0.05);
 	gl_FragData[1] = vec4(shadowed, penumbra, shadowed, shadowed);
 }

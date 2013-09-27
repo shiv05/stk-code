@@ -53,6 +53,6 @@ void main() {
 		outcol *= cloud;
 	}
 
-	gl_FragData[0] = vec4(outcol, 1.0);
+	gl_FragData[0] = vec4(outcol, 0.05);
 	gl_FragData[1] = vec4(1.0);
 }

@@ -474,7 +474,7 @@ void IrrDriver::renderGLSL(float dt)
         if (!m_lightviz)
         {
             m_video_driver->setRenderTarget(m_rtts->getRTT(RTT_TMP1), true, false,
-                                            video::SColor(255, 0, 0, 0));
+                                            video::SColor(1, 0, 0, 0));
         } else
         {
             m_video_driver->setRenderTarget(m_rtts->getRTT(RTT_COLOR), false, false);

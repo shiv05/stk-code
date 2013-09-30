@@ -12,7 +12,7 @@ void main()
 	col.xyz += ambient;
 	float spec = col.a - 0.05;
 	spec *= specular.a;
-	col.xyz += spec * col.xyz;
+	col.xyz += spec;
 	col.a = 1.0;
 
 	gl_FragColor = col;

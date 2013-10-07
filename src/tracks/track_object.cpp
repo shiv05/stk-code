@@ -67,7 +67,7 @@ TrackObject::TrackObject(const core::vector3df& xyz, const core::vector3df& hpr,
     m_presentation = presentation;
 
     if (m_interaction != "ghost" && m_interaction != "none" &&
-        physics_settings )
+        physics_settings)
     {
         m_rigid_body = new PhysicalObject(is_dynamic,
                                           *physics_settings,
@@ -151,7 +151,10 @@ void TrackObject::init(const XMLNode &xml_node, LODNode* lod_node)
             glownode = ((TrackObjectPresentationMesh *) m_presentation)->getNode();
         }
 
-        if (m_interaction != "ghost" && m_interaction != "none")
+        std::string render_pass;
+        xml_node.get("renderpass", &render_pass);
+
+        if (m_interaction != "ghost" && m_interaction != "none" && render_pass != "skybox")
         {
             m_rigid_body = PhysicalObject::fromXML(type == "movable",
                                                    xml_node,

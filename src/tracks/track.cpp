@@ -1341,7 +1341,7 @@ void Track::createWater(const XMLNode &node)
 
     if (UserConfigParams::m_graphical_effects)
     {
-        scene::IMesh *welded;
+        /*scene::IMesh *welded;
         scene_node = irr_driver->addWaterNode(mesh, &welded,
                                               wave_height,
                                               wave_speed,
@@ -1351,7 +1351,7 @@ void Track::createWater(const XMLNode &node)
         irr_driver->grabAllTextures(mesh);
         m_all_cached_meshes.push_back(mesh);
 
-        mesh = welded;
+        mesh = welded;*/
     }
     else
     {

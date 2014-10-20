@@ -90,14 +90,7 @@ bool SFXOpenAL::init()
     assert( alIsBuffer(m_sound_buffer->getBufferID()) );
     assert( alIsSource(m_sound_source) );
 
-<<<<<<< HEAD
     alSourcei (m_sound_source, AL_BUFFER, m_sound_buffer->getBufferID());
-=======
-    //Log::info("SFXOpenAL", "Setting a source with buffer, %p, rolloff %f, gain = %f, position = %s",
-    //    m_soundBuffer, rolloff, m_defaultGain, positional ? "true" : "false");
-
-    alSourcei (m_soundSource, AL_BUFFER, m_soundBuffer->getBufferID());
->>>>>>> origin/master
 
     if (!SFXManager::checkError("attaching the buffer to the source"))
         return false;
